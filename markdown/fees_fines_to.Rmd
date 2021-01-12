@@ -1,0 +1,56 @@
+---
+title: "Turnout and Amendment 4: Mobilizing Eligible Voters Close to Formerly Incarcerated Floridians"
+subtitle: ""
+thanks: Prepared for the 2021 Annual Meeting of the SPSA. Draft --- please do not circulate without permission. The author thanks Myrna Pérez, Patrick Berry, and Peter Miller for their comments on this project. All errors are my responsibility.
+author: Kevin Morris^[Researcher, Brennan Center for Justice at NYU School of Law, 120 Broadway Ste 1750, New York, NY 10271 (kevin.morris@nyu.edu)]
+institute: "Brennan Center for Justice"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  bookdown::pdf_document2:
+    toc: no
+    fig_caption: yes
+    latex_engine: xelatex
+    keep_tex: true
+link-citations: yes
+fontsize: 12pt
+header-includes:
+    - \usepackage{rotating}
+    - \usepackage{setspace}
+    - \usepackage{lineno}
+    - \linenumbers
+abstract: ""
+---
+\pagenumbering{gobble}
+\pagebreak
+```{r setup, echo = F, message = F, warning = F}
+knitr::opts_knit$set(root.dir = "..", dev = "cairo_pdf")
+library(systemfit)
+library(kevostools)
+library(AER)
+library(sandwich)
+library(lmtest)
+library(scales)
+library(ggpubr)
+library(tidyverse)
+library(extrafont)
+library(kableExtra)
+library(data.table)
+library(stargazer)
+loadfonts()
+```
+\pagenumbering{arabic}
+\doublespacing
+
+```{r, figures-side, fig.show="hold", out.width="50%", echo = FALSE, message = F, warning = F, fig.cap = "\\label{fig:marg1}Dollars per Resident and 2018 Turnout"}
+p1 <- readRDS("./temp/simple_scat.rds")
+load("./temp/mef_to.rdata")
+print(p1)
+print(p2)
+```
+
+```{r, fig.show="hold", out.width="50%", echo = FALSE, message = F, warning = F, fig.cap = "\\label{fig:marg1}Dollars per Resident and 2018 Turnout Gap"}
+p3 <- readRDS("./temp/simple_scat_gap.rds")
+load("./temp/mef_gap.rdata")
+print(p3)
+print(p4)
+```
