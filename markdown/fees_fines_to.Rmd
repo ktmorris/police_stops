@@ -1,7 +1,7 @@
 ---
 title: "Policing for profit undermines democracy: Fines, Fees, and Voter Turnout"
 subtitle: ""
-thanks: 
+thanks: The authors thank XX for their feedback and support. All errors are our responsibility. 
 author:
 - Jonathan Ben-Menachem^[PhD Student, Columbia University, Department of Sociology (jbenmenachem@gmail.com)]
 - Kevin Morris^[Researcher, Brennan Center for Justice at NYU School of Law (kevin.morris@nyu.edu)]
@@ -17,7 +17,7 @@ fontsize: 12pt
 header-includes:
     - \usepackage{rotating}
     - \usepackage{setspace}
-abstract: ""
+abstract: "This is an abstract."
 ---
 \pagenumbering{gobble}
 \pagebreak

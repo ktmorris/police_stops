@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.1.9)  12 JAN 2021 12:21
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.1.9)  12 JAN 2021 12:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -992,28 +992,26 @@ LaTeX Info: Redefining \nameref on input line 93.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
+(Font)              scaled to size 20.74pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
 (Font)              scaled to size 14.4pt on input line 95.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 10.0pt on input line 95.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 7.0pt on input line 95.
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 9
 5.
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
+(Font)              scaled to size 20.7419pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
 (Font)              scaled to size 14.4013pt on input line 95.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 10.00092pt on input line 95.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 7.00064pt on input line 95.
+(Font)              scaled to size 12.0011pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
+(Font)              scaled to size 20.73778pt on input line 95.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 14.39845pt on input line 95.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 9.99893pt on input line 95.
-LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 6.99925pt on input line 95.
+(Font)              scaled to size 11.99872pt on input line 95.
 LaTeX Font Info:    Trying to load font information for U+msa on input line 95.
 
 
@@ -1026,6 +1024,18 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 95.
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
+(Font)              scaled to size 10.0pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
+(Font)              scaled to size 7.0pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
+(Font)              scaled to size 10.00092pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
+(Font)              scaled to size 7.00064pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
+(Font)              scaled to size 9.99893pt on input line 95.
+LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
+(Font)              scaled to size 6.99925pt on input line 95.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
 (Font)              scaled to size 5.0pt on input line 95.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
@@ -1042,7 +1052,7 @@ File: fees_fines_to_files/figure-latex/figures-side-2.pdf Graphic file (type pd
 f)
 <use fees_fines_to_files/figure-latex/figures-side-2.pdf>
 
-Overfull \hbox (2.60683pt too wide) in paragraph at lines 140--140
+Overfull \hbox (2.60683pt too wide) in paragraph at lines 143--143
 [][] []
  []
 
@@ -1054,7 +1064,7 @@ File: fees_fines_to_files/figure-latex/unnamed-chunk-1-2.pdf Graphic file (type
  pdf)
 <use fees_fines_to_files/figure-latex/unnamed-chunk-1-2.pdf>
 
-Overfull \hbox (2.60683pt too wide) in paragraph at lines 148--148
+Overfull \hbox (2.60683pt too wide) in paragraph at lines 151--151
 [][] []
  []
 
@@ -1066,11 +1076,11 @@ Package rerunfilecheck Info: File `fees_fines_to.out' has not changed.
 (rerunfilecheck)             Checksum: DDFF57583F769FE78776AD610E2D6F71;298.
  ) 
 Here is how much of TeX's memory you used:
- 18237 strings out of 479215
- 318063 string characters out of 5873169
- 782118 words of memory out of 5000000
- 37534 multiletter control sequences out of 15000+600000
- 408067 words of font info for 63 fonts, out of 8000000 for 9000
+ 18258 strings out of 479215
+ 318722 string characters out of 5873169
+ 782208 words of memory out of 5000000
+ 37547 multiletter control sequences out of 15000+600000
+ 409940 words of font info for 76 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  98i,12n,118p,1408b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
 
