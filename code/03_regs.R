@@ -121,8 +121,8 @@ p4 <- ggplot() +
   labs(caption = "Notes: Distribution of Dollars per Resident shown at bottom. Robust standard errors clustered by state.
 Covariates: % White, % Black, % Latinx, Median Income, % with Some College, Median Age,
 % Over 64 Years Old, State Fixed Effects.",
-       color = "Non-Hispanic White Share\nof Municipality",
-       fill = "Non-Hispanic White Share\nof Municipality") +
+       color = "Non-Hispanic White\nShare of Municipality",
+       fill = "Non-Hispanic White\nShare of Municipality") +
   theme_bw() + theme(plot.caption = element_text(hjust = 0),
                      text = element_text(family = "LM Roman 10")) +
   coord_cartesian(ylim = c(-.2, .4),
