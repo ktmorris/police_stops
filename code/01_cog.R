@@ -44,7 +44,10 @@ d <- left_join(d, select(info,
 # 
 # saveRDS(c2, "temp/census_data.rds")
 
-c2 <- readRDS("temp/census_data.rds")
+c2 <- readRDS("temp/census_data.rds") %>% 
+  group_by(GEOID) %>% 
+  filter(row_number() == 1) %>% 
+  ungroup()
 
 cities <- inner_join(mutate(d, GEOID = paste0(state, fips)), c2, by = "GEOID") %>% 
   filter(item_code == "U30",
