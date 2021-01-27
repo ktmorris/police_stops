@@ -1,7 +1,8 @@
 
 
 cog <- readRDS("temp/cog_cities.rds") %>% 
-  mutate(state = as.factor(state))
+  mutate(state = as.factor(state),
+         fines_rev = dper / total_revenue)
 
 to <- readRDS("temp/city_to.rds") %>% 
   group_by(plasub) %>%
@@ -31,17 +32,30 @@ p1 <- ggplot(full_set, aes(x = lndper, y = vap_to_18)) + geom_point(shape = 1) +
        
        ")
 p1
-m1 <- lm.cluster(to_18 ~ lndper + nh_white + nh_black + latino +
+p1b <- ggplot(full_set, aes(x = log(fines_rev), y = vap_to_18)) + geom_point(shape = 1) + geom_smooth(method = "lm") +
+  xlab("Share of Municipal Revenue from Fees and Fines") +
+  ylab("Turnout in 2018") + scale_x_continuous(breaks = c(log(0.00005), log(0.001), log(0.0075)),
+                                               labels = c("0.005%", "0.1%", "0.75%")) +
+  scale_y_continuous(labels = percent) +
+  theme_bw() + theme(plot.caption = element_text(hjust = 0),
+                     text = element_text(family = "LM Roman 10")) +
+  coord_cartesian(xlim = c(log(0.000005), log(0.04)),
+                  ylim = c(0, 1)) +
+  labs(caption = "
+       
+       ")
+p1b
+m1 <- lm.cluster(to_18 ~ lndper + nh_white + nh_black + latino + pop_dens + 
            median_income + some_college + median_age + share_over_64 +
-           state, data = full_set, cluster = full_set$state)
+           state + total_revenue + share_taxes + share_state_fed, data = full_set, cluster = full_set$state)
 
-m2 <- lm(vap_to_18 ~ lndper + nh_white + nh_black + latino +
+m2 <- lm(vap_to_18 ~ lndper + nh_white + nh_black + latino + pop_dens +
            median_income + some_college + median_age + share_over_64 +
-           state, data = filter(full_set, vap_to_18 <= 1))
+           state + total_revenue + share_taxes + share_state_fed, data = filter(full_set, vap_to_18 <= 1))
 
 m3 <- lm(vap_to_18 ~ lndper + nh_white + nh_black + latino +
            median_income + some_college + median_age + share_over_64 +
-           state, data = filter(full_set, vap_to_18 <= 1))
+           state + total_revenue + share_taxes + share_state_fed, data = filter(full_set, vap_to_18 <= 1))
 
 stargazer(m2, m3, type = "text", omit = c("state"))
 
@@ -75,8 +89,8 @@ p2 <- ggplot() +
   scale_y_continuous(labels = percent) +
   coord_cartesian(xlim = c(-.3, log(201)), ylim = c(0, .825)) +
   labs(caption = "Notes: Distribution of Dollars per Resident shown at bottom. Robust standard errors clustered by state.
-Covariates: % White, % Black, % Latinx, Median Income, % with Some College, Median Age,
-% Over 64 Years Old, State Fixed Effects.") +
+Covariates: % White, % Black, % Latinx, Median Income, % with Some College, Median Age, % Over 64 Years Old, 
+Population Density, Total Revenue, Share of Revenue from Taxes, Share of Revenue from State / Fed. Gov, State Fixed Effects.") +
   theme_bw() + theme(plot.caption = element_text(hjust = 0),
                      text = element_text(family = "LM Roman 10")) +
   geom_vline(xintercept = bars$x[1], color = "black", linetype = "dashed") +
@@ -217,8 +231,8 @@ p5 <- ggplot(filter(gap_set, black_cvap > 0), aes(x = lndper, y = vap_gap_18_bw)
 p5
 
 
-m1 <- lm(vap_gap_18_bw ~ lndper + nh_white + nh_black + latino + state + 
-           median_income + some_college + median_age + share_over_64,
+m1 <- lm(vap_gap_18_bw ~ lndper + nh_white + nh_black + latino + state + pop_dens + 
+           median_income + some_college + median_age + share_over_64 + total_revenue + share_taxes + share_state_fed,
          data = filter(gap_set, !is.infinite(vap_gap_18_bw)))
 
 stargazer(m1, type = "text", omit = "state")
@@ -244,8 +258,8 @@ p6 <- ggplot() +
   scale_y_continuous(labels = percent) +
   coord_cartesian(xlim = c(-.3, log(201)), ylim = c(-.25, .75)) +
   labs(caption = "Notes: Distribution of Dollars per Resident shown at bottom. Robust standard errors clustered by state.
-Covariates: % White, % Black, % Latinx, Median Income, % with Some College, Median Age,
-% Over 64 Years Old, State Fixed Effects.") +
+Covariates: % White, % Black, % Latinx, Median Income, % with Some College, Median Age, % Over 64 Years Old,
+Population Density, Total Revenue, Share of Revenue from Taxes, Share of Revenue from State / Fed. Gov, State Fixed Effects.") +
   theme_bw() + theme(plot.caption = element_text(hjust = 0),
                      text = element_text(family = "LM Roman 10")) +
   geom_vline(xintercept = bars3$x[1], color = "black", linetype = "dashed") +

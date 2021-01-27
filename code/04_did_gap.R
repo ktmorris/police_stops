@@ -1,21 +1,22 @@
-#######
-set.seed(38913)
+to <- readRDS("temp/city_to_early_reg.rds") %>%
+  filter(EthnicGroups_EthnicGroup1Desc %in% c("European",
+                                              "Likely African-American")) %>%
+  pivot_wider(id_cols = c("plasub", "state"), names_from = "EthnicGroups_EthnicGroup1Desc",
+              values_from = c("count", "to_18", "to_16", "to_14", "to_12", "to_10"))
+to <- to[complete.cases(to), ] %>%
+  select(plasub) %>% 
+  pull()
 
+#######
 cities <- readRDS("temp/cog_cities.rds") %>% 
+  filter(GEOID %in% to) %>% 
   mutate(pct_change = dper / dper12,
          q = ntile(pct_change, 10)) %>% 
   filter(q %in% c(1:7, 10)) %>% 
   mutate(treated = q == 10) %>% 
-  dplyr::select(place_id, treated, GEOID)
-
-pot_con <- filter(cities, !treated)
-
-census <- readRDS("temp/census_12.rds") %>% 
-  select(population, asian, latino, nh_black, nh_white,
-         median_income, some_college, median_age,
-         share_no_car, GEOID)
-
-cities <- left_join(cities, census)
+  dplyr::select(place_id, treated, population, asian, latino, nh_black, nh_white,
+                median_income, some_college, median_age,
+                share_no_car, GEOID)
 
 cities <- cities[complete.cases(cities), ]
 
@@ -23,9 +24,9 @@ match_data <- cities %>%
   dplyr::select(-place_id, -treated, -GEOID)
 
 # genout <- GenMatch(Tr = cities$treated, X = match_data, replace = T, pop.size = 1000)
-# saveRDS(genout, "temp/genout_pct.rds")
+# saveRDS(genout, "temp/genout_pct_gap.rds")
 
-genout <- readRDS("temp/genout_pct.rds")
+genout <- readRDS("temp/genout_pct_gap.rds")
 
 mout <- Match(Tr = cities$treated, X = match_data,
               estimand = "ATT", Weight.matrix = genout, M = 2)
@@ -36,8 +37,8 @@ varnames <- c("population", "asian", "latino", "nh_black", "nh_white",
               "share_no_car")
 
 balance <- MatchBalance(treated ~ population + asian + latino + nh_black + nh_white +
-                  median_income + some_college + median_age +
-                  share_no_car, data = cities, match.out = mout)
+                          median_income + some_college + median_age +
+                          share_no_car, data = cities, match.out = mout)
 TrMean <- c()
 PreMean <- c()
 PreQQmed <- c()
@@ -126,47 +127,44 @@ change <- left_join(cities, dper) %>%
 
 ggplot(change, aes(x = year, y = dper, fill = treated), xlab="Age Group") +
   geom_bar(stat="identity", width=.5, position = "dodge") 
-###################################################
 
+###############################################
 to <- readRDS("temp/city_to_early_reg.rds") %>% 
-  group_by(plasub) %>%
+  filter(EthnicGroups_EthnicGroup1Desc %in% c("European",
+                                              "Likely African-American")) %>% 
+  group_by(plasub, race = EthnicGroups_EthnicGroup1Desc) %>%
   summarize_at(vars(to_18, to_16, to_14, to_12, to_10),
                ~ weighted.mean(., count)) %>% 
   pivot_longer(starts_with("to_"), names_to = "year") %>% 
   mutate(year = as.integer(gsub("to_", "20", year))) %>% 
-  rename(to = value)
+  rename(to = value) %>% 
+  pivot_wider(id_cols = c("plasub", "year"), names_from = "race", values_from = "to") %>% 
+  mutate(gap = `European` - `Likely African-American`) %>% 
+  select(plasub, year, gap)
 
-##############################
 
-cities2 <- left_join(cities, to, by = c("GEOID" = "plasub"))
+cities3 <- left_join(cities, to, by = c("GEOID" = "plasub"))
 
-pot_con <- left_join(pot_con, to, by = c("GEOID" = "plasub")) %>% 
-  group_by(year) %>% 
-  summarize(to = mean(to)) %>% 
-  mutate(treated = "All Bottom 70tile")
-
-ll <- cities2 %>% 
+ll <- cities3 %>% 
   group_by(treated, year) %>% 
-  summarize(to = weighted.mean(to, weight)) %>% 
-  mutate(treated = ifelse(treated, "Top 10tile", "Controls from Bottom 70tile"))
+  summarize(gap = weighted.mean(gap, weight, na.rm = T)) %>% 
+  mutate(treated = ifelse(treated, "Treated", "Control"))
 
+ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
-ll$treated <- factor(ll$treated, levels = c("Top 10tile", "Controls from Bottom 70tile", "All Bottom 70tile"))
-
-ggplot(ll, aes(x = year, y = to, color = treated)) + geom_line() +
-  theme_bc() +
+ggplot(ll, aes(x = year, y = gap, color = treated)) + geom_line() +
+  theme_bw() +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = "Year", y = "Turnout", color = "Group") +
+  labs(x = "Year", y = "Turnout Gap", color = "Group") +
   geom_vline(xintercept = 2012, linetype = "dashed") +
   geom_vline(xintercept = 2017, linetype = "dashed") +
   labs(caption = "Notes: End years of Census periods in dashed lines.")
 
-cities2$midterm <- cities2$year %% 4 == 2
-
-m1 <- lm(to ~ treated * I(year > 2014) + treated * midterm,
-                 data = cities2, weights = weight)
-m1ses <- summary(lm.cluster(to ~ treated * I(year > 2014) + treated * midterm,
-         data = cities2, weights = cities2$weight, cluster = cities2$group))[,2]
+cities3$midterm <- cities3$year %% 4 == 2
+m1 <- lm(gap ~ treated * I(year > 2014) + treated * midterm,
+         data = cities3, weights = weight)
+m1ses <- summary(lm.cluster(gap ~ treated * I(year > 2014) + treated * midterm,
+                            data = cities3, weights = cities3$weight, cluster = cities3$group))[,2]
 
 stargazer(m1, type = "text",
           se = list(m1ses))
