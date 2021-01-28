@@ -191,9 +191,7 @@ cities <- inner_join(mutate(d, GEOID = paste0(state, fips)), c2, by = "GEOID") %
   mutate(lnbl = log(nh_black + 1))
 
 cities <- left_join(cities, select(d12_good,
-                                   place_id, lndper12 = lndper))
-
-cities <- left_join(cities, cvap)
+                                   place_id, lndper12 = lndper, dper_12 = dper))
 
 cities <- left_join(cities, rev)
 

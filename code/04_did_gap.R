@@ -10,13 +10,18 @@ to <- to[complete.cases(to), ] %>%
 #######
 cities <- readRDS("temp/cog_cities.rds") %>% 
   filter(GEOID %in% to) %>% 
-  mutate(pct_change = dper / dper12,
+  mutate(pct_change = dper / dper_12,
          q = ntile(pct_change, 10)) %>% 
   filter(q %in% c(1:7, 10)) %>% 
   mutate(treated = q == 10) %>% 
-  dplyr::select(place_id, treated, population, asian, latino, nh_black, nh_white,
-                median_income, some_college, median_age,
-                share_no_car, GEOID)
+  dplyr::select(place_id, treated, GEOID)
+
+census <- readRDS("temp/census_12.rds") %>% 
+  select(population, asian, latino, nh_black, nh_white,
+         median_income, some_college, median_age,
+         share_no_car, GEOID)
+
+cities <- left_join(cities, census)
 
 cities <- cities[complete.cases(cities), ]
 
@@ -117,8 +122,8 @@ cities <- left_join(
   mutate(weight = ifelse(is.na(weight), 0, weight))
 ##############################
 dper <- readRDS("temp/cog_cities.rds") %>% 
-  select(GEOID, dper, dper12) %>% 
-  pivot_longer(cols = c("dper", "dper12"), names_to = "year") %>% 
+  select(GEOID, dper, dper_12) %>% 
+  pivot_longer(cols = c("dper", "dper_12"), names_to = "year") %>% 
   mutate(year = ifelse(year == "dper", "2017", "2012"))
 
 change <- left_join(cities, dper) %>% 

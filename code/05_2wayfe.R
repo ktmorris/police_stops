@@ -112,7 +112,7 @@ j <- j %>%
          V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
   filter(!grepl("Note:", V1))
 
-insert1 <- "\\resizebox{!}{.5\\textheight}{%"
+insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
 insert2 <- "}"
 
 j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
