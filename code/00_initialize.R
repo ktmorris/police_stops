@@ -1,3 +1,4 @@
+library(splitstackshape)
 library(miceadds)
 library(Matching)
 library(plm)

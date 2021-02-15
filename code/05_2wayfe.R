@@ -21,70 +21,56 @@ census <- bind_rows(
 
 cities <- left_join(cities, census)
 
-to <- readRDS("temp/city_to_14_reg.rds") %>% 
-  group_by(plasub, state) %>%
-  summarize_at(vars(to_18, to_16, to_14, to_12, to_10),
-               ~ weighted.mean(., count)) %>% 
-  select(GEOID = plasub, state, to_18, to_14) %>% 
-  pivot_longer(cols = starts_with("to_"), names_to = "year", values_to = "to") %>% 
-  mutate(year = as.integer(gsub("to_", "20", year)),
-         year = ifelse(year == 2018, 2017, 2012))
-
-to2 <- readRDS("temp/city_to_14_reg.rds") %>% 
-  filter(EthnicGroups_EthnicGroup1Desc %in% c("European", "Likely African-American")) %>% 
-  mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European", "White", "Nonwhite")) %>% 
-  group_by(plasub, state, race) %>%
-  summarize_at(vars(to_18, to_16, to_14, to_12, to_10),
-               ~ sum(. * count)) %>% 
-  select(GEOID = plasub, race, state, to_18, to_14) %>% 
+to <- bind_rows(readRDS("temp/city_to_14_reg.rds") %>% 
+                  mutate(race = "overall"),
+                readRDS("temp/city_to_14_reg.rds")%>%
+                  filter(EthnicGroups_EthnicGroup1Desc %in% c("European",
+                                                              "Likely African-American")) %>% 
+                  mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European",
+                                       "white",
+                                       "black"))) %>% 
+  group_by(state, GEOID = plasub, race) %>%
+  summarize(to_18 = sum(count * to_18) / sum(count),
+            to_14 = sum(count * to_14) / sum(count),
+            voters = sum(count)) %>% 
   pivot_longer(cols = starts_with("to_"), names_to = "year", values_to = "to") %>% 
   mutate(year = as.integer(gsub("to_", "20", year)),
          year = ifelse(year == 2018, 2017, 2012)) %>% 
-  pivot_wider(id_cols = c("GEOID", "year", "state"), names_from = "race", values_from = "to")
+  pivot_wider(id_cols = c("GEOID", "year", "state"), names_from = "race",
+              values_from = c("to", "voters"))
 
 
-cities1 <- left_join(cities, to)
+cities1 <- left_join(cities, to) %>% 
+  mutate(to_overall = (to_overall * voters_overall) / cvap,
+         to_white = (to_white * voters_white) / white_cvap,
+         to_black = (to_black * voters_black) / black_cvap)
 
-cities_bal1 <- cities1[complete.cases(cities1), ] %>% 
-  select(-ends_with("cvap")) %>% 
-  group_by(GEOID) %>% 
-  filter(n() == 2) %>% 
-  mutate(state = as.factor(state),
-         year = as.factor(year),
-         GEOID = as.factor(GEOID))
-
-cities2 <- left_join(cities, to2)
-
-cities_bal2 <- cities2[complete.cases(cities2), ] %>% 
-  filter(White / white_cvap <= 1,
-         Nonwhite / black_cvap <= 1) %>% 
-  mutate(to_gap = (White / white_cvap) - (Nonwhite / black_cvap)) %>% 
-  select(-White, -Nonwhite, -ends_with("cvap")) %>% 
-  filter(!is.infinite(to_gap)) %>% 
-  group_by(GEOID) %>% 
-  filter(n() == 2) %>% 
-  mutate(state = as.factor(state),
-         year = as.factor(year),
-         GEOID = as.factor(GEOID))
-
-
-m1 <- plm(to ~ lndper + nh_white + nh_black + latino + pop_dens +
+m1 <- plm(to_overall ~ lndper + nh_white + nh_black + latino + pop_dens +
             median_income + some_college + median_age + share_over_64 +
-            share_taxes + share_state_fed + total_revenue, 
-          data = cities_bal1, 
+            share_taxes + share_state_fed + total_revenue + state, 
+          data = filter(cities1, !is.na(to_overall), !is.infinite(to_overall)), 
           index = c("GEOID", "year"), 
           model = "within", 
           effect = "twoways")
 
-m2 <- plm(to_gap ~ lndper + nh_white + nh_black + latino + pop_dens +
+m2 <- plm(to_white ~ lndper + nh_white + nh_black + latino + pop_dens +
             median_income + some_college + median_age + share_over_64 +
-            share_taxes + share_state_fed + total_revenue, 
-          data = cities_bal2, 
+            share_taxes + share_state_fed + total_revenue + state, 
+          data = filter(cities1, !is.na(to_white), !is.infinite(to_white), white_cvap > 100), 
           index = c("GEOID", "year"), 
           model = "within", 
           effect = "twoways")
 
-stargazer(m1, m2, type = "text",
+m3 <- plm(to_black ~ lndper * nh_white + nh_black + latino + pop_dens +
+            median_income + some_college + median_age + share_over_64 +
+            share_taxes + share_state_fed + total_revenue + state, 
+          data = filter(cities1, !is.na(to_black), !is.infinite(to_black),
+                        to_black <= 1),
+          index = c("GEOID", "year"), 
+          model = "within", 
+          effect = "twoways")
+
+stargazer(m1, m2, m3, type = "text",
           covariate.labels = c("Log(Dollars / Resident)",
                                "Share non-Hispanic White",
                                "Share non-Hispanic Black",
@@ -97,7 +83,7 @@ stargazer(m1, m2, type = "text",
                                "Share of Revenue from Taxes",
                                "Share of Revenue from State / Federal Government",
                                "Total Revenue"),
-          dep.var.labels = c("Turnout", "White-Black Turnout Gap"),
+          dep.var.labels = c("Overall Turnout", "White Turnout", "Black Turnout"),
           out = "temp/2wfe_reg.tex",
           notes = "TO REPLACE",
           title = "\\label{tab:tab1} Two-Way Fixed Effects Models")

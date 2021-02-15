@@ -4,8 +4,15 @@ cog <- readRDS("temp/cog_cities.rds") %>%
   mutate(state = as.factor(state),
          fines_rev = dper / total_revenue)
 
-to <- readRDS("temp/city_to.rds") %>% 
-  group_by(plasub) %>%
+to <- bind_rows(readRDS("temp/city_to.rds") %>% 
+                  mutate(race = "overall"),
+                readRDS("temp/city_to.rds")%>%
+                  filter(EthnicGroups_EthnicGroup1Desc %in% c("European",
+                                                              "Likely African-American")) %>% 
+                  mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European",
+                                       "white",
+                                       "black"))) %>% 
+  group_by(plasub, race) %>%
   mutate(votes_18 = count * to_18,
          votes_16 = count * to_16,
          votes_10 = count * to_10) %>% 
@@ -13,13 +20,22 @@ to <- readRDS("temp/city_to.rds") %>%
             to_16 = sum(votes_16) / sum(count),
             votes_18 = sum(votes_18),
             votes_16 = sum(votes_16),
-            votes_10 = sum(votes_10))
+            votes_10 = sum(votes_10)) %>% 
+  pivot_wider(id_cols = "plasub", names_from = "race", values_from = c("to_18",
+                                                                       "to_16",
+                                                                       "votes_18",
+                                                                       "votes_16",
+                                                                       "votes_10"))
 
 full_set <- inner_join(cog, to, by = c("GEOID" = "plasub")) %>% 
-  mutate(vap_to_18 = votes_18 / cvap,
-         vap_to_10 = votes_10 / cvap)
+  mutate(vap_to_18_overall = votes_18_overall / cvap,
+         vap_to_10_overall = votes_10_overall / cvap,
+         vap_to_18_white = votes_18_white / white_cvap,
+         vap_to_10_white = votes_10_white / white_cvap,
+         vap_to_18_black = votes_18_black / black_cvap,
+         vap_to_10_black = votes_10_black / black_cvap)
 
-p1 <- ggplot(full_set, aes(x = lndper, y = vap_to_18)) + geom_point(shape = 1) + geom_smooth(method = "lm") +
+p1 <- ggplot(full_set, aes(x = lndper, y = vap_to_18_overall)) + geom_point(shape = 1) + geom_smooth(method = "lm") +
   xlab("Dollars per Resident") +
   ylab("Turnout in 2018") + scale_x_continuous(breaks = c(log(1), log(2), log(11), log(101), log(201)),
                                                                            labels = c("$0", "$1", "$10", "$100", "$200")) +
@@ -32,7 +48,7 @@ p1 <- ggplot(full_set, aes(x = lndper, y = vap_to_18)) + geom_point(shape = 1) +
        
        ")
 p1
-p1b <- ggplot(full_set, aes(x = log(fines_rev), y = vap_to_18)) + geom_point(shape = 1) + geom_smooth(method = "lm") +
+p1b <- ggplot(full_set, aes(x = log(fines_rev), y = vap_to_18_overall)) + geom_point(shape = 1) + geom_smooth(method = "lm") +
   xlab("Share of Municipal Revenue from Fees and Fines") +
   ylab("Turnout in 2018") + scale_x_continuous(breaks = c(log(0.00005), log(0.001), log(0.0075)),
                                                labels = c("0.005%", "0.1%", "0.75%")) +
@@ -45,19 +61,53 @@ p1b <- ggplot(full_set, aes(x = log(fines_rev), y = vap_to_18)) + geom_point(sha
        
        ")
 p1b
-m1 <- lm.cluster(to_18 ~ lndper + nh_white + nh_black + latino + pop_dens + 
-           median_income + some_college + median_age + share_over_64 +
-           state + total_revenue + share_taxes + share_state_fed, data = full_set, cluster = full_set$state)
 
-m2 <- lm(vap_to_18 ~ lndper + nh_white + nh_black + latino + pop_dens +
-           median_income + some_college + median_age + share_over_64 +
-           state + total_revenue + share_taxes + share_state_fed, data = filter(full_set, vap_to_18 <= 1))
+full_set <- rename(full_set, share_s_fed = share_state_fed)
 
-m3 <- lm(vap_to_18 ~ lndper + nh_white + nh_black + latino +
+m1 <- lm(vap_to_18_overall ~ lndper + nh_white + nh_black + latino + pop_dens +
            median_income + some_college + median_age + share_over_64 +
-           state + total_revenue + share_taxes + share_state_fed, data = filter(full_set, vap_to_18 <= 1))
+           state + total_revenue + share_taxes + share_s_fed, data = filter(full_set, vap_to_18_overall <= 1))
+m1s <- summary(lm.cluster(vap_to_18_overall ~ lndper + nh_white + nh_black + latino + pop_dens +
+                            median_income + some_college + median_age + share_over_64 +
+                            state + total_revenue + share_taxes + share_s_fed,
+                          data = filter(full_set, vap_to_18_overall <= 1),
+                          cluster = filter(full_set, vap_to_18_overall <= 1)$state))[,2]
 
-stargazer(m2, m3, type = "text", omit = c("state"))
+m2 <- lm(vap_to_18_white ~ lndper + nh_white + nh_black + latino + pop_dens +
+           median_income + some_college + median_age + share_over_64 +
+           state + total_revenue + share_taxes + share_s_fed, data = filter(full_set, vap_to_18_white <= 1))
+m2s <- summary(lm.cluster(vap_to_18_white ~ lndper + nh_white + nh_black + latino + pop_dens +
+                            median_income + some_college + median_age + share_over_64 +
+                            state + total_revenue + share_taxes + share_s_fed,
+                          data = filter(full_set, vap_to_18_white <= 1),
+                          cluster = filter(full_set, vap_to_18_white <= 1)$state))[,2]
+
+m3 <- lm(vap_to_18_black ~ lndper + nh_white + nh_black + latino + pop_dens +
+           median_income + some_college + median_age + share_over_64 +
+           state + total_revenue + share_taxes + share_s_fed, data = filter(full_set, vap_to_18_black <= 1))
+m3s <- summary(lm.cluster(vap_to_18_black ~ lndper + nh_white + nh_black + latino + pop_dens +
+                            median_income + some_college + median_age + share_over_64 +
+                            state + total_revenue + share_taxes + share_s_fed,
+                          data = filter(full_set, vap_to_18_black <= 1),
+                          cluster = filter(full_set, vap_to_18_black <= 1)$state))[,2]
+
+stargazer(m1, m2, m3, type = "text", omit = c("state"),
+          dep.var.labels = c("Overall Turnout", "White Turnout", "Black Turnout"),
+          covariate.labels = c("Log(Dollars / Resident)",
+                               "% nonHispanic White",
+                               "% nonHispanic Black",
+                               "% Latinx",
+                               "Population Density",
+                               "Median Income",
+                               "% with Some College",
+                               "Median Age",
+                               "Share over 64",
+                               "Total Revenue",
+                               "% of Rev from Taxes",
+                               "% of Rev from State / Fed Gov."),
+          se = list(m1s, m2s, m3s),
+          add.lines = list(c("State fixed effects", "X", "X", "X")),
+          notes = "Robust standard errors clustered by state.")
 
 
 marg <- ggeffect(m2, "lndper [all]", vcov.fun = "vcovCR", vcov.type = "CR0", 

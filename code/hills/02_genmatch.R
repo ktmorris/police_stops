@@ -1,0 +1,43 @@
+
+## needs to be run on nyu hpc or its way too slow
+## set seed for reproducibility. this is a random 5-digit number: floor(runif(1, min = 10000, max = 99999))
+## on nyu hpc with 50 processors, 50gb RAM: Total run time : 66 hours 14 minutes and 25 seconds
+set.seed(45251)
+
+library(Matching)
+library(data.table)
+library(scales)
+library(kableExtra)
+library(tidyverse)
+require(snow)
+require(parallel)
+
+
+Sys.info()
+
+NodeFile = Sys.getenv("MY_HOSTFILE")
+
+print(NodeFile)
+
+readLines(NodeFile)
+
+cl<-makeCluster(c(readLines(NodeFile)), type="SOCK")
+cl
+
+
+hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+
+samp <- hills_pre_match %>% 
+  group_by(treated) %>% 
+  sample_frac(0.5) %>% 
+  ungroup()
+
+match_data <- samp %>% 
+  select(-LALVOTERID, -treated, -GEOID, -fd) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
+  mutate(reg_date = as.integer(reg_date))
+
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
+                   exact = c(rep(T, 7), rep(F, 5)), pop.size = 1000)
+
+saveRDS(genout, "temp/genout_hills_civil.rds")

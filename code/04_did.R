@@ -1,132 +1,15 @@
-#######
-set.seed(38913)
+# floor(runif(1, min = 10000, max = 99999))
+set.seed(45251)
 
-cities <- readRDS("temp/cog_cities.rds") %>% 
-  mutate(pct_change = dper / dper12,
-         q = ntile(pct_change, 10)) %>% 
-  filter(q %in% c(1:7, 10)) %>% 
-  mutate(treated = q == 10) %>% 
-  dplyr::select(place_id, treated, GEOID)
+library(Matching)
+library(data.table)
+library(scales)
+library(kableExtra)
+library(tidyverse)
+require(snow)
+require(parallel)
 
-pot_con <- filter(cities, !treated)
-
-census <- readRDS("temp/census_12.rds") %>% 
-  select(population, asian, latino, nh_black, nh_white,
-         median_income, some_college, median_age,
-         share_no_car, GEOID)
-
-cities <- left_join(cities, census)
-
-cities <- cities[complete.cases(cities), ]
-
-match_data <- cities %>% 
-  dplyr::select(-place_id, -treated, -GEOID)
-
-# genout <- GenMatch(Tr = cities$treated, X = match_data, replace = T, pop.size = 1000)
-# saveRDS(genout, "temp/genout_pct.rds")
-
-genout <- readRDS("temp/genout_pct.rds")
-
-mout <- Match(Tr = cities$treated, X = match_data,
-              estimand = "ATT", Weight.matrix = genout, M = 2)
-##################################
-
-varnames <- c("population", "asian", "latino", "nh_black", "nh_white",
-              "median_income", "some_college", "median_age",
-              "share_no_car")
-
-balance <- MatchBalance(treated ~ population + asian + latino + nh_black + nh_white +
-                  median_income + some_college + median_age +
-                  share_no_car, data = cities, match.out = mout)
-TrMean <- c()
-PreMean <- c()
-PreQQmed <- c()
-PreQQmean <- c()
-PreQQmax <- c()
-PostMean <- c()
-PostQQmed <- c()
-PostQQmean <- c()
-PostQQmax <- c()
-
-for(i in c(1:length(balance$BeforeMatching))){
-  TrMean <- unlist(c(TrMean, balance$BeforeMatching[[i]][3][1]))
-  PreMean <- unlist(c(PreMean, balance$BeforeMatching[[i]][4][1]))
-  PreQQmed <- unlist(c(PreQQmed, balance$BeforeMatching[[i]]$qqsummary[2]))
-  PreQQmean <- unlist(c(PreQQmean, balance$BeforeMatching[[i]]$qqsummary[1]))
-  PreQQmax <- unlist(c(PreQQmax, balance$BeforeMatching[[i]]$qqsummary[3]))
-  
-  PostMean <- unlist(c(PostMean, balance$AfterMatching[[i]][4][1]))
-  PostQQmed <- unlist(c(PostQQmed, balance$AfterMatching[[i]]$qqsummary[2]))
-  PostQQmean <- unlist(c(PostQQmean, balance$AfterMatching[[i]]$qqsummary[1]))
-  PostQQmax <- unlist(c(PostQQmax, balance$AfterMatching[[i]]$qqsummary[3]))
-}
-
-
-
-df <- data.frame("TrMean" = TrMean,
-                 "TrMean2" = TrMean,
-                 "PreMean" = PreMean,
-                 "PreQQmed" = PreQQmed,
-                 "PreQQmean" = PreQQmean,
-                 "PreQQmax" = PreQQmax,
-                 "PostMean" = PostMean,
-                 "PostQQmed" = PostQQmed,
-                 "PostQQmean" = PostQQmean,
-                 "PostQQmax" = PostQQmax,
-                 "names" = varnames) %>%
-  mutate(change_mean = 1 - (abs(TrMean - PostMean) / abs(TrMean - PreMean)),
-         change_eqqmed = 1 - abs(PostQQmed / PreQQmed),
-         change_eqqmean = 1 - abs(PostQQmean / PreQQmean),
-         change_eqqmax = 1 - abs(PostQQmax / PreQQmax)) %>%
-  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean), ~ comma(round(., 3), accuracy = .001)) %>%
-  mutate_at(vars(change_mean, change_eqqmed, change_eqqmean, change_eqqmax), ~ round(. * 100, 2)) %>%
-  filter(names != "voted_primary")
-
-df <- full_join(df,
-                fread("./raw_data/var_names.csv"),
-                by = c("names" = "variable")) %>%
-  select(name, TrMean, PreMean, TrMean2, PostMean, change_mean, change_eqqmed, change_eqqmean, change_eqqmax) %>%
-  filter(!is.na(TrMean))
-
-
-df <- df %>%
-  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-            ~ ifelse(name == "Median Income", dollar(round(as.numeric(gsub(",", "", .)))), .)) %>%
-  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-            ~ ifelse(name %in% c("Population"), comma(round(as.numeric(gsub(",", "", .))), 1), .)) %>%
-  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-            ~ ifelse(name %in% c("Median Age"), round(as.numeric(gsub(",", "", .)), digits = 1), .)) %>%
-  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-            ~ ifelse(substring(name, 1, 1) == "%", percent(as.numeric(.), accuracy = .1), .)) %>%
-  filter(!is.na(name))
-
-colnames(df) <- c("", "Treated", "Control", "Treated", "Control", "Mean Diff", "eQQ Med", "eQQ Mean", "eQQ Max")
-###################################################
-
-ids <- data.frame("id" = c(mout$index.treated, mout$index.control),
-                  "group" = rep(mout$index.treated, 2)) %>% 
-  group_by(id, group) %>% 
-  summarize(weight = n())
-
-cities <- left_join(
-  cities %>% 
-    mutate(id = row_number()),
-  ids
-) %>% 
-  mutate(weight = ifelse(is.na(weight), 0, weight))
-##############################
-dper <- readRDS("temp/cog_cities.rds") %>% 
-  select(GEOID, dper, dper12) %>% 
-  pivot_longer(cols = c("dper", "dper12"), names_to = "year") %>% 
-  mutate(year = ifelse(year == "dper", "2017", "2012"))
-
-change <- left_join(cities, dper) %>% 
-  group_by(treated, year) %>% 
-  summarize(dper = weighted.mean(value, weight))
-
-ggplot(change, aes(x = year, y = dper, fill = treated), xlab="Age Group") +
-  geom_bar(stat="identity", width=.5, position = "dodge") 
-###################################################
+cl <- makeCluster(c(readLines(Sys.getenv("MY_HOSTFILE"))), type="SOCK")
 
 to <- readRDS("temp/city_to_early_reg.rds") %>% 
   group_by(plasub) %>%
@@ -136,37 +19,230 @@ to <- readRDS("temp/city_to_early_reg.rds") %>%
   mutate(year = as.integer(gsub("to_", "20", year))) %>% 
   rename(to = value)
 
-##############################
+to2 <- readRDS("temp/city_to_early_reg.rds") %>% 
+  filter(EthnicGroups_EthnicGroup1Desc %in% c("European",
+                                              "Likely African-American")) %>% 
+  mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European",
+                       "white",
+                       "black")) %>% 
+  group_by(plasub, race) %>%
+  summarize_at(vars(to_18, to_16, to_14, to_12, to_10),
+               ~ weighted.mean(., count)) %>% 
+  pivot_longer(starts_with("to_"), names_to = "year") %>% 
+  mutate(year = as.integer(gsub("to_", "20", year))) %>% 
+  rename(to = value) %>% 
+  pivot_wider(id_cols = c("plasub", "year"), names_from = "race", values_from = "to", names_prefix = "to_")
 
-cities2 <- left_join(cities, to, by = c("GEOID" = "plasub"))
+to <- left_join(to, to2)
 
-pot_con <- left_join(pot_con, to, by = c("GEOID" = "plasub")) %>% 
-  group_by(year) %>% 
-  summarize(to = mean(to)) %>% 
-  mutate(treated = "All Bottom 70tile")
+for(lb in c(0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8)){
+  for(ub in c(0.85, 0.9, 0.95)){
+    cities <- readRDS("temp/cog_cities.rds") %>%
+      mutate(pct_change = dper / dper_12) %>%
+      filter(!is.na(pct_change))
+    
+    cities <- cities %>%
+      filter(pct_change <= quantile(cities$pct_change, lb) |
+               pct_change >= quantile(cities$pct_change, ub)) %>%
+      mutate(treated = pct_change >= quantile(cities$pct_change, ub)) %>%
+      dplyr::select(place_id, treated, GEOID)
+    
+    pot_con <- filter(cities, !treated)
+    
+    census <- readRDS("temp/census_12.rds") %>%
+      select(population, asian, latino, nh_black, nh_white,
+             median_income, some_college, median_age,
+             share_no_car, GEOID)
+    
+    cities <- left_join(cities, census)
+    
+    cities <- cities[complete.cases(cities), ]
+    
+    match_data <- cities %>%
+      dplyr::select(-place_id, -treated, -GEOID)
+    
+    if(!file.exists(paste0("temp/genout_pct_", lb, "_", ub, ".rds"))){
+      genout <- GenMatch(Tr = cities$treated, X = match_data, replace = T, pop.size = 1000, cluster = cl)
+      saveRDS(genout, paste0("temp/genout_pct_", lb, "_", ub, ".rds"))
+    }else{
+      genout <- readRDS(paste0("temp/genout_pct_", lb, "_", ub, ".rds"))
+    }
+    
+    mout <- Match(Tr = cities$treated, X = match_data,
+                  estimand = "ATT", Weight.matrix = genout, M = 2)
+    ###################################################
+    
+    ids <- data.frame("id" = c(mout$index.treated, mout$index.control),
+                      "group" = rep(mout$index.treated, 2),
+                      "weight" = rep(mout$weights, 2)) %>% 
+      group_by(id, group) %>% 
+      summarize(weight = sum(weight))
+    
+    cities <- left_join(
+      cities %>% 
+        mutate(id = row_number()),
+      ids
+    ) %>% 
+      mutate(weight = ifelse(is.na(weight), 0, weight))
+    
 
-ll <- cities2 %>% 
-  group_by(treated, year) %>% 
-  summarize(to = weighted.mean(to, weight)) %>% 
-  mutate(treated = ifelse(treated, "Top 10tile", "Controls from Bottom 70tile"))
+    ##############################
+    
+    cities2 <- left_join(cities, to, by = c("GEOID" = "plasub")) %>% 
+      filter(weight != 0)
+
+    cities2$midterm <- cities2$year %% 4 == 2
+    # 
+    # m1 <- lm(to ~ treated * I(year > 2014) + treated * midterm,
+    #          data = cities2, weights = weight)
+    # m1ses <- lm.cluster(to ~ treated * I(year > 2014) + treated * midterm,
+    #                     data = cities2, weights = cities2$weight, cluster = cities2$group)
+    # 
+    # stargazer(m1, type = "text",
+    #           se = list(summary(m1ses)[,2]),
+    #           dep.var.labels = paste0(lb, "-", ub))
+    # 
+    # save(m1, m1ses, file = paste0("temp/regs_pct_", lb, "_", ub, ".rdata"))
+    
+    m2 <- lm(to_white ~ treated * I(year > 2014) + treated * midterm,
+             data = cities2, weights = weight)
+    m2ses <- lm.cluster(to_white ~ treated * I(year > 2014) + treated * midterm,
+                        data = cities2, weights = cities2$weight, cluster = cities2$group)
+    
+    save(m2, m2ses, file = paste0("temp/regs_pct_", lb, "_", ub, "_white.rdata"))
+    
+    m3 <- lm(to_black ~ treated * I(year > 2014) + treated * midterm,
+             data = cities2, weights = weight)
+    m3ses <- lm.cluster(to_black ~ treated * I(year > 2014) + treated * midterm,
+                        data = cities2, weights = cities2$weight, cluster = cities2$group)
+    
+
+    save(m3, m3ses, file = paste0("temp/regs_pct_", lb, "_", ub, "_black.rdata"))
+  }
+}
+
+###############################################################################################
+
+fs <- list.files("temp", pattern = "^regs_pct_", full.names = T)
+fs <- fs[!(grepl("white", fs))]
+fs <- fs[!(grepl("black", fs))]
+
+models <- lapply(fs, function(f){
+  load(f)
+  return(m1)
+})
+
+ses <- lapply(fs, function(f){
+  load(f)
+  return(summary(m1ses)[,2])
+})
+
+reg_labels <- gsub("_", "-",
+                   gsub("temp/regs_pct_", "",
+                        gsub(".rdata", "", fs)))
+
+stargazer(models, type = "text",
+          se = ses,
+          omit.stat = c("f", "ser"),
+          column.labels = c(reg_labels),
+          out = "temp/sens_regs.txt")
+#########################
+
+cints <- rbindlist(lapply(fs, function(f){
+  load(f)
+  cint <- as.data.frame(confint(m1ses)) %>% 
+    mutate(Model = gsub("_", "-",
+                        gsub("temp/regs_pct_", "",
+                             gsub(".rdata", "", f)))) %>% 
+    rownames_to_column("vars") %>% 
+    filter(vars == "treatedTRUE:I(year > 2014)TRUE")
+}))
+
+colnames(cints) <- c("vars", "conf.low", "conf.high", "Model")
+
+cints$estimate <- (cints$conf.low + cints$conf.high) / 2
 
 
-ll$treated <- factor(ll$treated, levels = c("Top 10tile", "Controls from Bottom 70tile", "All Bottom 70tile"))
+###############################################################################################
 
-ggplot(ll, aes(x = year, y = to, color = treated)) + geom_line() +
-  theme_bc() +
-  scale_y_continuous(labels = scales::percent) +
-  labs(x = "Year", y = "Turnout", color = "Group") +
-  geom_vline(xintercept = 2012, linetype = "dashed") +
-  geom_vline(xintercept = 2017, linetype = "dashed") +
-  labs(caption = "Notes: End years of Census periods in dashed lines.")
+fs <- list.files("temp", pattern = "^regs_pct_", full.names = T)
+fs <- fs[(grepl("white", fs))]
 
-cities2$midterm <- cities2$year %% 4 == 2
+models <- lapply(fs, function(f){
+  load(f)
+  return(m2)
+})
 
-m1 <- lm(to ~ treated * I(year > 2014) + treated * midterm,
-                 data = cities2, weights = weight)
-m1ses <- summary(lm.cluster(to ~ treated * I(year > 2014) + treated * midterm,
-         data = cities2, weights = cities2$weight, cluster = cities2$group))[,2]
+ses <- lapply(fs, function(f){
+  load(f)
+  return(summary(m2ses)[,2])
+})
 
-stargazer(m1, type = "text",
-          se = list(m1ses))
+reg_labels <- gsub("_", "-",
+                   gsub("temp/regs_pct_", "",
+                        gsub(".rdata", "", fs)))
+
+stargazer(models, type = "text",
+          se = ses,
+          omit.stat = c("f", "ser"),
+          column.labels = c(reg_labels),
+          out = "temp/sens_regs.txt")
+#########################
+
+cints <- rbindlist(lapply(fs, function(f){
+  load(f)
+  cint <- as.data.frame(confint(m2ses)) %>% 
+    mutate(Model = gsub("_", "-",
+                        gsub("temp/regs_pct_", "",
+                             gsub("_white.rdata", "", f)))) %>% 
+    rownames_to_column("vars") %>% 
+    filter(vars == "treatedTRUE:I(year > 2014)TRUE")
+}))
+
+colnames(cints) <- c("vars", "conf.low", "conf.high", "Model")
+
+cints$estimate <- (cints$conf.low + cints$conf.high) / 2
+
+
+
+cints <- cSplit(cints, "Model", "-", type.convert = F) %>% 
+  rename(treatment_group = Model_2,
+         control_group = Model_1) %>% 
+  mutate(treatment_group = paste0("Top ", 100 - (as.numeric(treatment_group)*100), "th Percentile"),
+         control_group = paste0("Bottom ", (as.numeric(control_group)*100), "th Percentile"))
+
+cints$treatment_group <- factor(cints$treatment_group, levels = c("Top 5th Percentile",
+                                                                  "Top 10th Percentile",
+                                                                  "Top 15th Percentile"))
+
+lls <- cints %>% 
+  group_by(treatment_group) %>% 
+  summarize(mean_eff = mean(estimate))
+
+p <- ggplot(data = cints) +
+  ggstance::geom_pointrangeh(aes(y = treatment_group, x = estimate, 
+                                 xmin = conf.low, xmax = conf.high, colour = control_group),
+                             position = ggstance::position_dodgev(height = -.5), 
+                             fill = "white", fatten = 3, size = 0.8, show.legend = T)+
+  geom_vline(xintercept = 0, linetype = 2, 
+             size = 0.25) + 
+  theme_bc(legend.pos = "right", base_family = "BentonSans") +
+  theme(axis.title.y = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        panel.grid.major.x = element_line(linetype = "solid"),
+        text = element_text(family = "BentonSans", face = "bold")) + 
+  xlab("Estimate") +
+  scale_x_continuous(labels = percent, ) +
+  labs(color = "Control Group\nDrawn From...",
+       y = "Treatment Group",
+       caption = "Note: 95% confidence intervals shown.
+Mean effect for treatment groups shown in dashed lines.") +
+  theme(plot.caption = element_text(hjust = 0),
+        text = element_text(size = 12)) +
+  ggtitle("Estimated Treatment Effect (Treated × Year > 2014)") +
+  geom_segment(aes(x = lls$mean_eff[1], y = 0.5, xend = lls$mean_eff[1], yend = 1.5), linetype = "dashed") +
+  geom_segment(aes(x = lls$mean_eff[2], y = 1.5, xend = lls$mean_eff[2], yend = 2.5), linetype = "dashed") +
+  geom_segment(aes(x = lls$mean_eff[3], y = 2.5, xend = lls$mean_eff[3], yend = 3.5), linetype = "dashed")
+
+p
+ggsave(plot = p, file = "temp/sens_regs.png")
