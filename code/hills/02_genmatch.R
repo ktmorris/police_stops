@@ -33,7 +33,7 @@ samp <- hills_pre_match %>%
   ungroup()
 
 match_data <- samp %>% 
-  select(-LALVOTERID, -treated, -GEOID, -fd) %>% 
+  select(-LALVOTERID, -treated, -GEOID, -fd, -stop_count) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 

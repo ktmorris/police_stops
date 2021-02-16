@@ -7,9 +7,9 @@
 #   }
 # 
 #   ja <- fread(paste0("raw_data/hills_stops/civil_stops_", l, ".csv"))
-#   
+# 
 #   colnames(ja) <- clean_names(ja)
-#   
+# 
 #   ja <- ja %>%
 #     select(last_name, first_name, middle_name,
 #            date_of_birth,
@@ -17,17 +17,42 @@
 #            city,
 #            state,
 #            zip = zip_code,
-#            offense_date)
+#            offense_date) %>% 
+#     mutate(type = "civil")
 # 
 #   return(ja)
 #   }
 # }))
 # 
+# hills_stops_cr <- rbindlist(lapply(c(2003:2021), function(l){
+#   print(l)
+#   if(l != "J"){
+#     if(!(file.exists(paste0("raw_data/hills_stops/crim_stops_", l, ".csv")))){
+#       download.file(paste0("https://publicrec.hillsclerk.com/Traffic/Criminal_Traffic_Name_Index_files/Criminal_Traffic_Name_Index_", l, ".csv"),
+#                     paste0("raw_data/hills_stops/crim_stops_", l, ".csv"))
+#     }
+#     
+#     ja <- fread(paste0("raw_data/hills_stops/crim_stops_", l, ".csv"))
+#     
+#     colnames(ja) <- clean_names(ja)
+#     
+#     ja <- ja %>%
+#       select(last_name, first_name, middle_name,
+#              date_of_birth,
+#              offense_date) %>% 
+#       mutate(type = "crim")
+#     
+#     return(ja)
+#   }
+# }))
+# hills_stops <- bind_rows(hills_stops, hills_stops_cr)
+# 
 # saveRDS(hills_stops, "temp/hills_stops.rds")
 # 
 # hills_stops_ll <- hills_stops %>%
 #   group_by(first_name, last_name, date_of_birth) %>%
-#   summarize(fd = min(as.Date(offense_date, "%m/%d/%Y"), na.rm = T))
+#   summarize(fd = min(as.Date(offense_date, "%m/%d/%Y"), na.rm = T),
+#             stop_count = n())
 # 
 # saveRDS(hills_stops_ll, "temp/hills_stops_ll.rds")
 
@@ -77,7 +102,7 @@ test <- data.table(dates = c("Good", "Plus", "Minus"),
 ######################################
 
 joined <- filter(joined,
-                 fd >= "2010-01-01" | is.na(fd)) %>% 
+                 fd >= "2010-11-03" | is.na(fd)) %>% 
   mutate(treated = !is.na(fd),
          GEOID = paste0("12",
                         str_pad(Voters_FIPS, pad = "0", width = 3, side = "left"),
@@ -94,7 +119,7 @@ joined <- filter(joined,
   select(LALVOTERID, GEOID, treated, fd,
          white, black, latino, asian, male, dem, rep,
          age = Voters_Age,
-         reg_date)
+         reg_date, stop_count)
 
 
 census <- readRDS("../regular_data/census_bgs_18.rds")
@@ -106,7 +131,7 @@ match_data <- joined %>%
   mutate(reg_date = reg_date - as.Date("2000-01-01"))
 
 
-match_data <- match_data[complete.cases(select(match_data, -fd)),]
+match_data <- match_data[complete.cases(select(match_data, -fd, -stop_count)),]
 
 saveRDS(match_data, "temp/hills_pre_match.rds")
 ########################################
