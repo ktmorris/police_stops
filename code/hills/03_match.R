@@ -12,52 +12,169 @@ require(parallel)
 hills_pre_match <- readRDS("temp/hills_pre_match.rds") %>% 
   ungroup()
 
-##########
-
-ids <- hills_pre_match %>% 
-  mutate(id = row_number()) %>% 
-  select(id, LALVOTERID, fd, stop_count)
-
-# X <- hills_pre_match %>%
-#   select(-LALVOTERID, -treated, -GEOID, -fd, -stop_count) %>% 
-#   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
+#################################################################
+########## 2014 #################################################
+#################################################################
+#################################################################
+# hills14 <- hills_pre_match %>%
+#   mutate(treated = fd <= "2014-11-04") %>%
+#   select(-v14, -v16)
+# 
+# ids <- hills14 %>%
+#   mutate(id = row_number()) %>%
+#   select(id, LALVOTERID)
+# 
+# X <- hills14 %>%
+#   select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>%
+#   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>%
 #   mutate(reg_date = as.integer(reg_date))
 # 
 # 
-# genout <- readRDS("./temp/genout_hills_civil_05.rds")
+# genout <- readRDS("temp/genout_hills_14.rds")
 # 
-# mout <- Matchby(Tr = hills_pre_match$treated, X = X,
+# mout <- Matchby(Tr = hills14$treated, X = X,
 #                 by = c(X$white,
 #                        X$black,
 #                        X$latino,
 #                        X$asian,
 #                        X$male,
 #                        X$dem,
-#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 1)
+#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2)
 # 
-# save(mout, file = "./temp/mout_hills_05.RData")
+# save(mout, file = "./temp/mout_hills_14.RData")
+# 
+# load("temp/mout_hills_14.RData")
+# 
+# matches <- data.table(voter = c(mout$index.control,
+#                                 mout$index.treated),
+#                       group = rep(mout$index.treated, 2),
+#                       weight = rep(mout$weights, 2)) %>%
+#   group_by(voter, group) %>%
+#   summarize(weight = sum(weight)) %>%
+#   ungroup()
+# 
+# 
+# matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
+#   select(-voter) %>%
+#   rename(voter = LALVOTERID)
+# 
+# matches <- left_join(matches, ids, by = c("group" = "id")) %>%
+#   select(-group) %>%
+#   rename(group = LALVOTERID) %>%
+#   mutate(first_tr_year = as.Date("2014-11-04"))
+# saveRDS(matches, "temp/matches_hills_14.rds")
+# #################################################################
+# ########## 2016 #################################################
+# #################################################################
+# #################################################################
+# hills16 <- hills_pre_match %>%
+#   filter(fd > "2014-11-04") %>%
+#   mutate(treated = fd <= "2016-11-08") %>%
+#   select(-v16)
+# 
+# ids <- hills16 %>%
+#   mutate(id = row_number()) %>%
+#   select(id, LALVOTERID)
+# 
+# X <- hills16 %>%
+#   select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>%
+#   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>%
+#   mutate(reg_date = as.integer(reg_date))
+# 
+# 
+# genout <- readRDS("temp/genout_hills_16.rds")
+# 
+# mout <- Matchby(Tr = hills16$treated, X = X,
+#                 by = c(X$white,
+#                        X$black,
+#                        X$latino,
+#                        X$asian,
+#                        X$male,
+#                        X$dem,
+#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2)
+# 
+# save(mout, file = "./temp/mout_hills_16.RData")
+# 
+# load("temp/mout_hills_16.RData")
+# 
+# matches <- data.table(voter = c(mout$index.control,
+#                                 mout$index.treated),
+#                       group = rep(mout$index.treated, 2),
+#                       weight = rep(mout$weights, 2)) %>%
+#   group_by(voter, group) %>%
+#   summarize(weight = sum(weight)) %>%
+#   ungroup()
+# 
+# 
+# matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
+#   select(-voter) %>%
+#   rename(voter = LALVOTERID)
+# 
+# matches <- left_join(matches, ids, by = c("group" = "id")) %>%
+#   select(-group) %>%
+#   rename(group = LALVOTERID) %>%
+#   mutate(first_tr_year = as.Date("2016-11-08"))
+# saveRDS(matches, "temp/matches_hills_16.rds")
+# #################################################################
+# ########## 2018 #################################################
+# #################################################################
+# #################################################################
+# hills18 <- hills_pre_match %>% 
+#   filter(fd > "2016-11-08") %>% 
+#   mutate(treated = fd <= "2018-11-06")
+# 
+# ids <- hills18 %>% 
+#   mutate(id = row_number()) %>% 
+#   select(id, LALVOTERID)
+# 
+# X <- hills18 %>%
+#   select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>%
+#   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>%
+#   mutate(reg_date = as.integer(reg_date))
+# 
+# 
+# genout <- readRDS("temp/genout_hills_18.rds")
+# 
+# mout <- Matchby(Tr = hills18$treated, X = X,
+#                 by = c(X$white,
+#                        X$black,
+#                        X$latino,
+#                        X$asian,
+#                        X$male,
+#                        X$dem,
+#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2)
+# 
+# save(mout, file = "./temp/mout_hills_18.RData")
+# 
+# load("temp/mout_hills_18.RData")
+# 
+# matches <- data.table(voter = c(mout$index.control,
+#                                 mout$index.treated),
+#                       group = rep(mout$index.treated, 2),
+#                       weight = rep(mout$weights, 2)) %>% 
+#   group_by(voter, group) %>% 
+#   summarize(weight = sum(weight)) %>% 
+#   ungroup()
+# 
+# 
+# matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
+#   select(-voter) %>%
+#   rename(voter = LALVOTERID)
+# 
+# matches <- left_join(matches, ids, by = c("group" = "id")) %>%
+#   select(-group) %>%
+#   rename(group = LALVOTERID) %>% 
+#   mutate(first_tr_year = as.Date("2018-11-06"))
+# saveRDS(matches, "temp/matches_hills_18.rds")
+##############################################################
+##############################################################
+##############################################################
+##############################################################
 
-load("temp/mout_hills_05.RData")
-#######################################
-
-matches <- data.table(voter = c(mout$index.control,
-                                mout$index.treated),
-                      group = rep(mout$index.treated, 2),
-                      weight = rep(mout$weights, 2)) %>% 
-  group_by(voter, group) %>% 
-  summarize(weight = sum(weight)) %>% 
-  ungroup()
-
-
-matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
-  select(-voter, -fd, -stop_count) %>%
-  rename(voter = LALVOTERID)
-
-matches <- left_join(matches, ids, by = c("group" = "id")) %>%
-  select(-group) %>%
-  rename(group = LALVOTERID)
-
-#############################
+matches <- rbindlist(lapply(c(
+  "temp/matches_hills_14.rds",
+  "temp/matches_hills_16.rds",
+  "temp/matches_hills_18.rds"), readRDS))
 
 hist <- readRDS("raw_data/fl_l2_hills/fl_l2_history_hills.rds") %>%
   select(-state) %>%
@@ -68,115 +185,185 @@ mh <- matches
 
 matches <- left_join(mh, hist %>% 
                        filter(grepl("Gene", year)), by = c("voter" = "LALVOTERID")) %>%
-  filter(fd > "2010-11-02",
-         fd < as.Date("2018-11-06")) %>% 
   mutate(year = as.Date(gsub("General_|Local_or_Municipal_", "", year), "%Y_%m_%d"),
-         post = year > fd) %>%
-  arrange(voter, group, post, year) %>%
-  group_by(voter, group, post) %>%
-  mutate(p = row_number()) %>%
-  arrange(voter, group, post, desc(year)) %>%
-  group_by(voter, group, post) %>%
-  mutate(p2 = row_number()) %>%
-  ungroup()
+         treated = voter == group)
 
 
-matches <- matches %>%
-  mutate(period = ifelse(post, p, -1*p2),
-         period = ifelse(period > 0, period - 0.5, period + 0.5))
+periods <- fread("raw_data/period_lu.csv") %>% 
+  mutate_at(vars(first_tr_year, year), as.Date)
 
-
-matches <- left_join(matches,
-                     matches %>%
-                       filter(period == 0.5) %>%
-                       rename(first_tr_year = year) %>%
-                       select(voter, group, first_tr_year))
+matches <- left_join(matches, periods)
 
 matches <- left_join(matches,
                      hills_pre_match %>%
-                       select(-GEOID, -fd, -stop_count),
+                       select(-GEOID, -fd, -max_amount),
                      by = c("voter" = "LALVOTERID"))
-
-ll <- matches %>%
-  group_by(treated, period) %>%
-  summarize(to = mean(to))
-
-
-ggplot(ll, aes(x = period, y = to, color = treated)) + geom_line() + geom_point() +
-  scale_x_continuous(minor_breaks = seq(-4.5, 4.5, 1),
-                     breaks = seq(-4.5, 4.5, 1)) +
-  geom_vline(xintercept = 0, linetype = "dashed") +
-  theme_bc()
-
-
-## overall
-m1 <- lm.cluster(to ~ treated*post*white + as.factor(year) +
-                   treated*period, data = matches,
-                 cluster = matches$group)
-
-## effect of stop in first post-election
-m2 <- lm.cluster(to ~ treated*post*white + as.factor(year) +
-                   treated*period, data = filter(matches, period <= 1),
-                 cluster = filter(matches, period <= 1)$group)
-
-## effect of a stop within 60 days of election on first election
-m3 <- lm.cluster(to ~ treated*post*white + as.factor(year), data = filter(matches, (first_tr_year - fd) <= 30,
-                                                                                    period <= 1),
-                 cluster = filter(matches, (first_tr_year - fd) <= 30,
-                                  period <= 1)$group)
-
-## effect of multiple stops
-m4 <- lm.cluster(to ~ treated*post*white*stop_count.y + as.factor(year), data = matches,
-                 cluster = matches$group)
-
-
-#############################################################################
-#############################################################################
-#############################################################################
-matches <- left_join(mh, hist %>% 
-                       filter(grepl("Local", year)), by = c("voter" = "LALVOTERID")) %>%
-  filter(fd < as.Date("2019-03-01"),
-         fd > "2011-03-01") %>%
-  mutate(year = as.Date(gsub("General_|Local_or_Municipal_", "", year), "%Y_%m_%d"),
-         post = year > fd) %>%
-  arrange(voter, group, post, year) %>%
-  group_by(voter, group, post) %>%
-  mutate(p = row_number()) %>%
-  arrange(voter, group, post, desc(year)) %>%
-  group_by(voter, group, post) %>%
-  mutate(p2 = row_number()) %>%
-  ungroup() %>% 
-  mutate(to = ifelse(is.na(to), F, to))
-
-
-matches <- matches %>%
-  mutate(period = ifelse(post, p, -1*p2),
-         period = ifelse(period > 0, period - 0.5, period + 0.5))
-
-
-matches <- left_join(matches,
-                     matches %>%
-                       filter(period == 0.5) %>%
-                       rename(first_tr_year = year) %>%
-                       select(voter, group, first_tr_year))
 
 matches <- left_join(matches,
                      hills_pre_match %>%
-                       select(-GEOID, -fd, -stop_count),
-                     by = c("voter" = "LALVOTERID"))
+                       select(LALVOTERID, max_amount, fd),
+                     by = c("group" = "LALVOTERID")) %>% 
+  mutate(post = period >= 0.5)
 
 ll <- matches %>%
-  mutate(treated = voter == group) %>%
-  group_by(treated, period) %>%
-  summarize(to = mean(to))
+  filter(first_tr_year - fd <= 90) %>%
+  group_by(treated, period, black) %>%
+  summarize(to = weighted.mean(to, weight)) %>% 
+  mutate(treated = ifelse(treated, "Treated", "Control"),
+         black = ifelse(black, "Black Voters", "Non-Black Voters"))
+
+ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
+
+ggplot(data = ll) + 
+  facet_grid(~ black) +
+  geom_rect(aes(xmin = 0.5-.125, xmax = 0.5, ymin = 0, ymax = Inf),
+            alpha = 0.03, color = "black", fill = "yellow") +
+  geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
+  geom_point(data = ll, aes(x = period, y = to, shape = treated)) +
+  scale_x_continuous(minor_breaks = seq(-3.5, 3.5, 1),
+                     breaks = seq(-3.5, 3.5, 1),
+                     labels = c("4 Elections\nBefore",
+                                "3 Elections\nBefore",
+                                "2 Elections\nBefore",
+                                "1 Election\nBefore",
+                                "1 Election\nAfter",
+                                "2 Elections\nAfter",
+                                "3 Elections\nAfter",
+                                "4 Elections\nAfter")) +
+  theme_bc(base_family = "LM Roman 10") +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Period", y = "Turnout",
+       linetype = "Treatment Group",
+       shape = "Treatment Group",
+       caption = "Treatment occurs inside of yellow band.") +
+  coord_cartesian(ylim = c(0.05, 0.75))
+##########################
+ll <- matches %>%
+  group_by(treated, period, black) %>%
+  summarize(to = weighted.mean(to, weight)) %>% 
+  mutate(treated = ifelse(treated, "Treated", "Control"),
+         black = ifelse(black, "Black Voters", "Non-Black Voters"))
+
+ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
+
+ggplot(data = ll) + 
+  facet_grid(~ black) +
+  geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
+            alpha = 0.03, color = "black", fill = "yellow") +
+  geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
+  geom_point(data = ll, aes(x = period, y = to, shape = treated)) +
+  scale_x_continuous(minor_breaks = seq(-3.5, 3.5, 1),
+                     breaks = seq(-3.5, 3.5, 1),
+                     labels = c("4 Elections\nBefore",
+                                "3 Elections\nBefore",
+                                "2 Elections\nBefore",
+                                "1 Election\nBefore",
+                                "1 Election\nAfter",
+                                "2 Elections\nAfter",
+                                "3 Elections\nAfter",
+                                "4 Elections\nAfter")) +
+  theme_bc(base_family = "LM Roman 10") +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Period", y = "Turnout",
+       linetype = "Treatment Group",
+       shape = "Treatment Group",
+       caption = "Treatment occurs inside of yellow band.") +
+  coord_cartesian(ylim = c(0.05, 0.75))
 
 
-ggplot(ll, aes(x = period, y = to, color = treated)) + geom_line() + geom_point() +
-  scale_x_continuous(minor_breaks = seq(-4.5, 4.5, 1),
-                     breaks = seq(-4.5, 4.5, 1)) +
-  geom_vline(xintercept = 0, linetype = "dashed") +
-  theme_bc()
+############### overall
 
-m1b <- lm.cluster(to ~ treated*post*white + as.factor(year) +
-                    treated*period, data = matches,
-                  cluster = matches$group)
+dat1 <- matches
+dat2 <- filter(matches, first_tr_year - fd <= 90)
+
+m1 <- to ~ treated * post + as.factor(year)
+m2 <- to ~ treated * post * black + as.factor(year)
+
+models1 <- lapply(c(m1, m2), function(f){
+  m <- lm(f, data = dat1,
+          weight = dat1$weight)
+})
+
+models2 <- lapply(c(m1, m2), function(f){
+  m <- lm(f, data = dat2,
+          weight = dat2$weight)
+})
+
+
+ses_cl <- list(
+  summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+  summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+  summary(lm.cluster(formula = m1, data = dat2, weights = dat2$weight, cluster = dat2$group))[ , 2],
+  summary(lm.cluster(formula = m2, data = dat2, weights = dat2$weight, cluster = dat2$group))[ , 2]
+  )
+
+
+stargazer(models1, models2,
+          type = "text",
+          column.labels = c("Stopped Any Time", "Stopped within 90 Days of Election"),
+          column.separate = c(2, 2),
+          omit.stat = c("f", "ser"),
+          se = ses_cl,
+          omit = c("as.fac"),
+          covariate.labels = c("Treated",
+                               "Post Treatment",
+                               "Black",
+                               "Treated X Post Treatment",
+                               "Treated X Black",
+                               "Post Treatment X Black",
+                               "Treated X Post Treatment X Black"),
+          table.layout = "-cm#-t-a-s-n")
+
+############### first election
+
+dat1 <- filter(matches, period <= 0.5)
+dat2 <- filter(matches, first_tr_year - fd <= 90, period <= 0.5)
+
+m1 <- to ~ treated * post + as.factor(year)
+m2 <- to ~ treated * post * black + as.factor(year)
+
+models1 <- lapply(c(m1, m2), function(f){
+  m <- lm(f, data = dat1,
+          weight = dat1$weight)
+})
+
+models2 <- lapply(c(m1, m2), function(f){
+  m <- lm(f, data = dat2,
+          weight = dat2$weight)
+})
+
+
+ses_cl <- list(
+  summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+  summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+  summary(lm.cluster(formula = m1, data = dat2, weights = dat2$weight, cluster = dat2$group))[ , 2],
+  summary(lm.cluster(formula = m2, data = dat2, weights = dat2$weight, cluster = dat2$group))[ , 2]
+)
+
+
+stargazer(models1, models2,
+          type = "text",
+          column.labels = c("Stopped Any Time", "Stopped within 90 Days of Election"),
+          column.separate = c(2, 2),
+          omit.stat = c("f", "ser"),
+          se = ses_cl,
+          omit = c("as.fac"),
+          covariate.labels = c("Treated",
+                               "Post Treatment",
+                               "Black",
+                               "Treated X Post Treatment",
+                               "Treated X Black",
+                               "Post Treatment X Black",
+                               "Treated X Post Treatment X Black"),
+          table.layout = "-cm#-t-a-s-n")
+#############################################################################
+#############################################################################
+#############################################################################
+
+##########################
+
+demos <- matches %>% 
+  filter(first_tr_year - fd <= 90) %>%
+  group_by(treated) %>% 
+  summarize_at(vars(white, black, latino, asian, median_income, age, male,
+                    unem, some_college, dem, rep, reg_date), mean)

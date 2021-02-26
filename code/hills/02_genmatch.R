@@ -26,18 +26,68 @@ cl
 
 
 hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+############## 2014
 
-samp <- hills_pre_match %>% 
+hills14 <- hills_pre_match %>% 
+  mutate(treated = fd <= "2014-11-04") %>% 
+  select(-v14, -v16)
+
+samp <- hills14 %>% 
   group_by(treated) %>% 
-  sample_frac(0.5) %>% 
+  sample_frac(0.05) %>% 
   ungroup()
 
 match_data <- samp %>% 
-  select(-LALVOTERID, -treated, -GEOID, -fd, -stop_count) %>% 
+  select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
 genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
-                   exact = c(rep(T, 7), rep(F, 5)), pop.size = 1000)
+                   exact = c(rep(T, 7), rep(F, 6), T, T), pop.size = 1000)
 
-saveRDS(genout, "temp/genout_hills_civil.rds")
+
+saveRDS(genout, "temp/genout_hills_14.rds")
+############## 2016
+
+hills16 <- hills_pre_match %>% 
+  filter(fd > "2014-11-04") %>% 
+  mutate(treated = fd <= "2016-11-08") %>% 
+  select(-v16)
+
+samp <- hills16 %>% 
+  group_by(treated) %>% 
+  sample_frac(0.05) %>% 
+  ungroup()
+
+match_data <- samp %>% 
+  select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
+  mutate(reg_date = as.integer(reg_date))
+
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
+                   exact = c(rep(T, 7), rep(F, 6), T, T, T), pop.size = 1000)
+
+
+saveRDS(genout, "temp/genout_hills_16.rds")
+
+############## 2018
+
+hills18 <- hills_pre_match %>% 
+  filter(fd > "2016-11-08") %>% 
+  mutate(treated = fd <= "2018-11-06")
+
+samp <- hills18 %>% 
+  group_by(treated) %>% 
+  sample_frac(0.05) %>% 
+  ungroup()
+
+match_data <- samp %>% 
+  select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
+  mutate(reg_date = as.integer(reg_date))
+
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
+                   exact = c(rep(T, 7), rep(F, 6), T, T, T, T), pop.size = 1000)
+
+
+saveRDS(genout, "temp/genout_hills_18.rds")
