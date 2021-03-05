@@ -142,37 +142,39 @@ saveRDS(cog_12, "temp/cog_12.rds")
 # 
 # c2 <- bind_rows(c, sd)
 # 
-# pcvap <- fread("../regular_data/CVAP_2014-2018_ACS_csv_files/Place.csv") %>% 
+# pcvap <- fread("../regular_data/CVAP_2014-2018_ACS_csv_files/Place.csv") %>%
+#   filter(lntitle != "Not Hispanic or Latino") %>% 
 #   mutate(GEOID = substring(geoid, 8),
 #          lntitle = ifelse(lntitle == "Total", "total",
 #                           ifelse(lntitle == "Hispanic or Latino", "latino",
 #                                  ifelse(lntitle == "Black or African American Alone", "black",
-#                                         ifelse(lntitle == "White Alone", "white", "other")))),
+#                                         ifelse(lntitle == "White Alone", "white",
+#                                                ifelse(lntitle == "Asian Alone", "asian", "other"))))),
 #          lntitle = ifelse(lntitle == "total", "cvap",
-#                           paste0(lntitle, "_cvap"))) %>% 
-#   group_by(GEOID, lntitle) %>% 
-#   summarize(cvap = sum(cvap_est)) %>% 
-#   pivot_wider(id_cols = GEOID, names_from = lntitle, values_from = cvap, values_fill = 0) %>% 
-#   mutate(nonwhite_cvap = cvap - white_cvap) %>% 
-#   select(-other_cvap)
-# 
+#                           paste0(lntitle, "_cvap"))) %>%
+#   group_by(GEOID, lntitle) %>%
+#   summarize(cvap = sum(cvap_est)) %>%
+#   pivot_wider(id_cols = GEOID, names_from = lntitle, values_from = cvap, values_fill = 0) %>%
+#   mutate(nonwhite_cvap = cvap - white_cvap)
+# #
 # #####################################
-# cscvap <- fread("../regular_data/CVAP_2014-2018_ACS_csv_files/MCD.csv") %>% 
+# cscvap <- fread("../regular_data/CVAP_2014-2018_ACS_csv_files/MCD.csv") %>%
+#   filter(lntitle != "Not Hispanic or Latino") %>% 
 #   mutate(GEOID = substring(geoid, 8),
 #          lntitle = ifelse(lntitle == "Total", "total",
 #                           ifelse(lntitle == "Hispanic or Latino", "latino",
 #                                  ifelse(lntitle == "Black or African American Alone", "black",
-#                                         ifelse(lntitle == "White Alone", "white", "other")))),
+#                                         ifelse(lntitle == "White Alone", "white",
+#                                                ifelse(lntitle == "Asian Alone", "asian", "other"))))),
 #          lntitle = ifelse(lntitle == "total", "cvap",
-#                           paste0(lntitle, "_cvap"))) %>% 
-#   group_by(GEOID, lntitle) %>% 
-#   summarize(cvap = sum(cvap_est)) %>% 
-#   pivot_wider(id_cols = GEOID, names_from = lntitle, values_from = cvap, values_fill = 0) %>% 
-#   mutate(nonwhite_cvap = cvap - white_cvap) %>% 
-#   select(-other_cvap) %>% 
-#   mutate(GEOID = paste0(substring(GEOID, 1, 2), substring(GEOID, 6))) %>% 
-#   group_by(GEOID) %>% 
-#   summarize_at(vars(cvap, white_cvap, nonwhite_cvap, black_cvap, latino_cvap), sum) %>% 
+#                           paste0(lntitle, "_cvap"))) %>%
+#   group_by(GEOID, lntitle) %>%
+#   summarize(cvap = sum(cvap_est)) %>%
+#   pivot_wider(id_cols = GEOID, names_from = lntitle, values_from = cvap, values_fill = 0) %>%
+#   mutate(nonwhite_cvap = cvap - white_cvap) %>%
+#   mutate(GEOID = paste0(substring(GEOID, 1, 2), substring(GEOID, 6))) %>%
+#   group_by(GEOID) %>%
+#   summarize_at(vars(ends_with("cvap")), sum) %>%
 #   filter(!GEOID %in% pcvap$GEOID)
 # 
 # cvap <- bind_rows(cscvap, pcvap)

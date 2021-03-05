@@ -1,5 +1,7 @@
 library(splitstackshape)
 library(PanelMatch)
+library(rgdal)
+library(multcomp)
 library(miceadds)
 library(Matching)
 library(plm)

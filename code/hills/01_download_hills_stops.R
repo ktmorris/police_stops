@@ -51,20 +51,19 @@
 # 
 # saveRDS(hills_stops, "temp/hills_stops.rds")
 # 
-# hills_stops <- readRDS("temp/hills_stops.rds") %>% 
+# hills_stops <- readRDS("temp/hills_stops.rds") %>%
 #   mutate(offense_date = as.Date(offense_date, "%m/%d/%Y"),
-#          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y")) %>% 
-#   filter(offense_date <= as.Date("2018-11-06"))
+#          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y"))
 # 
-# zeros_only <- hills_stops %>% 
+# zeros_only <- hills_stops %>%
 #   filter(offense_date > "2012-11-06",
 #          offense_date <= "2018-11-06")
 # 
 # zeros_only <- zeros_only[,
 #                          .(max_amount = max(amount_paid)),
-#                          .(first_name, last_name, date_of_birth)] %>% 
-#   filter(max_amount == 0) %>% 
-#   select(first_name, last_name, date_of_birth) %>% 
+#                          .(first_name, last_name, date_of_birth)] %>%
+#   filter(max_amount == 0) %>%
+#   select(first_name, last_name, date_of_birth) %>%
 #   mutate(exclude = 1)
 # 
 # saveRDS(zeros_only, "temp/stopped_no_fine.rds")
@@ -86,49 +85,49 @@
 # 
 # saveRDS(hills_stops_ll, "temp/hills_stops_ll.rds")
 # 
-# hills_stops_ll <- readRDS("temp/hills_stops_ll.rds")
+hills_stops_ll <- readRDS("temp/hills_stops_ll.rds") %>% 
+  mutate_at(vars(first_name,
+                 last_name), ~ gsub("[[:punct:]]| ", "", ifelse(. == "", NA, toupper(.)))) %>% 
+  group_by(first_name, last_name, date_of_birth) %>% 
+  mutate(count = row_number())
 
 ########################
 
-hills_voters <- readRDS("raw_data/fl_l2_hills/fl_l2_data_hills.rds")
-
-
-hills_voters <- hills_voters %>% 
-  mutate_at(vars(Voters_FirstName,
-                 Voters_LastName), toupper) %>% 
-  group_by(Voters_FirstName, Voters_LastName, Voters_BirthDate) %>% 
-  mutate(count = row_number(),
-         Voters_BirthDate = as.Date(Voters_BirthDate, "%m/%d/%Y")) %>% 
-  ungroup()
-
+hills_voters <- readRDS("temp/full_raw_coded_hills_w_bgs.rds")
 
 joined <- left_join(hills_voters, hills_stops_ll,
-                    by = c("Voters_FirstName" = "first_name",
-                           "Voters_LastName" = "last_name",
-                           "Voters_BirthDate" = "date_of_birth"))
+                    by = c("name_first" = "first_name",
+                           "name_last" = "last_name",
+                           "birth_date" = "date_of_birth",
+                           "count")) %>% 
+  mutate(age = 2020 - year(birth_date))
 
 
 ######################## test permuting birth dates to check for false positives
-# joined2 <- inner_join(hills_voters,
-#                     select(hills_stops_ll, first_name,
-#                            last_name, date_of_birth) %>%
-#                       mutate(date_of_birth = date_of_birth + 35),
-#                     by = c("Voters_FirstName" = "first_name",
-#                            "Voters_LastName" = "last_name",
-#                            "Voters_BirthDate" = "date_of_birth"))
-# 
-# joined3 <- inner_join(hills_voters,
-#                     select(hills_stops_ll, first_name,
-#                            last_name, date_of_birth) %>%
-#                       mutate(date_of_birth = date_of_birth - 35),
-#                     by = c("Voters_FirstName" = "first_name",
-#                            "Voters_LastName" = "last_name",
-#                            "Voters_BirthDate" = "date_of_birth"))
-# 
-# test <- data.table(dates = c("Good", "Plus", "Minus"),
-#                    values = c(sum(!is.na(joined$fd)),
-#                               nrow(joined2),
-#                               nrow(joined3)))
+joined2 <- inner_join(hills_voters,
+                    select(hills_stops_ll, first_name,
+                           last_name, date_of_birth, count) %>%
+                      mutate(date_of_birth = date_of_birth + 35),
+                    by = c("name_first" = "first_name",
+                           "name_last" = "last_name",
+                           "birth_date" = "date_of_birth",
+                           "count"))
+
+joined3 <- inner_join(hills_voters,
+                    select(hills_stops_ll, first_name,
+                           last_name, date_of_birth, count) %>%
+                      mutate(date_of_birth = date_of_birth - 35),
+                    by = c("name_first" = "first_name",
+                           "name_last" = "last_name",
+                           "birth_date" = "date_of_birth",
+                           "count"))
+
+test <- data.table(dates = c("Good", "Plus", "Minus"),
+                   values = c(sum(!is.na(joined$fd)),
+                              nrow(joined2),
+                              nrow(joined3)))
+
+saveRDS(test, "temp/plus_minus_35.rds")
 ######################################
 
 joined <- joined %>% 
@@ -136,32 +135,27 @@ joined <- joined %>%
          stop_count = ifelse(is.na(stop_count), 0, stop_count),
          pre_12 = ifelse(is.na(pre_12), 0, pre_12),
          max_amount = ifelse(is.na(max_amount), 0, max_amount),
-         GEOID = paste0("12",
-                        str_pad(Voters_FIPS, pad = "0", width = 3, side = "left"),
-                        str_pad(Residence_Addresses_CensusTract, width = 6, pad = "0", side = "left"),
-                        Residence_Addresses_CensusBlockGroup),
-         white = EthnicGroups_EthnicGroup1Desc == "European",
-         black = EthnicGroups_EthnicGroup1Desc == "Likely African-American",
-         latino = EthnicGroups_EthnicGroup1Desc == "Hispanic and Portuguese",
-         asian = EthnicGroups_EthnicGroup1Desc == "East and South Asian",
-         male = Voters_Gender == "M",
-         dem = Parties_Description == "Democratic",
-         rep = Parties_Description == "Republican",
-         reg_date = as.Date(Voters_OfficialRegDate, "%m/%d/%Y")) %>% 
-  select(LALVOTERID, GEOID, fd,
-         white, black, latino, asian, male, dem, rep,
-         age = Voters_Age,
-         reg_date, pre_12, max_amount, Voters_FirstName, Voters_LastName, Voters_BirthDate)
+         white = race == 5,
+         black = race == 3,
+         latino = race == 4,
+         asian = race == 2,
+         male = gender == "M",
+         dem = party_affiliation == "DEM",
+         rep = party_affiliation == "REP",
+         reg_date = as.Date(registration_date, "%m/%d/%Y")) %>% 
+  select(voter_id, GEOID, fd,
+         white, black, latino, asian, male, dem, rep, age,
+         reg_date, pre_12, max_amount, name_first, name_last, birth_date,
+         v10, v12, v14, v16, v18)
 
 ### remove people who were stopped, not fined
 joined <- left_join(joined, readRDS("temp/stopped_no_fine.rds"),
-                    by = c("Voters_FirstName" = "first_name",
-                           "Voters_LastName" = "last_name",
-                           "Voters_BirthDate" = "date_of_birth")) %>% 
+                    by = c("name_first" = "first_name",
+                           "name_last" = "last_name",
+                           "birth_date" = "date_of_birth")) %>% 
   filter(is.na(exclude)) %>% 
-  select(-Voters_FirstName, -Voters_LastName, -Voters_BirthDate, -exclude)
+  select(-name_first, -name_last, -birth_date, -exclude)
 
-### drop if stopped in period but no fee
 
 census <- readRDS("../regular_data/census_bgs_18.rds")
 
@@ -171,21 +165,10 @@ joined <- left_join(joined, census %>%
 match_data <- joined %>% 
   mutate(reg_date = reg_date - as.Date("2000-01-01"))
 
-############# read in pre-history
-
-hist <- readRDS("raw_data/fl_l2_hills/fl_l2_history_hills.rds") %>% 
-  select(LALVOTERID, v10 = General_2010_11_02,
-         v12 = General_2012_11_06,
-         v14 = General_2014_11_04,
-         v16 = General_2016_11_08)
-
-match_data <- left_join(match_data, hist) %>% 
-  mutate_at(vars(v10, v12, v14, v16), ~ ifelse(is.na(.) | . == "", 0, 1))
-
 
 match_data <- match_data[complete.cases(match_data),]
 
 match_data$pre_12 <- ifelse(match_data$pre_12 > 10, 10,
                             match_data$pre_12)
 
-saveRDS(match_data, "temp/hills_pre_match.rds")
+saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")

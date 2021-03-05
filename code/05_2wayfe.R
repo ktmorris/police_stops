@@ -13,7 +13,7 @@ cities <- bind_rows(cities1, cities2) %>%
   select(-place_id)
 
 census <- bind_rows(
-  readRDS("temp/census_12.rds") %>% 
+  readRDS("temp/census_14.rds") %>% 
     mutate(year = 2012),
   readRDS("temp/census_data.rds") %>% 
     mutate(year = 2017)
@@ -21,93 +21,106 @@ census <- bind_rows(
 
 cities <- left_join(cities, census)
 
-to <- bind_rows(readRDS("temp/city_to_14_reg.rds") %>% 
+to <- bind_rows(readRDS("temp/city_to.rds") %>% 
                   mutate(race = "overall"),
-                readRDS("temp/city_to_14_reg.rds")%>%
-                  filter(EthnicGroups_EthnicGroup1Desc %in% c("European",
-                                                              "Likely African-American")) %>% 
+                readRDS("temp/city_to.rds")%>%
+                  mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Likely African-American",
+                                       "black",
+                                       "nonblack")),
+                readRDS("temp/city_to.rds")%>%
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European",
                                        "white",
-                                       "black"))) %>% 
-  group_by(state, GEOID = plasub, race) %>%
-  summarize(to_18 = sum(count * to_18) / sum(count),
-            to_14 = sum(count * to_14) / sum(count),
-            voters = sum(count)) %>% 
-  pivot_longer(cols = starts_with("to_"), names_to = "year", values_to = "to") %>% 
-  mutate(year = as.integer(gsub("to_", "20", year)),
-         year = ifelse(year == 2018, 2017, 2012)) %>% 
-  pivot_wider(id_cols = c("GEOID", "year", "state"), names_from = "race",
-              values_from = c("to", "voters"))
+                                       "nonwhite")),
+                readRDS("temp/city_to.rds")%>%
+                  filter(!(EthnicGroups_EthnicGroup1Desc %in% c("European", "Likely African-American"))) %>% 
+                  mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Hispanic and Portuguese", "latino",
+                                       ifelse(EthnicGroups_EthnicGroup1Desc == "East and South Asian", "asian", "other")))) %>% 
+  group_by(plasub, race) %>%
+  mutate(votes_18 = count * to_18,
+         votes_14 = count * to_14) %>% 
+  summarize(to_18 = sum(votes_18) / sum(count),
+            to_14 = sum(votes_14) / sum(count),
+            votes_18 = sum(votes_18),
+            votes_14 = sum(votes_14)) %>% 
+  pivot_longer(cols = c("to_18", "to_14", "votes_18", "votes_14"), names_to = "year_var") %>% 
+  cSplit("year_var", sep = "_", type.convert = F) %>% 
+  rename(year = year_var_2, var = year_var_1) %>% 
+  mutate(var = paste0(var, "_", race),
+         year = ifelse(year == "18", 2017, 2012)) %>% 
+  select(-race) %>% 
+  pivot_wider(id_cols = c("plasub", "year"), names_from = "var")
 
+cities1 <- inner_join(cities, to, by = c("GEOID" = "plasub", "year")) %>% 
+  mutate(vap_to_overall =  votes_overall / cvap,
+         vap_to_white =    votes_white / white_cvap,
+         vap_to_black =    votes_black / black_cvap,
+         vap_to_nonwhite = votes_nonwhite / nonwhite_cvap,
+         vap_to_nonblack = votes_nonblack / (cvap - black_cvap),
+         vap_to_latino =   votes_latino / latino_cvap,
+         vap_to_asian =    votes_asian / asian_cvap,
+         vap_to_other =    votes_other / other_cvap,
+         state = substring(GEOID, 1, 2))
 
-cities1 <- left_join(cities, to) %>% 
-  mutate(to_overall = (to_overall * voters_overall) / cvap,
-         to_white = (to_white * voters_white) / white_cvap,
-         to_black = (to_black * voters_black) / black_cvap)
+#################################
 
-m1 <- plm(to_overall ~ lndper + nh_white + nh_black + latino + pop_dens +
+covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + pop_dens +
             median_income + some_college + median_age + share_over_64 +
-            share_taxes + share_state_fed + total_revenue + state, 
-          data = filter(cities1, !is.na(to_overall), !is.infinite(to_overall)), 
-          index = c("GEOID", "year"), 
-          model = "within", 
-          effect = "twoways")
+            state + total_revenue + share_taxes + share_state_fed")
 
-m2 <- plm(to_white ~ lndper + nh_white + nh_black + latino + pop_dens +
-            median_income + some_college + median_age + share_over_64 +
-            share_taxes + share_state_fed + total_revenue + state, 
-          data = filter(cities1, !is.na(to_white), !is.infinite(to_white), white_cvap > 100), 
-          index = c("GEOID", "year"), 
-          model = "within", 
-          effect = "twoways")
+ms <- data.frame(m = c("vap_to_overall", "vap_to_black", "vap_to_nonblack"),
+                 name = c("Overall Turnout", "Black Turnout", "Non-Black Turnout"))
 
-m3 <- plm(to_black ~ lndper * nh_white + nh_black + latino + pop_dens +
-            median_income + some_college + median_age + share_over_64 +
-            share_taxes + share_state_fed + total_revenue + state, 
-          data = filter(cities1, !is.na(to_black), !is.infinite(to_black),
-                        to_black <= 1),
-          index = c("GEOID", "year"), 
-          model = "within", 
-          effect = "twoways")
+models <- lapply(ms$m, function(f){
+  plm(as.formula(paste0(f, " ~ ", covars)),
+      data = cities1 %>% 
+        group_by(GEOID) %>% 
+        mutate(r = sum(!!sym(f) <= 1)) %>% 
+        filter(r == 2),
+      index = c("GEOID", "year"), 
+      model = "within", 
+      effect = "twoways")
+})
 
-stargazer(m1, m2, m3, type = "text",
+stargazer(models, type = "text",
           covariate.labels = c("Log(Dollars / Resident)",
                                "Share non-Hispanic White",
                                "Share non-Hispanic Black",
                                "Share Latinx",
+                               "Share Asian",
                                "Population Density",
                                "Median Income",
                                "Share with Some College",
                                "Median Age",
                                "Share over 64 Years Old",
+                               "Total Revenue",
                                "Share of Revenue from Taxes",
-                               "Share of Revenue from State / Federal Government",
-                               "Total Revenue"),
-          dep.var.labels = c("Overall Turnout", "White Turnout", "Black Turnout"),
+                               "Share of Revenue from State / Federal Government"),
+          column.labels = ms$name,
+          dep.var.labels = "",
           out = "temp/2wfe_reg.tex",
           notes = "TO REPLACE",
           title = "\\label{tab:tab1} Two-Way Fixed Effects Models")
-
-j <- fread("./temp/2wfe_reg.tex", header = F, sep = "+")
-
-note.latex <- "\\multicolumn{2}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.}}}"
-
-j <- j %>%
-  mutate(n = row_number(),
-         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
-  filter(!grepl("Note:", V1))
-
-insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
-insert2 <- "}"
-
-j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
-  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
-  arrange(n) %>%
-  select(-n)
-
-write.table(j, "./temp/2wfe_reg_clean.tex", quote = F, col.names = F,
-            row.names = F)
+# 
+# j <- fread("./temp/2wfe_reg.tex", header = F, sep = "+")
+# 
+# note.latex <- "\\multicolumn{2}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.}}}"
+# 
+# j <- j %>%
+#   mutate(n = row_number(),
+#          V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
+#          V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
+#   filter(!grepl("Note:", V1))
+# 
+# insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
+# insert2 <- "}"
+# 
+# j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
+#   mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
+#   arrange(n) %>%
+#   select(-n)
+# 
+# write.table(j, "./temp/2wfe_reg_clean.tex", quote = F, col.names = F,
+#             row.names = F)
 
 # marg <- ggeffect(m1, "lndper [0.01476405, 1.113368, 3.856901, 7.9801]")
 # 
@@ -147,3 +160,57 @@ write.table(j, "./temp/2wfe_reg_clean.tex", quote = F, col.names = F,
 # p2
 # 
 # saveRDS(p2, "temp/mef_2wfe.rds")
+
+###########################################
+
+cat <- full_join(cities1 %>% 
+                   filter(year == 2017) %>% 
+                   select(lndper_17 = lndper,
+                          GEOID),
+                 cities1 %>% 
+                   filter(year == 2012) %>% 
+                   select(lndper_12 = lndper,
+                          GEOID)) %>% 
+  mutate(treated = lndper_17 > lndper_12,
+         change = lndper_17 / lndper_12) %>% 
+  select(GEOID, treated, change)
+
+cities1 <- left_join(cities1,
+                     cat)
+
+cities1 <- rename(cities1, share_s_fed = share_state_fed)
+
+covars <- gsub("\\n|            ", "", "treated * I(as.factor(year)) + nh_white + nh_black +
+            latino + asian + pop_dens +
+            median_income + some_college + median_age + share_over_64 +
+            state + total_revenue + share_taxes + share_s_fed")
+
+models <- lapply(ms$m, function(f){
+  plm(as.formula(paste0(f, " ~ ", covars)),
+      data = cities1 %>% 
+        group_by(GEOID) %>% 
+        mutate(r = sum(!!sym(f) <= 1)) %>% 
+        filter(r == 2),
+      index = c("GEOID", "year"), 
+      model = "within", 
+      effect = "twoways")
+})
+
+
+stargazer(models, type = "text", omit = c("state"),
+          column.labels = ms$name,
+          dep.var.labels = "",
+          covariate.labels = c("Treated × 2018",
+                               "% nonHispanic White",
+                               "% nonHispanic Black",
+                               "% Latinx",
+                               "% Asian",
+                               "Population Density",
+                               "Median Income",
+                               "% with Some College",
+                               "Median Age",
+                               "Share over 64",
+                               "Total Revenue",
+                               "% of Rev from Taxes",
+                               "% of Rev from State / Fed Gov."),
+          order = c(13))
