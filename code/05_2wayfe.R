@@ -198,7 +198,7 @@ models <- lapply(ms$m, function(f){
 
 
 stargazer(models, type = "text",
-          covariate.labels = c("Treated × 2018",
+          covariate.labels = c("Treated $\\times$ 2018",
                                "Share non-Hispanic White",
                                "Share non-Hispanic Black",
                                "Share Latinx",
