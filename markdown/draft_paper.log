@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.16)  16 MAR 2021 12:56
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.16)  16 MAR 2021 17:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -654,6 +654,9 @@ Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
 \csllabelwidth=\skip71
 (./draft_paper.aux
 
+LaTeX Warning: Label `tab:lit-table' multiply defined.
+
+
 LaTeX Warning: Label `' multiply defined.
 
 
@@ -1042,78 +1045,73 @@ Underfull \hbox (badness 10000) in paragraph at lines 130--131
 
 [1
 
-] [1] [2] [3] [4] [5] [6] (../temp/tab_lit.tex
+] [1] [2] [3] [4] [5] [6]
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 8.4pt on input line 5.
+(Font)              scaled to size 8.4pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 6.0pt on input line 5.
+(Font)              scaled to size 6.0pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 12.0011pt on input line 5.
+(Font)              scaled to size 12.0011pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 8.40076pt on input line 5.
+(Font)              scaled to size 8.40076pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 6.00055pt on input line 5.
+(Font)              scaled to size 6.00055pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 11.99872pt on input line 5.
+(Font)              scaled to size 11.99872pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 8.3991pt on input line 5.
+(Font)              scaled to size 8.3991pt on input line 220.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 5.99936pt on input line 5.
-) [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
+(Font)              scaled to size 5.99936pt on input line 220.
+[7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
 File: draft_paper_files/figure-latex/cross-18-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/cross-18-1.pdf>
-[20] (../temp/2wfe_reg_clean.tex
+[20] [21] (../temp/2wfe_reg_clean.tex
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
 (Font)              scaled to size 8.0pt on input line 64.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
 (Font)              scaled to size 8.00073pt on input line 64.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 7.99915pt on input line 64.
-) [21] (../temp/coarser_reg_clean.tex
-Invalid UTF-8 byte or sequence at line 16 replaced by U+FFFD.
-Missing character: There is no � in font [lmroman12-regular]:mapping=tex-text;!
-) [22] [23]
-
-LaTeX Warning: Reference `tab:balance' on page 24 undefined on input line 334.
-
-
-LaTeX Warning: Reference `tab:balance' on page 24 undefined on input line 340.
-
+) [22] (../temp/coarser_reg_clean.tex) [23] [24] [25]
 File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did1-1.pdf>
-[24]
+[26]
 File: draft_paper_files/figure-latex/did2-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did2-1.pdf>
-[25] (../temp/dind_reg.tex) [26] [27] [28] [29] [30] [31] [32]
-Underfull \hbox (badness 1675) in paragraph at lines 528--530
+[27] (../temp/dind_reg.tex) [28] [29] [30]
+Underfull \hbox (badness 10000) in paragraph at lines 484--486
+[][][][] [] [][][][][][][][] [] [][][][][] [] [][][][][][][] [][] [][][][] [][]
+ [][][][][][] [][] [][][] [][] [][][][] [][] [][][][][][] [][] [][][][][] [][] 
+[][][][][] [][] [][][][][][][] [][] [][][][] [][]
+ []
+
+[31] [32] [33] [34] [35] [36]
+Underfull \hbox (badness 1675) in paragraph at lines 640--642
 \TU/lmr/m/n/12 the Cops — If You’re Black.” \TU/lmr/m/it/12 Tampa Bay Times\TU/
 lmr/m/n/12 , April 15, 2015. []$[][][][][] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 528--530
+Underfull \hbox (badness 10000) in paragraph at lines 640--642
 [] [] [][][] [] [][][][][][][][] [] [][][] [] [][][][] [] [][][][][][][][][][][
 ][] [] [][][] [][] [][][][][][] [][] [][][][] [][] [][][][] [][] [][][] [][] []
 [][][] [][] [][][] [][] [][] [][]
  []
 
-[33] (./draft_paper.aux)
-
-LaTeX Warning: There were undefined references.
-
+[37] [38] (./draft_paper.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `draft_paper.out' has not changed.
-(rerunfilecheck)             Checksum: 6D819287922FA698219E2999C797169B;2154.
+(rerunfilecheck)             Checksum: A3AF9C2D54C9E7EE0A7D0157EC7F6671;2457.
  ) 
 Here is how much of TeX's memory you used:
- 17580 strings out of 478930
- 312255 string characters out of 5865217
- 808433 words of memory out of 5000000
- 37132 multiletter control sequences out of 15000+600000
+ 17579 strings out of 478930
+ 312267 string characters out of 5865217
+ 807555 words of memory out of 5000000
+ 37134 multiletter control sequences out of 15000+600000
  408620 words of font info for 78 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 98i,15n,122p,1628b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 98i,15n,122p,1610b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on draft_paper.pdf (34 pages).
+Output written on draft_paper.pdf (39 pages).
