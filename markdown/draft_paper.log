@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.16)  16 MAR 2021 10:03
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.16)  16 MAR 2021 10:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1035,6 +1035,11 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
 (Font)              scaled to size 5.00046pt on input line 127.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 4.99947pt on input line 127.
+
+Underfull \hbox (badness 10000) in paragraph at lines 130--131
+
+ []
+
 [1
 
 ] [1] [2] [3] [4] [5] [6] (../temp/tab_lit.tex
@@ -1054,21 +1059,17 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 8.3991pt on input line 5.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 5.99936pt on input line 5.
-) [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18]
+) [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
 File: draft_paper_files/figure-latex/cross-18-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/cross-18-1.pdf>
-[19] (../temp/2wfe_reg_clean.tex
+[20] (../temp/2wfe_reg_clean.tex
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
 (Font)              scaled to size 8.0pt on input line 64.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
 (Font)              scaled to size 8.00073pt on input line 64.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 7.99915pt on input line 64.
-) [20] [21]
-
-LaTeX Warning: Reference `tab:balance' on page 22 undefined on input line 322.
-
-(../temp/coarser_reg_clean.tex
+) [21] (../temp/coarser_reg_clean.tex
 Invalid UTF-8 byte or sequence at line 16 replaced by U+FFFD.
 Missing character: There is no � in font [lmroman12-regular]:mapping=tex-text;!
 ) [22] [23]
@@ -1078,13 +1079,12 @@ LaTeX Warning: Reference `tab:balance' on page 24 undefined on input line 334.
 
 LaTeX Warning: Reference `tab:balance' on page 24 undefined on input line 340.
 
-[24]
 File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did1-1.pdf>
-[25]
+[24]
 File: draft_paper_files/figure-latex/did2-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did2-1.pdf>
-[26] (../temp/dind_reg.tex) [27] [28] [29] [30] [31] [32]
+[25] (../temp/dind_reg.tex) [26] [27] [28] [29] [30] [31] [32]
 Underfull \hbox (badness 1675) in paragraph at lines 528--530
 \TU/lmr/m/n/12 the Cops — If You’re Black.” \TU/lmr/m/it/12 Tampa Bay Times\TU/
 lmr/m/n/12 , April 15, 2015. []$[][][][][] []
@@ -1105,15 +1105,15 @@ LaTeX Warning: There were undefined references.
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `draft_paper.out' has not changed.
-(rerunfilecheck)             Checksum: B1547DD40BBB306AF888EB008458727D;2227.
+(rerunfilecheck)             Checksum: 6D819287922FA698219E2999C797169B;2154.
  ) 
 Here is how much of TeX's memory you used:
- 17579 strings out of 478930
- 312256 string characters out of 5865217
- 807446 words of memory out of 5000000
- 37131 multiletter control sequences out of 15000+600000
+ 17580 strings out of 478930
+ 312255 string characters out of 5865217
+ 808433 words of memory out of 5000000
+ 37132 multiletter control sequences out of 15000+600000
  408620 words of font info for 78 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 98i,15n,122p,1610b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 98i,15n,122p,1628b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 Output written on draft_paper.pdf (34 pages).

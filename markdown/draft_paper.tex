@@ -126,6 +126,10 @@
 \maketitle
 \begin{abstract}
 The American criminal legal system is an important site of political socialization: sociologists show how the alienating effect of criminalization manifests as systems avoidance, and political scientists have measured the effects of policing and incarceration on political participation. Despite this burgeoning literature, no research has directly investigated how ticketing for low-level offenses affects political participation. Using data from the Census of Governments and the national voter file, we conduct the first quasi-experimental analysis of the causal effect of fines and fees practices on American voting behavior at the city level. Additionally, we exploit individual-level ticketing data from Hillsborough County, Florida between 2003 and 2019. We find that municipal fines and fees practices mobilize Black voters. Nationally, we estimate that each 10 percent increase in city fines and fees collections between 2012 and 2017 is associated with a roughly 3.3 percentage point decrease in 2018 federal turnout, and a 1.8 percentage point decrease in the Black-white turnout gap. In Tampa, Florida, we estimate that Black voters who were ticketed in the 90-day period preceding a federal election were 3 percentage points more likely to turn out in federal elections.
+
+\hfill\break
+
+\textbf{Keywords}: voting, monetary sanctions, race, punishment, political participation
 \end{abstract}
 
 \pagenumbering{gobble}
@@ -133,6 +137,10 @@ The American criminal legal system is an important site of political socializati
 
 \pagenumbering{arabic}
 \doublespacing
+
+\hypertarget{introduction}{%
+\section*{Introduction}\label{introduction}}
+\addcontentsline{toc}{section}{Introduction}
 
 Fines and fees are increasingly recognized as a form of racist revenue extraction connected to marginalized communities' alienation from government. After Michael Brown was killed by the Ferguson Police Department in 2014, a US Department of Justice investigation into the city's police and courts demonstrated that the municipality was engaged in a practice that advocates now refer to as ``policing for profit.'' The city's reliance on fines and fees to fund government functions grew from 13 to 23 percent of the total budget between fiscal years 2012 and 2015. From 2012 to 2014, the Department of Justice found that 85 percent of vehicle stops, 90 percent of citations, and 93 percent of arrests targeted Black people. By contrast, just two-thirds of Ferguson's residents are Black (\protect\hyperlink{ref-UnitedStatesDepartmentofJusticeCivilRightsDivision2015}{United States Department of Justice Civil Rights Division 2015}).
 
@@ -311,22 +319,14 @@ The results of the two-way fixed effects model are slightly different than what 
 
 In Table \ref{tab:coarser}, we re-estimate the model from Table \ref{tab:twfe} but coarsen the data. Here, we test whether turnout changed for municipalities who increased their fees and fines collections differently than municipalities where collections stayed the same or decreased. Municipalities that increased their per-capita fees and fines are considered ``treated.''
 
-The coefficient on \emph{Treated × 2018} indicates that non-Black turnout dropped by about 0.5 percentage points in municipalities where fees and fines collections increased relative to other municipalities. While this coefficient is also negative for Black voters, it is not statistically significantly different from 0. In other words, both Tables \ref{tab:twfe} and \ref{tab:coarser} indicate that increased fees and fines collections decrease non-Black turnout but have no impact on Black turnout.
-
-\hypertarget{individual-level-results}{%
-\subsection*{Individual-Level Results}\label{individual-level-results}}
-\addcontentsline{toc}{subsection}{Individual-Level Results}
-
-Thus far, we have shown that the turnout effects of fees and fines collection impact municipal-level turnout, and that the effects are different for Black and non-Black Americans. We argue that this relationship is causal: increased fees and fines collections means that more residents have direct interactions with the criminal legal system. Based on prior literature, we assume there are indirect effects as well, as more residents know a family or community member who has been ticketed. While the national analysis gives us great breadth and an increased understanding of how this plays out across the country, municipal-level data leaves us unable to directly observe the causal mechanisms at play.
-
-To directly observe the effect of being ticketed on voter participation, we now turn to our individual-level analysis in Hillsborough County, Florida. As discussed above, we match (\protect\hyperlink{ref-Sekhon2011}{Sekhon 2011}) individuals who were stopped and assessed a fine between the 2012 and 2018 elections to individuals who were not stopped during this time period.\footnote{Due to computing constraints, a 5 percent random sample stratified by treatment status is used to calculate the genetic weights. The full sample is used in the actual matching process.} Matching is done with replacement and ties are not broken, meaning some treated voters may have more than XX controls; the regression weights reflect this possibility. In Table \ref{tab:balance} we present the results of the matching algorithm. We manage to reduce between treated and control voters substantially along all observed characteristics with the exception of 2012 turnout. However, this is not likely a problem: the turnout of all potential and actual controls were both within 0.1 percentage points of the treatment group's turnout that year.
-
 \begin{singlespace}
 \input{"../temp/coarser_reg_clean.tex"}
 \end{singlespace}
 
-\hypertarget{individual-level-results-1}{%
-\subsection*{Individual-Level Results}\label{individual-level-results-1}}
+The coefficient on \emph{Treated × 2018} indicates that non-Black turnout dropped by about 0.5 percentage points in municipalities where fees and fines collections increased relative to other municipalities. While this coefficient is also negative for Black voters, it is not statistically significantly different from 0. In other words, both Tables \ref{tab:twfe} and \ref{tab:coarser} indicate that increased fees and fines collections decrease non-Black turnout but have no impact on Black turnout.
+
+\hypertarget{individual-level-results}{%
+\subsection*{Individual-Level Results}\label{individual-level-results}}
 \addcontentsline{toc}{subsection}{Individual-Level Results}
 
 Thus far, we have shown that the turnout effects of fees and fines collection impact municipal-level turnout, and that the effects are different for Black and non-Black Americans. We argue that this relationship is causal: increased fees and fines collections means that more residents have direct interactions with the criminal legal system. Based on prior literature, we assume there are indirect effects as well, as more residents know a family or community member who has been ticketed. While the national analysis gives us great breadth and an increased understanding of how this plays out across the country, municipal-level data leaves us unable to directly observe the causal mechanisms at play.
