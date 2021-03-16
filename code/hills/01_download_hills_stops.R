@@ -146,7 +146,7 @@ joined <- joined %>%
   select(voter_id, GEOID, fd,
          white, black, latino, asian, male, dem, rep, age,
          reg_date, pre_12, max_amount, name_first, name_last, birth_date,
-         v10, v12, v14, v16, v18)
+         v10, v12, v14, v16, v18, pre)
 
 ### remove people who were stopped, not fined
 joined <- left_join(joined, readRDS("temp/stopped_no_fine.rds"),
