@@ -97,30 +97,30 @@ stargazer(models, type = "text",
                                "Share of Revenue from State / Federal Government"),
           column.labels = ms$name,
           dep.var.labels = "",
-          out = "temp/2wfe_reg.tex",
           notes = "TO REPLACE",
-          title = "\\label{tab:tab1} Two-Way Fixed Effects Models")
-# 
-# j <- fread("./temp/2wfe_reg.tex", header = F, sep = "+")
-# 
-# note.latex <- "\\multicolumn{2}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.}}}"
-# 
-# j <- j %>%
-#   mutate(n = row_number(),
-#          V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-#          V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
-#   filter(!grepl("Note:", V1))
-# 
-# insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
-# insert2 <- "}"
-# 
-# j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
-#   mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
-#   arrange(n) %>%
-#   select(-n)
-# 
-# write.table(j, "./temp/2wfe_reg_clean.tex", quote = F, col.names = F,
-#             row.names = F)
+          title = "\\label{tab:twfe} Two-Way Fixed Effects Models",
+          out = "temp/2wfe_reg.tex")
+
+j <- fread("./temp/2wfe_reg.tex", header = F, sep = "+")
+
+note.latex <- "\\multicolumn{3}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.}}}"
+
+j <- j %>%
+  mutate(n = row_number(),
+         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
+         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
+  filter(!grepl("Note:", V1))
+
+insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
+  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
+  arrange(n) %>%
+  select(-n)
+
+write.table(j, "./temp/2wfe_reg_clean.tex", quote = F, col.names = F,
+            row.names = F)
 
 # marg <- ggeffect(m1, "lndper [0.01476405, 1.113368, 3.856901, 7.9801]")
 # 
@@ -197,20 +197,43 @@ models <- lapply(ms$m, function(f){
 })
 
 
-stargazer(models, type = "text", omit = c("state"),
-          column.labels = ms$name,
-          dep.var.labels = "",
+stargazer(models, type = "text",
           covariate.labels = c("Treated × 2018",
-                               "% nonHispanic White",
-                               "% nonHispanic Black",
-                               "% Latinx",
-                               "% Asian",
+                               "Share non-Hispanic White",
+                               "Share non-Hispanic Black",
+                               "Share Latinx",
+                               "Share Asian",
                                "Population Density",
                                "Median Income",
-                               "% with Some College",
+                               "Share with Some College",
                                "Median Age",
-                               "Share over 64",
+                               "Share over 64 Years Old",
                                "Total Revenue",
-                               "% of Rev from Taxes",
-                               "% of Rev from State / Fed Gov."),
-          order = c(13))
+                               "Share of Revenue from Taxes",
+                               "Share of Revenue from State / Federal Government"),
+          column.labels = ms$name,
+          dep.var.labels = "",
+          notes = "TO REPLACE",
+          title = "\\label{tab:coarser} Two-Way Fixed Effects Models, Binary Treatment",
+          out = "temp/coarser_reg.tex")
+
+j <- fread("./temp/coarser_reg.tex", header = F, sep = "+")
+
+note.latex <- "\\multicolumn{3}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.}}}"
+
+j <- j %>%
+  mutate(n = row_number(),
+         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
+         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
+  filter(!grepl("Note:", V1))
+
+insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
+  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
+  arrange(n) %>%
+  select(-n)
+
+write.table(j, "./temp/coarser_reg_clean.tex", quote = F, col.names = F,
+            row.names = F)
