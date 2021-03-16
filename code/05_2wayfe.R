@@ -215,7 +215,8 @@ stargazer(models, type = "text",
           dep.var.labels = "",
           notes = "TO REPLACE",
           title = "\\label{tab:coarser} Two-Way Fixed Effects Models, Binary Treatment",
-          out = "temp/coarser_reg.tex")
+          out = "temp/coarser_reg.tex",
+          order = 13)
 
 j <- fread("./temp/coarser_reg.tex", header = F, sep = "+")
 
