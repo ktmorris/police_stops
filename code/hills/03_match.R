@@ -344,10 +344,10 @@ stargazer(models1, models2,
           covariate.labels = c("Treated",
                                "Post Treatment",
                                "Black",
-                               "Treated X Post Treatment",
-                               "Treated X Black",
-                               "Post Treatment X Black",
-                               "Treated X Post Treatment X Black"),
+                               "Treated $\\times$ Post Treatment",
+                               "Treated $\\times$ Black",
+                               "Post Treatment $\\times$ Black",
+                               "Treated $\\times$ Post Treatment $\\times$ Black"),
           table.layout = "-cm#-t-a-s-n",
           notes = "TO REPLACE",
           title = "\\label{tab:dind-table} Turnout Effects of Tickets",
@@ -370,6 +370,17 @@ j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 
   arrange(n) %>%
   select(-n)
 
+j <- mutate(j, n = row_number())
+
+j$V1 <- gsub("Stopped within 90 Days of Election", "Stopped within 90", j$V1)
+
+ins <- "&&&\\multicolumn{2}{c}{Days of Election} \\\\"
+
+j <- bind_rows(j,
+               data.table(V1 = ins,
+                          n = 9.1)) %>% 
+  arrange(n) %>% 
+  select(-n)
 
 write.table(j, "./temp/dind_reg.tex", quote = F, col.names = F,
             row.names = F)
@@ -428,11 +439,11 @@ write.table(j, "./temp/dind_reg.tex", quote = F, col.names = F,
 ###############
 
 demos_all_control <- filter(hills_pre_match, fd > "2018-11-06") %>% 
-  select(-LALVOTERID, -GEOID, -fd, -max_amount, -v14, -v16) %>% 
+  select(-voter_id, -GEOID, -fd, -max_amount, -v14, -v16) %>% 
   summarize_all(mean) %>% 
   mutate(group = "All Untreated")
 
-demos_reg <- inner_join(matches_wide, hills_pre_match, by = c("voter" = "LALVOTERID")) %>% 
+demos_reg <- inner_join(matches_wide, hills_pre_match, by = c("voter" = "voter_id")) %>% 
   mutate(group = ifelse(group == voter, "Treated", "Actual Controls")) %>% 
   select(-voter, -GEOID, -fd, -max_amount, -v14, -v16, -first_tr_year, -weight) %>% 
   group_by(group) %>% 
@@ -459,4 +470,12 @@ bt <- bind_rows(demos_all_control, demos_reg) %>%
   mutate_at(vars(c(Treated, `Actual Controls`, `All Untreated`)),
             ~ ifelse(name == "median_income", 
                      dollar(as.numeric(.), accuracy = 1), .)) %>% 
-  mutate(mean_imp = percent(mean_imp, .01))
+  mutate(mean_imp = percent(mean_imp, .01)) %>% 
+  filter(name != "pre")
+
+or <- fread("raw_data/var_orders.csv")
+
+bt <- left_join(bt, or, by = c("name" = "Name")) %>% 
+  select(Variable, `Treated`, `All Untreated`, `Actual Controls`, `Mean Improvement` = mean_imp)
+
+saveRDS(bt, "temp/balance_table.rds")
