@@ -190,47 +190,64 @@ matches_wide <- rbindlist(lapply(c(
   "temp/matches_hills_16.rds",
   "temp/matches_hills_18.rds"), readRDS))
 
-cleanup(c("matches_wide", "hills_pre_match"))
+pot_con <- bind_rows(pot_con_14, pot_con_16, pot_con_18) %>% 
+  select(first_tr_year, voter_id, black)
 
-hist <- readRDS("raw_data/fl_l2_hills/fl_l2_history_hills.rds") %>%
-  select(-state) %>%
-  pivot_longer(c(starts_with("Gener"), starts_with("Loc")), names_to = "year", values_to = "to") %>%
-  mutate(to = to == "Y")
+cleanup(c("matches_wide", "hills_pre_match", "pot_con"))
+
+hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
+  select(voter_id, starts_with("v1")) %>%
+  pivot_longer(starts_with("v1"), names_to = "year", values_to = "to")
+
+elec_dates <- fread("raw_data/election_dates.csv")
+
+hist <- left_join(hist, elec_dates) %>% 
+  select(-year) %>% 
+  rename(year = date) %>% 
+  mutate(year = as.Date(year))
+
 
 matches <- left_join(matches_wide, hist %>% 
-                       filter(grepl("Gene", year)), by = c("voter" = "LALVOTERID")) %>%
-  mutate(year = as.Date(gsub("General_|Local_or_Municipal_", "", year), "%Y_%m_%d"),
-         treated = voter == group)
+                       filter(year(year) %% 2 == 0), by = c("voter" = "voter_id"))
 
+pot_con <- left_join(pot_con, hist %>% 
+                       filter(year(year) %% 2 == 0), by = c("voter_id" = "voter_id"))
 
 periods <- fread("raw_data/period_lu.csv") %>% 
   mutate_at(vars(first_tr_year, year), as.Date)
 
 matches <- left_join(matches, periods)
 
-matches <- left_join(matches,
+pot_con <- left_join(pot_con, periods) %>% 
+  group_by(period, black) %>% 
+  summarize(to = mean(to)) %>% 
+  mutate(black = ifelse(black, "Black Voters", "Non-Black Voters"),
+         treated = "All Controls")
+
+matches <- inner_join(matches,
                      hills_pre_match %>%
                        select(-GEOID, -fd, -max_amount),
-                     by = c("voter" = "LALVOTERID"))
+                     by = c("voter" = "voter_id"))
 
-matches <- left_join(matches,
+matches <- inner_join(matches,
                      hills_pre_match %>%
-                       select(LALVOTERID, max_amount, fd),
-                     by = c("group" = "LALVOTERID")) %>% 
-  mutate(post = period >= 0.5)
+                       select(voter_id, max_amount, fd, black_t = black),
+                     by = c("group" = "voter_id")) %>% 
+  mutate(post = period >= 0.5,
+         treated = voter == group)
 
 ll <- matches %>%
   filter(period <= 1.5) %>% 
   filter(first_tr_year - fd <= 90) %>%
-  group_by(treated, period, black) %>%
+  group_by(treated, period, black_tt = max_amount <= 10) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black, "Black Voters", "Non-Black Voters"))
+         black = ifelse(black_tt, "Black Voters", "Non-Black Voters"))
 
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
-ggplot(data = ll) + 
+p1 <- ggplot(data = ll) + 
   facet_grid(~ black) +
   geom_rect(aes(xmin = 0.5-.125, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
@@ -253,17 +270,19 @@ ggplot(data = ll) +
        shape = "Treatment Group",
        caption = "Treatment occurs inside of yellow band.") +
   coord_cartesian(ylim = c(0.05, 0.75))
+
+saveRDS(p1, "temp/within90days.rds")
 ##########################
 ll <- matches %>%
   filter(period <= 1.5) %>% 
-  group_by(treated, period, black) %>%
+  group_by(treated, period, black_t) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black, "Black Voters", "Non-Black Voters"))
+         black = ifelse(black_t, "Black Voters", "Non-Black Voters"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
-ggplot(data = ll) + 
+p2 <- ggplot(data = ll) + 
   facet_grid(~ black) +
   geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
@@ -287,7 +306,7 @@ ggplot(data = ll) +
        caption = "Treatment occurs inside of yellow band.") +
   coord_cartesian(ylim = c(0.05, 0.75))
 
-
+saveRDS(p2, "temp/stopped_any_time.rds")
 ############### overall
 matches$first <- matches$period == 0.5
 dat1 <- filter(matches, period <= 1.5)
@@ -330,7 +349,30 @@ stargazer(models1, models2,
                                "Post Treatment X Black",
                                "Treated X Post Treatment X Black"),
           table.layout = "-cm#-t-a-s-n",
+          notes = "TO REPLACE",
+          title = "\\label{tab:dind-table} Turnout Effects of Tickets",
           out = "temp/two_matches_reg.tex")
+
+j <- fread("./temp/two_matches_reg.tex", header = F, sep = "+")
+
+note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
+
+j <- j %>% 
+  mutate(n = row_number(),
+         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
+         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>% 
+  filter(!grepl("Note:", V1))
+
+insert1 <- "\\resizebox{1\\textwidth}{!}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
+  arrange(n) %>%
+  select(-n)
+
+
+write.table(j, "./temp/dind_reg.tex", quote = F, col.names = F,
+            row.names = F)
 
 # ############### first election
 # 

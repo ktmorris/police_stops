@@ -28,7 +28,9 @@ cl
 hills_pre_match <- readRDS("temp/hills_pre_match.rds")
 ############## 2014
 
-hills14 <- hills_pre_match %>% 
+hills14 <- hills_pre_match  %>% 
+  filter(fd <= "2014-11-04" |
+           fd > "2018-11-06") %>% 
   mutate(treated = fd <= "2014-11-04") %>% 
   select(-v14, -v16)
 
@@ -38,7 +40,7 @@ samp <- hills14 %>%
   ungroup()
 
 match_data <- samp %>% 
-  select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>% 
+  select(-voter_id, -treated, -GEOID, -fd, -max_amount) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
@@ -50,7 +52,9 @@ saveRDS(genout, "temp/genout_hills_14.rds")
 ############## 2016
 
 hills16 <- hills_pre_match %>% 
-  filter(fd > "2014-11-04") %>% 
+  filter(fd > "2014-11-04",
+         fd <= "2016-11-08" |
+           fd > "2018-11-06") %>% 
   mutate(treated = fd <= "2016-11-08") %>% 
   select(-v16)
 
@@ -60,7 +64,7 @@ samp <- hills16 %>%
   ungroup()
 
 match_data <- samp %>% 
-  select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>% 
+  select(-voter_id, -treated, -GEOID, -fd, -max_amount) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
@@ -82,7 +86,7 @@ samp <- hills18 %>%
   ungroup()
 
 match_data <- samp %>% 
-  select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>% 
+  select(-voter_id, -treated, -GEOID, -fd, -max_amount) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
@@ -91,3 +95,5 @@ genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
 
 
 saveRDS(genout, "temp/genout_hills_18.rds")
+
+
