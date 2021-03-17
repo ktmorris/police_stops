@@ -224,12 +224,12 @@ pot_con <- left_join(pot_con, periods) %>%
   mutate(black = ifelse(black, "Black Voters", "Non-Black Voters"),
          treated = "All Controls")
 
-matches <- inner_join(matches,
+matches <- left_join(matches,
                      hills_pre_match %>%
                        select(-GEOID, -fd, -max_amount),
                      by = c("voter" = "voter_id"))
 
-matches <- inner_join(matches,
+matches <- left_join(matches,
                      hills_pre_match %>%
                        select(voter_id, max_amount, fd, black_t = black),
                      by = c("group" = "voter_id")) %>% 
@@ -305,7 +305,7 @@ p2 <- ggplot(data = ll) +
        shape = "Treatment Group",
        caption = "Treatment occurs inside of yellow band.") +
   coord_cartesian(ylim = c(0.05, 0.75))
-
+p2
 saveRDS(p2, "temp/stopped_any_time.rds")
 ############### overall
 matches$first <- matches$period == 0.5
