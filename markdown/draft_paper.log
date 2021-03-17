@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.16)  16 MAR 2021 17:30
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.17)  17 MAR 2021 17:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1045,24 +1045,24 @@ Underfull \hbox (badness 10000) in paragraph at lines 130--131
 
 [1
 
-] [1] [2] [3] [4] [5] [6]
+] [1] [2] [3]
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 8.4pt on input line 220.
+(Font)              scaled to size 8.4pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 6.0pt on input line 220.
+(Font)              scaled to size 6.0pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 12.0011pt on input line 220.
+(Font)              scaled to size 12.0011pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 8.40076pt on input line 220.
+(Font)              scaled to size 8.40076pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 6.00055pt on input line 220.
+(Font)              scaled to size 6.00055pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 11.99872pt on input line 220.
+(Font)              scaled to size 11.99872pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 8.3991pt on input line 220.
+(Font)              scaled to size 8.3991pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 5.99936pt on input line 220.
-[7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
+(Font)              scaled to size 5.99936pt on input line 173.
+[4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
 File: draft_paper_files/figure-latex/cross-18-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/cross-18-1.pdf>
 [20] [21] (../temp/2wfe_reg_clean.tex
@@ -1078,40 +1078,40 @@ File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
 [26]
 File: draft_paper_files/figure-latex/did2-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did2-1.pdf>
-[27] (../temp/dind_reg.tex) [28] [29] [30]
-Underfull \hbox (badness 10000) in paragraph at lines 484--486
+[27] (../temp/dind_reg.tex) [28] [29] [30] [31]
+Underfull \hbox (badness 10000) in paragraph at lines 476--478
 [][][][] [] [][][][][][][][] [] [][][][][] [] [][][][][][][] [][] [][][][] [][]
  [][][][][][] [][] [][][] [][] [][][][] [][] [][][][][][] [][] [][][][][] [][] 
 [][][][][] [][] [][][][][][][] [][] [][][][] [][]
  []
 
-[31] [32] [33] [34] [35] [36]
-Underfull \hbox (badness 1675) in paragraph at lines 640--642
+[32] [33] [34] [35] [36] [37] [38]
+Underfull \hbox (badness 1675) in paragraph at lines 650--652
 \TU/lmr/m/n/12 the Cops — If You’re Black.” \TU/lmr/m/it/12 Tampa Bay Times\TU/
 lmr/m/n/12 , April 15, 2015. []$[][][][][] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 640--642
+Underfull \hbox (badness 10000) in paragraph at lines 650--652
 [] [] [][][] [] [][][][][][][][] [] [][][] [] [][][][] [] [][][][][][][][][][][
 ][] [] [][][] [][] [][][][][][] [][] [][][][] [][] [][][][] [][] [][][] [][] []
 [][][] [][] [][][] [][] [][] [][]
  []
 
-[37] [38] (./draft_paper.aux)
+[39] (./draft_paper.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `draft_paper.out' has not changed.
-(rerunfilecheck)             Checksum: A3AF9C2D54C9E7EE0A7D0157EC7F6671;2457.
+(rerunfilecheck)             Checksum: 5AA70DEF56A7C9D44EAFC1CFE9BF18CE;2261.
  ) 
 Here is how much of TeX's memory you used:
- 17579 strings out of 478930
- 312267 string characters out of 5865217
- 807555 words of memory out of 5000000
- 37134 multiletter control sequences out of 15000+600000
+ 17579 strings out of 478922
+ 312234 string characters out of 5864964
+ 808606 words of memory out of 5000000
+ 37142 multiletter control sequences out of 15000+600000
  408620 words of font info for 78 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 98i,15n,122p,1610b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 98i,15n,122p,1541b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on draft_paper.pdf (39 pages).
+Output written on draft_paper.pdf (40 pages).
