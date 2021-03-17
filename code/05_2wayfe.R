@@ -59,7 +59,8 @@ cities1 <- inner_join(cities, to, by = c("GEOID" = "plasub", "year")) %>%
          vap_to_latino =   votes_latino / latino_cvap,
          vap_to_asian =    votes_asian / asian_cvap,
          vap_to_other =    votes_other / other_cvap,
-         state = substring(GEOID, 1, 2))
+         state = substring(GEOID, 1, 2)) %>% 
+  mutate_at(vars(starts_with("vap_to")), ~ ifelse(is.finite(.) & . > 1, 1, .))
 
 #################################
 
@@ -74,7 +75,7 @@ models <- lapply(ms$m, function(f){
   plm(as.formula(paste0(f, " ~ ", covars)),
       data = cities1 %>% 
         group_by(GEOID) %>% 
-        mutate(r = sum(!!sym(f) <= 1)) %>% 
+        mutate(r = sum(is.finite(!!sym(f)) * !!sym(f) <= 1.05)) %>% 
         filter(r == 2),
       index = c("GEOID", "year"), 
       model = "within", 
@@ -189,7 +190,7 @@ models <- lapply(ms$m, function(f){
   plm(as.formula(paste0(f, " ~ ", covars)),
       data = cities1 %>% 
         group_by(GEOID) %>% 
-        mutate(r = sum(!!sym(f) <= 1)) %>% 
+        mutate(r = sum(is.finite(!!sym(f)))) %>% 
         filter(r == 2),
       index = c("GEOID", "year"), 
       model = "within", 
