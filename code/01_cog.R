@@ -90,9 +90,9 @@ rev_12 <- d12 %>%
 d12_good <- d12 %>% 
   filter(item_code == "U30",
          place_id %in% police12$place_id,
-         as.integer(pop_cog) > 2500)
+         as.integer(pop_cog) >= 2500)
 
-cog_12 <- full_join(rev_12, d12_good)
+cog_12 <- left_join(d12_good, rev_12)
 
 saveRDS(cog_12, "temp/cog_12.rds")
 ##################################
@@ -189,7 +189,7 @@ c2 <- readRDS("temp/census_data.rds")
 cities <- inner_join(mutate(d, GEOID = paste0(state, fips)), c2, by = "GEOID") %>% 
   filter(item_code == "U30",
          place_id %in% police$place_id,
-         as.integer(pop_cog) > 2500) %>% 
+         as.integer(pop_cog) >= 2500) %>% 
   mutate(lnbl = log(nh_black + 1))
 
 cities <- left_join(cities, select(d12_good,
