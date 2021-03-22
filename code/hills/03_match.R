@@ -16,21 +16,21 @@ hills_pre_match <- readRDS("temp/hills_pre_match.rds") %>%
 ########## 2014 #################################################
 #################################################################
 #################################################################
-hills14 <- hills_pre_match  %>% 
+hills14 <- hills_pre_match  %>%
   filter(fd <= "2014-11-04" |
-           fd > "2018-11-06") %>% 
-  mutate(treated = fd <= "2014-11-04") %>% 
-  select(-v14, -v16)
+           fd > "2018-11-06") %>%
+  mutate(treated = fd <= "2014-11-04") %>%
+  select(-v14, -v16, -pre)
 
-pot_con_14 <- filter(hills14, !treated) %>% 
+pot_con_14 <- filter(hills14, !treated) %>%
   mutate(first_tr_year = as.Date("2014-11-04"))
-# 
+
 # ids <- hills14 %>%
 #   mutate(id = row_number()) %>%
-#   select(id, LALVOTERID)
+#   select(id, voter_id)
 # 
 # X <- hills14 %>%
-#   select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>%
+#   select(-voter_id, -treated, -GEOID, -fd, -max_amount) %>%
 #   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>%
 #   mutate(reg_date = as.integer(reg_date))
 # 
@@ -44,7 +44,7 @@ pot_con_14 <- filter(hills14, !treated) %>%
 #                        X$asian,
 #                        X$male,
 #                        X$dem,
-#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2)
+#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2, ties = T)
 # 
 # save(mout, file = "./temp/mout_hills_14.RData")
 # 
@@ -61,34 +61,33 @@ pot_con_14 <- filter(hills14, !treated) %>%
 # 
 # matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
 #   select(-voter) %>%
-#   rename(voter = LALVOTERID)
+#   rename(voter = voter_id)
 # 
 # matches <- left_join(matches, ids, by = c("group" = "id")) %>%
 #   select(-group) %>%
-#   rename(group = LALVOTERID) %>%
+#   rename(group = voter_id) %>%
 #   mutate(first_tr_year = as.Date("2014-11-04"))
 # saveRDS(matches, "temp/matches_hills_14.rds")
-# #################################################################
-# ########## 2016 #################################################
-# #################################################################
-# #################################################################
-hills16 <- hills_pre_match %>% 
+#################################################################
+########## 2016 #################################################
+#################################################################
+#################################################################
+hills16 <- hills_pre_match %>%
   filter(fd > "2014-11-04",
          fd <= "2016-11-08" |
-           fd > "2018-11-06") %>% 
-  mutate(treated = fd <= "2016-11-08") %>% 
-  select(-v16)
+           fd > "2018-11-06") %>%
+  mutate(treated = fd <= "2016-11-08") %>%
+  select(-v16, -pre)
 
-pot_con_16 <- filter(hills16, !treated) %>% 
+pot_con_16 <- filter(hills16, !treated) %>%
   mutate(first_tr_year = as.Date("2016-11-08"))
 
-# 
 # ids <- hills16 %>%
 #   mutate(id = row_number()) %>%
-#   select(id, LALVOTERID)
+#   select(id, voter_id)
 # 
 # X <- hills16 %>%
-#   select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>%
+#   select(-voter_id, -treated, -GEOID, -fd, -max_amount) %>%
 #   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>%
 #   mutate(reg_date = as.integer(reg_date))
 # 
@@ -102,7 +101,7 @@ pot_con_16 <- filter(hills16, !treated) %>%
 #                        X$asian,
 #                        X$male,
 #                        X$dem,
-#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2)
+#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2, ties = T)
 # 
 # save(mout, file = "./temp/mout_hills_16.RData")
 # 
@@ -119,30 +118,31 @@ pot_con_16 <- filter(hills16, !treated) %>%
 # 
 # matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
 #   select(-voter) %>%
-#   rename(voter = LALVOTERID)
+#   rename(voter = voter_id)
 # 
 # matches <- left_join(matches, ids, by = c("group" = "id")) %>%
 #   select(-group) %>%
-#   rename(group = LALVOTERID) %>%
+#   rename(group = voter_id) %>%
 #   mutate(first_tr_year = as.Date("2016-11-08"))
 # saveRDS(matches, "temp/matches_hills_16.rds")
-# #################################################################
-# ########## 2018 #################################################
-# #################################################################
-# #################################################################
+#################################################################
+########## 2018 #################################################
+#################################################################
+#################################################################
 hills18 <- hills_pre_match %>% 
   filter(fd > "2016-11-08") %>% 
-  mutate(treated = fd <= "2018-11-06")
+  mutate(treated = fd <= "2018-11-06") %>% 
+  select(-pre)
 
 pot_con_18 <- filter(hills18, !treated) %>% 
   mutate(first_tr_year = as.Date("2018-11-06"))
-# 
+
 # ids <- hills18 %>% 
 #   mutate(id = row_number()) %>% 
-#   select(id, LALVOTERID)
+#   select(id, voter_id)
 # 
 # X <- hills18 %>%
-#   select(-LALVOTERID, -treated, -GEOID, -fd, -max_amount) %>%
+#   select(-voter_id, -treated, -GEOID, -fd, -max_amount) %>%
 #   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>%
 #   mutate(reg_date = as.integer(reg_date))
 # 
@@ -156,7 +156,7 @@ pot_con_18 <- filter(hills18, !treated) %>%
 #                        X$asian,
 #                        X$male,
 #                        X$dem,
-#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2)
+#                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 2, ties = T)
 # 
 # save(mout, file = "./temp/mout_hills_18.RData")
 # 
@@ -173,11 +173,11 @@ pot_con_18 <- filter(hills18, !treated) %>%
 # 
 # matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
 #   select(-voter) %>%
-#   rename(voter = LALVOTERID)
+#   rename(voter = voter_id)
 # 
 # matches <- left_join(matches, ids, by = c("group" = "id")) %>%
 #   select(-group) %>%
-#   rename(group = LALVOTERID) %>% 
+#   rename(group = voter_id) %>% 
 #   mutate(first_tr_year = as.Date("2018-11-06"))
 # saveRDS(matches, "temp/matches_hills_18.rds")
 ##############################################################

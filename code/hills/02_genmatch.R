@@ -25,14 +25,15 @@ cl<-makeCluster(c(readLines(NodeFile)), type="SOCK")
 cl
 
 
-hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+hills_pre_match <- readRDS("temp/hills_pre_match.rds") %>% 
+  mutate(tract = as.numeric(substring(GEOID, 1, 11)))
 ############## 2014
 
 hills14 <- hills_pre_match  %>% 
   filter(fd <= "2014-11-04" |
            fd > "2018-11-06") %>% 
   mutate(treated = fd <= "2014-11-04") %>% 
-  select(-v14, -v16)
+  select(-v14, -v16, -pre, -tract)
 
 samp <- hills14 %>% 
   group_by(treated) %>% 
@@ -44,9 +45,7 @@ match_data <- samp %>%
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
-genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
-                   exact = c(rep(T, 7), rep(F, 6), T, T), pop.size = 1000)
-
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000)
 
 saveRDS(genout, "temp/genout_hills_14.rds")
 ############## 2016
@@ -56,7 +55,7 @@ hills16 <- hills_pre_match %>%
          fd <= "2016-11-08" |
            fd > "2018-11-06") %>% 
   mutate(treated = fd <= "2016-11-08") %>% 
-  select(-v16)
+  select(-v16, -pre, -tract)
 
 samp <- hills16 %>% 
   group_by(treated) %>% 
@@ -68,9 +67,7 @@ match_data <- samp %>%
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
-genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
-                   exact = c(rep(T, 7), rep(F, 6), T, T, T), pop.size = 1000)
-
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000)
 
 saveRDS(genout, "temp/genout_hills_16.rds")
 
@@ -78,7 +75,8 @@ saveRDS(genout, "temp/genout_hills_16.rds")
 
 hills18 <- hills_pre_match %>% 
   filter(fd > "2016-11-08") %>% 
-  mutate(treated = fd <= "2018-11-06")
+  mutate(treated = fd <= "2018-11-06") %>% 
+  select(-pre, -tract)
 
 samp <- hills18 %>% 
   group_by(treated) %>% 
@@ -90,9 +88,7 @@ match_data <- samp %>%
   mutate_at(vars(white, black, latino, asian, male, dem, rep), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date))
 
-genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl,
-                   exact = c(rep(T, 7), rep(F, 6), T, T, T, T), pop.size = 1000)
-
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000)
 
 saveRDS(genout, "temp/genout_hills_18.rds")
 
