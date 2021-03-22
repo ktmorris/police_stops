@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.17)  17 MAR 2021 17:43
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020/W32TeX) (preloaded format=xelatex 2021.3.19)  19 MAR 2021 16:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -140,7 +140,7 @@ Package: expl3 2021-02-18 L3 programming layer (loader)
 
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3backend/l3back
 end-xetex.def
-File: l3backend-xetex.def 2021-03-02 L3 backend support: XeTeX
+File: l3backend-xetex.def 2021-03-18 L3 backend support: XeTeX
 (|extractbb --version)
 \c__kernel_sys_dvipdfmx_version_int=\count195
 \l__color_backend_stack_int=\count196
@@ -654,9 +654,6 @@ Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
 \csllabelwidth=\skip71
 (./draft_paper.aux
 
-LaTeX Warning: Label `tab:lit-table' multiply defined.
-
-
 LaTeX Warning: Label `' multiply defined.
 
 
@@ -1062,7 +1059,12 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 8.3991pt on input line 173.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 5.99936pt on input line 173.
-[4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
+[4] [5] [6] [7] (../raw_data/lit_tab.tex
+Overfull \hbox (28.24498pt too wide) in paragraph at lines 4--32
+ [][] 
+ []
+
+) [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
 File: draft_paper_files/figure-latex/cross-18-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/cross-18-1.pdf>
 [20] [21] (../temp/2wfe_reg_clean.tex
@@ -1078,21 +1080,21 @@ File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
 [26]
 File: draft_paper_files/figure-latex/did2-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did2-1.pdf>
-[27] (../temp/dind_reg.tex) [28] [29] [30] [31]
-Underfull \hbox (badness 10000) in paragraph at lines 476--478
+[27] (../temp/dind_reg_y.tex) [28] [29] [30] [31]
+Underfull \hbox (badness 10000) in paragraph at lines 453--455
 [][][][] [] [][][][][][][][] [] [][][][][] [] [][][][][][][] [][] [][][][] [][]
  [][][][][][] [][] [][][] [][] [][][][] [][] [][][][][][] [][] [][][][][] [][] 
 [][][][][] [][] [][][][][][][] [][] [][][][] [][]
  []
 
 [32] [33] [34] [35] [36] [37] [38]
-Underfull \hbox (badness 1675) in paragraph at lines 650--652
+Underfull \hbox (badness 1675) in paragraph at lines 630--632
 \TU/lmr/m/n/12 the Cops — If You’re Black.” \TU/lmr/m/it/12 Tampa Bay Times\TU/
 lmr/m/n/12 , April 15, 2015. []$[][][][][] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 650--652
+Underfull \hbox (badness 10000) in paragraph at lines 630--632
 [] [] [][][] [] [][][][][][][][] [] [][][] [] [][][][] [] [][][][][][][][][][][
 ][] [] [][][] [][] [][][][][][] [][] [][][][] [][] [][][][] [][] [][][] [][] []
 [][][] [][] [][][] [][] [][] [][]
@@ -1106,12 +1108,12 @@ Package rerunfilecheck Info: File `draft_paper.out' has not changed.
 (rerunfilecheck)             Checksum: 5AA70DEF56A7C9D44EAFC1CFE9BF18CE;2261.
  ) 
 Here is how much of TeX's memory you used:
- 17579 strings out of 478922
- 312234 string characters out of 5864964
- 808606 words of memory out of 5000000
- 37142 multiletter control sequences out of 15000+600000
+ 17584 strings out of 478922
+ 312335 string characters out of 5864964
+ 808631 words of memory out of 5000000
+ 37143 multiletter control sequences out of 15000+600000
  408620 words of font info for 78 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 98i,15n,122p,1541b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 98i,15n,122p,1536b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 Output written on draft_paper.pdf (40 pages).
