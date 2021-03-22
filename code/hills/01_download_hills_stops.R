@@ -46,14 +46,16 @@
 #     return(ja)
 #   }
 # }))
-# hills_stops <- bind_rows(hills_stops, hills_stops_cr) %>% 
+# hills_stops <- bind_rows(hills_stops, hills_stops_cr) %>%
 #   mutate(amount_paid = ifelse(is.na(amount_paid), 0, amount_paid))
 # 
 # saveRDS(hills_stops, "temp/hills_stops.rds")
 # 
 # hills_stops <- readRDS("temp/hills_stops.rds") %>%
 #   mutate(offense_date = as.Date(offense_date, "%m/%d/%Y"),
-#          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y"))
+#          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y")) %>%
+#   mutate_at(vars(first_name,
+#                  last_name), ~ gsub("[[:punct:]]| ", "", ifelse(. == "", NA, toupper(.))))
 # 
 # zeros_only <- hills_stops %>%
 #   filter(offense_date > "2012-11-06",
@@ -68,73 +70,152 @@
 # 
 # saveRDS(zeros_only, "temp/stopped_no_fine.rds")
 # 
-# hills_stops <- filter(hills_stops, amount_paid > 0)[,
-#                            .(max_amount = max(amount_paid)),
-#                            .(first_name, last_name, date_of_birth, offense_date)] %>%  # using data.table syntax for speed
-#   mutate(hold = if_else(offense_date <= as.Date("2012-11-06"),
-#                  as.Date("2099-12-31"), offense_date))
+# ##########
 # 
-# hills_stops_ll <- hills_stops[,
-#                        .(stop_count = .N,
-#                          pre_12 = sum(offense_date <= "2012-11-06"),
-#                          fd = min(hold)),
-#                        .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
+# pre12 <- filter(hills_stops, offense_date <= "2012-11-06")[,
+#                                                            .(stop_count = .N),
+#                                                            .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
 # 
-# hills_stops_ll <- left_join(hills_stops_ll, select(hills_stops, -hold),
-#                             by = c("first_name", "last_name", "date_of_birth", "fd" = "offense_date"))
+# pre12 <-  pre12[,
+#                 .(stop_count = .N),
+#                 .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
 # 
-# saveRDS(hills_stops_ll, "temp/hills_stops_ll.rds")
+# pre14 <- filter(hills_stops, offense_date <= "2014-11-04")[,
+#                                                            .(stop_count = .N),
+#                                                            .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
 # 
-hills_stops_ll <- readRDS("temp/hills_stops_ll.rds") %>% 
-  mutate_at(vars(first_name,
-                 last_name), ~ gsub("[[:punct:]]| ", "", ifelse(. == "", NA, toupper(.)))) %>% 
-  group_by(first_name, last_name, date_of_birth) %>% 
-  mutate(count = row_number())
+# pre14 <-  pre14[,
+#                 .(stop_count = .N),
+#                 .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
+# 
+# pre16 <- filter(hills_stops, offense_date <= "2016-11-08")[,
+#                                                            .(stop_count = .N),
+#                                                            .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
+# 
+# pre16 <-  pre16[,
+#                 .(stop_count = .N),
+#                 .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
+# 
+# ############################
+# 
+# 
+# s12_14 <- filter(hills_stops, offense_date > "2012-11-06",
+#                  offense_date <= "2014-11-04")[,
+#                               .(amount_paid = sum(amount_paid)),
+#                               .(first_name, last_name, date_of_birth, offense_date)]
+# s12_14 <- s12_14[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2014-11-04"))
+# 
+# s12_14 <- left_join(s12_14, rename(pre12, pre_stops = stop_count))
+# ##########################
+# 
+# s14_16 <- filter(hills_stops, offense_date > "2014-11-04",
+#                  offense_date <= "2016-11-08")[,
+#                                                .(amount_paid = sum(amount_paid)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s14_16 <- s14_16[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2016-11-08"))
+# 
+# 
+# s14_16 <- left_join(s14_16, rename(pre14, pre_stops = stop_count))
+# s14_16 <- left_join(s14_16, rename(pre12, pre_stops_c = stop_count))
+# ##########################
+# 
+# s16_18 <- filter(hills_stops, offense_date > "2016-11-08",
+#                  offense_date <= "2018-11-06")[,
+#                                                .(amount_paid = sum(amount_paid)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s16_18 <- s16_18[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2018-11-06"))
+# 
+# s16_18 <- left_join(s16_18, rename(pre16, pre_stops = stop_count))
+# s16_18 <- left_join(s16_18, rename(pre14, pre_stops_c = stop_count))
+# ##########################
+# 
+# s18_20 <- filter(hills_stops, offense_date > "2018-11-06",
+#                  offense_date <= "2020-11-03")[,
+#                                                .(amount_paid = sum(amount_paid)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s18_20 <- s18_20[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2020-11-03"))
+# 
+# s18_20 <- left_join(s18_20, rename(pre16, pre_stops_c = stop_count))
+# 
+# ###########################
+# hills_stops_ll <- bind_rows(
+#   s12_14,
+#   s14_16,
+#   s16_18,
+#   s18_20,
+# ) %>%
+#   mutate(pre_stops = ifelse(is.na(pre_stops), 0, pre_stops),
+#          pre_stops_c = ifelse(is.na(pre_stops_c), 0, pre_stops_c))
+# 
+# saveRDS(hills_stops_ll, "temp/hills_stops_ll_multi.rds")
 
 ########################
+hills_stops_ll <- readRDS("temp/hills_stops_ll_multi.rds")
 
-hills_voters <- readRDS("temp/full_raw_coded_hills_w_bgs.rds")
+hills_voters <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>% 
+  group_by(name_first, name_last, birth_date) %>% 
+  filter(row_number() == 1) %>% 
+  ungroup()
 
 joined <- left_join(hills_voters, hills_stops_ll,
                     by = c("name_first" = "first_name",
                            "name_last" = "last_name",
-                           "birth_date" = "date_of_birth",
-                           "count")) %>% 
-  mutate(age = 2020 - year(birth_date))
+                           "birth_date" = "date_of_birth")) %>% 
+  mutate(age = 2020 - year(birth_date)) %>% 
+  filter(!is.na(pre_stops))
 
 
 ######################## test permuting birth dates to check for false positives
-joined2 <- inner_join(hills_voters,
-                    select(hills_stops_ll, first_name,
-                           last_name, date_of_birth, count) %>%
-                      mutate(date_of_birth = date_of_birth + 35),
-                    by = c("name_first" = "first_name",
-                           "name_last" = "last_name",
-                           "birth_date" = "date_of_birth",
-                           "count"))
-
-joined3 <- inner_join(hills_voters,
-                    select(hills_stops_ll, first_name,
-                           last_name, date_of_birth, count) %>%
-                      mutate(date_of_birth = date_of_birth - 35),
-                    by = c("name_first" = "first_name",
-                           "name_last" = "last_name",
-                           "birth_date" = "date_of_birth",
-                           "count"))
-
-test <- data.table(dates = c("Good", "Plus", "Minus"),
-                   values = c(sum(!is.na(joined$fd)),
-                              nrow(joined2),
-                              nrow(joined3)))
-
-saveRDS(test, "temp/plus_minus_35.rds")
+# joined2 <- inner_join(hills_voters,
+#                     select(hills_stops_ll, first_name,
+#                            last_name, date_of_birth, count) %>%
+#                       mutate(date_of_birth = date_of_birth + 35),
+#                     by = c("name_first" = "first_name",
+#                            "name_last" = "last_name",
+#                            "birth_date" = "date_of_birth",
+#                            "count"))
+# 
+# joined3 <- inner_join(hills_voters,
+#                     select(hills_stops_ll, first_name,
+#                            last_name, date_of_birth, count) %>%
+#                       mutate(date_of_birth = date_of_birth - 35),
+#                     by = c("name_first" = "first_name",
+#                            "name_last" = "last_name",
+#                            "birth_date" = "date_of_birth",
+#                            "count"))
+# 
+# test <- data.table(dates = c("Good", "Plus", "Minus"),
+#                    values = c(sum(!is.na(joined$fd)),
+#                               nrow(joined2),
+#                               nrow(joined3)))
+# 
+# saveRDS(test, "temp/plus_minus_35.rds")
 ######################################
 
 joined <- joined %>% 
-  mutate(fd = if_else(is.na(fd), as.Date("2099-12-31"), fd),
-         stop_count = ifelse(is.na(stop_count), 0, stop_count),
-         pre_12 = ifelse(is.na(pre_12), 0, pre_12),
-         max_amount = ifelse(is.na(max_amount), 0, max_amount),
+  mutate(stop_count = ifelse(is.na(stop_count), 0, stop_count),
+         pre_stops = ifelse(is.na(pre_stops), 0, pre_stops),
+         amount_paid = ifelse(is.na(amount_paid), 0, amount_paid),
          white = race == 5,
          black = race == 3,
          latino = race == 4,
@@ -143,18 +224,19 @@ joined <- joined %>%
          dem = party_affiliation == "DEM",
          rep = party_affiliation == "REP",
          reg_date = as.Date(registration_date, "%m/%d/%Y")) %>% 
-  select(voter_id, GEOID, fd,
-         white, black, latino, asian, male, dem, rep, age,
-         reg_date, pre_12, max_amount, name_first, name_last, birth_date,
-         v10, v12, v14, v16, v18, pre)
+  select(voter_id, GEOID, last_date,
+         white, black, latino, asian, male, dem, rep, age, pre_stops_c,
+         reg_date, pre_stops, amount_paid, name_first, name_last, birth_date,
+         v08, v10, v12, v14, v16, v18, pre, latitude, longitude, first_tr_year) %>% 
+  filter()
 
 ### remove people who were stopped, not fined
-joined <- left_join(joined, readRDS("temp/stopped_no_fine.rds"),
-                    by = c("name_first" = "first_name",
-                           "name_last" = "last_name",
-                           "birth_date" = "date_of_birth")) %>% 
-  filter(is.na(exclude)) %>% 
-  select(-name_first, -name_last, -birth_date, -exclude)
+# joined <- left_join(joined, readRDS("temp/stopped_no_fine.rds"),
+#                     by = c("name_first" = "first_name",
+#                            "name_last" = "last_name",
+#                            "birth_date" = "date_of_birth")) %>% 
+#   filter(is.na(exclude)) %>% 
+#   select(-name_first, -name_last, -birth_date, -exclude)
 
 
 census <- readRDS("../regular_data/census_bgs_18.rds")
@@ -167,8 +249,5 @@ match_data <- joined %>%
 
 
 match_data <- match_data[complete.cases(match_data),]
-
-match_data$pre_12 <- ifelse(match_data$pre_12 > 10, 10,
-                            match_data$pre_12)
 
 saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")
