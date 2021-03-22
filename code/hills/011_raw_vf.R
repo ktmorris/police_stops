@@ -107,7 +107,7 @@ hists <- rbindlist(lapply(c("E:/rolls/florida/FL-2013-1/VoterHistory_20130203/HI
                           fread))
 
 
-
+roll$v08 <- roll$voter_id %in% filter(hists, V3 =="11/04/2008")$V2
 roll$v10 <- roll$voter_id %in% filter(hists, V3 =="11/02/2010")$V2
 roll$v12 <- roll$voter_id %in% filter(hists, V3 =="11/06/2012")$V2
 roll$v14 <- roll$voter_id %in% filter(hists, V3 =="11/04/2014")$V2
