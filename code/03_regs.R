@@ -4,17 +4,29 @@ cog <- readRDS("temp/cog_cities.rds") %>%
   mutate(state = as.factor(state),
          fines_rev = dper / total_revenue)
 
-to <- bind_rows(readRDS("temp/city_to.rds") %>% 
+place_to <- readRDS("temp/place_to.rds") %>% 
+  rename(plasub = place)
+
+county_s_to <- readRDS("temp/county_s_to.rds") %>% 
+  rename(plasub = county_s)
+
+county_s_to <- county_s_to[!(county_s_to$plasub %in% place_to$plasub),]
+
+city_to <- bind_rows(place_to, county_s_to)
+
+city_to <- city_to[city_to$plasub %in% cog$GEOID, ]
+
+to <- bind_rows(city_to %>% 
                   mutate(race = "overall"),
-                readRDS("temp/city_to.rds")%>%
+                city_to%>%
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Likely African-American",
                                        "black",
                                        "nonblack")),
-                readRDS("temp/city_to.rds")%>%
+                city_to%>%
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European",
                                        "white",
                                        "nonwhite")),
-                readRDS("temp/city_to.rds")%>%
+                city_to%>%
                   filter(!(EthnicGroups_EthnicGroup1Desc %in% c("European", "Likely African-American"))) %>% 
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Hispanic and Portuguese", "latino",
                                        ifelse(EthnicGroups_EthnicGroup1Desc == "East and South Asian", "asian", "other")))) %>% 
@@ -75,6 +87,7 @@ covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + 
 
 ms <- data.frame(m = c("vap_to_18_overall", "vap_to_18_black", "vap_to_18_nonblack"),
                  name = c("Overall Turnout", "Black Turnout", "Non-Black Turnout"))
+
 
 models <- lapply(ms$m, function(f){
   lm(as.formula(paste0(f, " ~ ", covars)),

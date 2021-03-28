@@ -21,17 +21,29 @@ census <- bind_rows(
 
 cities <- left_join(cities, census)
 
-to <- bind_rows(readRDS("temp/city_to.rds") %>% 
+place_to <- readRDS("temp/place_to.rds") %>% 
+  rename(plasub = place)
+
+county_s_to <- readRDS("temp/county_s_to.rds") %>% 
+  rename(plasub = county_s)
+
+county_s_to <- county_s_to[!(county_s_to$plasub %in% place_to$plasub),]
+
+city_to <- bind_rows(place_to, county_s_to)
+
+city_to <- city_to[city_to$plasub %in% cities$GEOID, ]
+
+to <- bind_rows(city_to %>% 
                   mutate(race = "overall"),
-                readRDS("temp/city_to.rds")%>%
+                city_to%>%
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Likely African-American",
                                        "black",
                                        "nonblack")),
-                readRDS("temp/city_to.rds")%>%
+                city_to%>%
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "European",
                                        "white",
                                        "nonwhite")),
-                readRDS("temp/city_to.rds")%>%
+                city_to%>%
                   filter(!(EthnicGroups_EthnicGroup1Desc %in% c("European", "Likely African-American"))) %>% 
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Hispanic and Portuguese", "latino",
                                        ifelse(EthnicGroups_EthnicGroup1Desc == "East and South Asian", "asian", "other")))) %>% 
@@ -63,23 +75,34 @@ cities1 <- inner_join(cities, to, by = c("GEOID" = "plasub", "year")) %>%
   mutate_at(vars(starts_with("vap_to")), ~ ifelse(is.finite(.) & . > 1, 1, .))
 
 #################################
+cv <- c("lndper", "nh_white", "nh_black", "latino", "asian", "pop_dens",
+          "median_income", "some_college", "median_age", "share_over_64",
+          "share_taxes", "share_state_fed", "year", "GEOID")
+
 
 covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + pop_dens +
             median_income + some_college + median_age + share_over_64 +
-            state + total_revenue + share_taxes + share_state_fed")
+            share_taxes + share_state_fed")
 
 ms <- data.frame(m = c("vap_to_overall", "vap_to_black", "vap_to_nonblack"),
                  name = c("Overall Turnout", "Black Turnout", "Non-Black Turnout"))
 
 models <- lapply(ms$m, function(f){
-  plm(as.formula(paste0(f, " ~ ", covars)),
-      data = cities1 %>% 
-        group_by(GEOID) %>% 
-        mutate(r = sum(is.finite(!!sym(f)) * !!sym(f) <= 1.05)) %>% 
-        filter(r == 2),
+  print(f)
+  
+  d <- cities1 %>% 
+    select(!!sym(f), cv)
+  
+  d <- d[complete.cases(d),]
+  d <- d[is.finite(rowSums(select(d, -GEOID))),] %>% 
+    group_by(GEOID) %>% 
+    filter(n() == 2)
+  
+  summary(plm(as.formula(paste0(f, " ~ ", covars)),
+      data = d,
       index = c("GEOID", "year"), 
       model = "within", 
-      effect = "twoways")
+      effect = "twoways"))
 })
 
 stargazer(models, type = "text",
@@ -93,7 +116,7 @@ stargazer(models, type = "text",
                                "Share with Some College",
                                "Median Age",
                                "Share over 64 Years Old",
-                               "Total Revenue",
+                               # "Total Revenue",
                                "Share of Revenue from Taxes",
                                "Share of Revenue from State / Federal Government"),
           column.labels = ms$name,
