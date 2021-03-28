@@ -5,7 +5,8 @@ d <- read_fwf("raw_data/2017_individual_unit_file/2017FinEstDAT_09102020modp_pu.
                                                        "amount",
                                                        "year",
                                                        "imputation")),
-              col_types = "ccccc")
+              col_types = "ccccc") %>% 
+  mutate(amount = as.numeric(amount) * 1000)
 
 
 police <- d %>% 
@@ -18,20 +19,9 @@ info <- read_fwf("raw_data/2017_individual_unit_file/Fin_GID_2017.txt",
                  col_positions = fwf_widths(c(14, 64, 35, 2, 3, 5, 9, 2, 7, 2, 2, 2, 4, 2)),
                  col_types = "cccccccccccccc")
 
-d <- left_join(d, select(info,
-                         X1,
-                         population = X7,
-                         fips = X6,
-                         state = X4,
-                         name = X2), by = c("place_id" = "X1")) %>% 
-  rename(pop_cog = population) %>% 
-  mutate(dper = as.numeric(amount)*1000 / as.numeric(pop_cog),
-         lndper = log(dper + 1))
-
 rev <- d %>% 
   filter(substring(item_code, 1, 1) %in% c("T", "B", "C", "D", "A", "U")) %>% 
-  mutate(amount = as.numeric(amount),
-         state_fed = amount * substring(item_code, 1, 1) %in% c("B", "C"),
+  mutate(state_fed = amount * substring(item_code, 1, 1) %in% c("B", "C"),
          taxes = amount * substring(item_code, 1, 1) %in% c("T")) %>% 
   group_by(place_id) %>% 
   summarize(total_revenue = sum(amount),
@@ -42,6 +32,34 @@ rev <- d %>%
   select(-rev_state_fed, -taxes) %>% 
   ungroup()
 
+fines_rev <- d %>% 
+  filter(item_code == "U30",
+         place_id %in% police$place_id) %>% 
+  select(-imputation, -item_code) %>% 
+  mutate(amount = as.numeric(amount)) %>% 
+  rename(fees_fines = amount)
+
+police_no_fines <- data.table(place_id = unique(d$place_id),
+                              fees_fines = rep(0, length(unique(d$place_id)))) %>% 
+  filter(place_id %in% police$place_id,
+         !(place_id %in% fines_rev$place_id)) %>% 
+  mutate(year = "2017")
+
+fines_rev <- bind_rows(fines_rev, police_no_fines)
+
+fines_rev <- left_join(fines_rev, rev)
+
+
+fines_rev <- left_join(fines_rev, select(info,
+                                         X1,
+                                         population = X7,
+                                         fips = X6,
+                                         state = X4,
+                                         name = X2), by = c("place_id" = "X1")) %>% 
+  rename(pop_cog = population) %>% 
+  mutate(pop_cog = as.numeric(pop_cog),
+         dper = fees_fines / pop_cog,
+         lndper = log(dper + 1))
 ############################# NOW DO 2012
 d12 <- read_fwf("raw_data/2012_individual_unit_file/2012FinEstDAT_10162019modp_pu.txt",
                 col_positions = fwf_widths(c(14, 3, 12, 4, 1),
@@ -50,28 +68,12 @@ d12 <- read_fwf("raw_data/2012_individual_unit_file/2012FinEstDAT_10162019modp_p
                                                          "amount",
                                                          "year",
                                                          "imputation")),
-                col_types = "ccccc")
-
-
-police12 <- d12 %>% 
-  filter(item_code %in% c("E62", "F62", "G62", "I62", "L62", "M62", "N62", "O62", "P62", "R62",
-                          "E25", "I25", "F25", "G25", "K25")) %>% 
-  filter(as.numeric(amount) > 0)
-
+                col_types = "ccccc") %>% 
+  mutate(amount = as.numeric(amount) * 1000)
 
 info12 <- read_fwf("raw_data/2012_individual_unit_file/Fin_GID_2012.txt",
                    col_positions = fwf_widths(c(14, 64, 35, 2, 3, 5, 9, 2, 7, 2, 2, 2, 4, 2)),
                    col_types = "cccccccccccccc")
-
-d12 <- left_join(d12, select(info12,
-                             X1,
-                             population = X7,
-                             fips = X6,
-                             state = X4,
-                             name = X2), by = c("place_id" = "X1")) %>% 
-  rename(pop_cog = population) %>% 
-  mutate(dper = as.numeric(amount)*1000 / as.numeric(pop_cog),
-         lndper = log(dper + 1))
 
 rev_12 <- d12 %>% 
   filter(substring(item_code, 1, 1) %in% c("T", "B", "C", "D", "A", "U")) %>% 
@@ -88,13 +90,33 @@ rev_12 <- d12 %>%
   ungroup()
 
 d12_good <- d12 %>% 
-  filter(item_code == "U30",
-         place_id %in% police12$place_id,
-         as.integer(pop_cog) >= 2500)
+  filter(item_code == "U30") %>% 
+  select(-imputation, -item_code) %>% 
+  mutate(amount = as.numeric(amount)) %>% 
+  rename(fees_fines = amount)
 
-cog_12 <- left_join(d12_good, rev_12)
+d12_no_fines <- data.table(place_id = unique(d12$place_id),
+                           fees_fines = rep(0, length(unique(d12$place_id)))) %>% 
+  filter(place_id %in% fines_rev$place_id,
+         !(place_id %in% d12_good$place_id)) %>% 
+  mutate(year = "2012")
+
+cog_12 <- full_join(bind_rows(d12_good, d12_no_fines), rev_12)
+
+cog_12 <- left_join(cog_12, select(info12,
+                                      X1,
+                                      population = X7,
+                                      fips = X6,
+                                      state = X4,
+                                      name = X2), by = c("place_id" = "X1")) %>% 
+  rename(pop_cog = population) %>% 
+  mutate(pop_cog = as.numeric(pop_cog),
+         dper = fees_fines / pop_cog,
+         lndper = log(dper + 1)) %>% 
+  filter(place_id %in% fines_rev$place_id)
 
 saveRDS(cog_12, "temp/cog_12.rds")
+cleanup(c("fines_rev", "cog_12"))
 ##################################
 # 
 # 
@@ -186,16 +208,11 @@ saveRDS(cog_12, "temp/cog_12.rds")
 
 c2 <- readRDS("temp/census_data.rds")
 
-cities <- inner_join(mutate(d, GEOID = paste0(state, fips)), c2, by = "GEOID") %>% 
-  filter(item_code == "U30",
-         place_id %in% police$place_id,
-         as.integer(pop_cog) >= 2500) %>% 
-  mutate(lnbl = log(nh_black + 1))
+cities <- inner_join(mutate(fines_rev, GEOID = paste0(state, fips)), c2, by = "GEOID") %>% 
+  filter(pop_cog >= 2500)
 
-cities <- left_join(cities, select(d12_good,
+cities <- left_join(cities, select(cog_12,
                                    place_id, lndper12 = lndper, dper_12 = dper))
-
-cities <- left_join(cities, rev)
 
 saveRDS(cities, "temp/cog_cities.rds")
 
