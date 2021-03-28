@@ -11,6 +11,7 @@
 #   colnames(ja) <- clean_names(ja)
 # 
 #   ja <- ja %>%
+#     filter(!grepl("cam", tolower(statute_description))) %>% 
 #     select(last_name, first_name, middle_name,
 #            date_of_birth,
 #            street = address_line_1,
@@ -19,7 +20,7 @@
 #            zip = zip_code,
 #            offense_date,
 #            amount_paid) %>%
-#     mutate(type = "civil")
+#     mutate(civil = 1)
 # 
 #   return(ja)
 #   }
@@ -41,7 +42,7 @@
 #       select(last_name, first_name, middle_name,
 #              date_of_birth,
 #              offense_date, amount_paid) %>%
-#       mutate(type = "crim")
+#       mutate(civil = 0)
 # 
 #     return(ja)
 #   }
@@ -50,7 +51,7 @@
 #   mutate(amount_paid = ifelse(is.na(amount_paid), 0, amount_paid))
 # 
 # saveRDS(hills_stops, "temp/hills_stops.rds")
-# 
+# # 
 # hills_stops <- readRDS("temp/hills_stops.rds") %>%
 #   mutate(offense_date = as.Date(offense_date, "%m/%d/%Y"),
 #          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y")) %>%
@@ -101,12 +102,14 @@
 # 
 # s12_14 <- filter(hills_stops, offense_date > "2012-11-06",
 #                  offense_date <= "2014-11-04")[,
-#                               .(amount_paid = sum(amount_paid)),
+#                               .(amount_paid = sum(amount_paid),
+#                                 civil = min(civil)),
 #                               .(first_name, last_name, date_of_birth, offense_date)]
 # s12_14 <- s12_14[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
-#                    amount_paid = sum(amount_paid)),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2014-11-04"))
 # 
@@ -115,12 +118,14 @@
 # 
 # s14_16 <- filter(hills_stops, offense_date > "2014-11-04",
 #                  offense_date <= "2016-11-08")[,
-#                                                .(amount_paid = sum(amount_paid)),
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil)),
 #                                                .(first_name, last_name, date_of_birth, offense_date)]
 # s14_16 <- s14_16[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
-#                    amount_paid = sum(amount_paid)),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2016-11-08"))
 # 
@@ -131,12 +136,14 @@
 # 
 # s16_18 <- filter(hills_stops, offense_date > "2016-11-08",
 #                  offense_date <= "2018-11-06")[,
-#                                                .(amount_paid = sum(amount_paid)),
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil)),
 #                                                .(first_name, last_name, date_of_birth, offense_date)]
 # s16_18 <- s16_18[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
-#                    amount_paid = sum(amount_paid)),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2018-11-06"))
 # 
@@ -146,12 +153,14 @@
 # 
 # s18_20 <- filter(hills_stops, offense_date > "2018-11-06",
 #                  offense_date <= "2020-11-03")[,
-#                                                .(amount_paid = sum(amount_paid)),
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil)),
 #                                                .(first_name, last_name, date_of_birth, offense_date)]
 # s18_20 <- s18_20[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
-#                    amount_paid = sum(amount_paid)),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2020-11-03"))
 # 
@@ -225,24 +234,25 @@ joined <- joined %>%
          rep = party_affiliation == "REP",
          reg_date = as.Date(registration_date, "%m/%d/%Y")) %>% 
   select(voter_id, GEOID, last_date,
-         white, black, latino, asian, male, dem, rep, age, pre_stops_c,
+         white, black, latino, asian, male, dem, rep, age, pre_stops_c, civil,
          reg_date, pre_stops, amount_paid, name_first, name_last, birth_date,
          v08, v10, v12, v14, v16, v18, pre, latitude, longitude, first_tr_year) %>% 
-  filter()
+  mutate(paid = amount_paid > 0)
 
 ### remove people who were stopped, not fined
 # joined <- left_join(joined, readRDS("temp/stopped_no_fine.rds"),
 #                     by = c("name_first" = "first_name",
 #                            "name_last" = "last_name",
 #                            "birth_date" = "date_of_birth")) %>% 
-#   filter(is.na(exclude)) %>% 
-#   select(-name_first, -name_last, -birth_date, -exclude)
+  # filter(is.na(exclude)) %>%
+  # select(-exclude)
 
 
 census <- readRDS("../regular_data/census_bgs_18.rds")
 
 joined <- left_join(joined, census %>% 
-                      select(median_income, some_college, unem, GEOID))
+                      select(median_income, some_college, unem, GEOID)) %>% 
+  select(-name_first, -name_last, -birth_date)
 
 match_data <- joined %>% 
   mutate(reg_date = reg_date - as.Date("2000-01-01"))
@@ -250,4 +260,4 @@ match_data <- joined %>%
 
 match_data <- match_data[complete.cases(match_data),]
 
-saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")
+#saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")
