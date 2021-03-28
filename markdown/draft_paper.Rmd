@@ -195,9 +195,9 @@ The use of administrative data marks an important step forward in our understand
 
 # Results {-}
 
-Before testing the causal effect of fees and fines collections, we begin with a cross-sectional analysis of the relationship between fees and fines and turnout. Here, we regress municipality-level turnout in 2018 against fees and fines collections as reported in the 2017 COG, as well as a number of other covariates. In Figure \ref{fig:mef-2018} we present the marginal effect of fees and fines on municipal-level turnout. The plot shows the results from two separate models: one in which the dependent variable is Black turnout (as a share of CVAP), and a second in which the dependent variable is non-Black turnout. The figure also marks the interdecile range. The full regression table can be found in Appendix XX.
+Before testing the causal effect of fees and fines collections, we begin with a cross-sectional analysis of the relationship between fees and fines and turnout using ordinary least squares. Here, we regress municipality-level turnout in 2018 against fees and fines collections as reported in the 2017 COG, as well as a number of other covariates. In Figure \ref{fig:mef-2018} we present the marginal effect of fees and fines on municipal-level turnout. The plot shows the results from two separate models: one in which the dependent variable is Black turnout (as a share of CVAP), and a second in which the dependent variable is non-Black turnout. The figure also marks the interdecile range. The full regression table can be found in Appendix XX.
 
-```{r cross-18, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:mef-2018}Marginal Effect of per-capita Fees and Fines on Turnout, 2018", fig.pos = "H", fig.align = "center"}
+```{r cross-18, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:mef-2018}Predicted Turnout, 2018", fig.pos = "H", fig.align = "center"}
 load("temp/mef_to.rdata")
 print(p2)
 ```
@@ -228,7 +228,7 @@ To directly observe the effect of being ticketed on voter participation, we now 
 
 \begin{singlespace}
 ```{r balance-tab-chunk, echo = F}
-t <- readRDS("./temp/balance_table_y.rds")
+t <- readRDS("temp/balance_table_y.rds")
 j <- knitr::kable(t, booktabs = T, caption = "(\\#tab:balance) Balance Table", linesep = "",
                   escape = F) %>%
   add_header_above(c(" " = 1, "Means: Unmatched Data" = 2, "Means: Matched Data" = 2, "Percent Improvement" = 4), align = "c") %>%

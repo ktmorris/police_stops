@@ -120,7 +120,7 @@
 \makeatother
 \subtitle{Fines, Fees, and Turnout}
 \author{Jonathan Ben-Menachem\footnote{PhD Student, Columbia University, Department of Sociology (\href{mailto:jb4487@columbia.edu}{\nolinkurl{jb4487@columbia.edu}})} \and Kevin Morris\footnote{PhD Student, CUNY Graduate Center, Department of Sociology (\href{mailto:kmorris@gradcenter.cuny.edu}{\nolinkurl{kmorris@gradcenter.cuny.edu}})}}
-\date{March 19, 2021}
+\date{March 25, 2021}
 
 \begin{document}
 \maketitle
@@ -296,7 +296,7 @@ The use of administrative data marks an important step forward in our understand
 \section*{Results}\label{results}}
 \addcontentsline{toc}{section}{Results}
 
-Before testing the causal effect of fees and fines collections, we begin with a cross-sectional analysis of the relationship between fees and fines and turnout. Here, we regress municipality-level turnout in 2018 against fees and fines collections as reported in the 2017 COG, as well as a number of other covariates. In Figure \ref{fig:mef-2018} we present the marginal effect of fees and fines on municipal-level turnout. The plot shows the results from two separate models: one in which the dependent variable is Black turnout (as a share of CVAP), and a second in which the dependent variable is non-Black turnout. The figure also marks the interdecile range. The full regression table can be found in Appendix XX.
+Before testing the causal effect of fees and fines collections, we begin with a cross-sectional analysis of the relationship between fees and fines and turnout using ordinary least squares. Here, we regress municipality-level turnout in 2018 against fees and fines collections as reported in the 2017 COG, as well as a number of other covariates. In Figure \ref{fig:mef-2018} we present the marginal effect of fees and fines on municipal-level turnout. The plot shows the results from two separate models: one in which the dependent variable is Black turnout (as a share of CVAP), and a second in which the dependent variable is non-Black turnout. The figure also marks the interdecile range. The full regression table can be found in Appendix XX.
 
 \begin{figure}[H]
 
@@ -304,7 +304,7 @@ Before testing the causal effect of fees and fines collections, we begin with a 
 
 }
 
-\caption{\label{fig:mef-2018}Marginal Effect of per-capita Fees and Fines on Turnout, 2018}\label{fig:cross-18}
+\caption{\label{fig:mef-2018}Predicted Turnout, 2018}\label{fig:cross-18}
 \end{figure}
 
 As Figure \ref{fig:mef-2018} makes clear, turnout was lower for non-Black voters in municipalities with higher fees and fines collections per resident: it dropped by roughly 1 percentage point over the interdecile range, after controlling for the other covariates. The opposite is true for Black voters: over the same range, Black turnout \emph{increases} by roughly 2.5 percentage points. Both of these relationships are statistically significant at the 95 confidence level. To be sure, this does not prove that higher fees and fines increase Black turnout; these cross-sectional regressions cannot establish causality. Nevertheless, Figure \ref{fig:mef-2018} is consistent with this story.
@@ -345,22 +345,22 @@ To directly observe the effect of being ticketed on voter participation, we now 
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-9}
  & Treated & Control & Treated & Control & Mean Diff & eQQ Med & eQQ Mean & eQQ Max\\
 \midrule
-\%White & 49.2\% & 49.5\% & 49.2\% & 49.2\% & 82.05 & 82.05 & 82.05 & 82.05\\
-\% Black & 23.1\% & 21.0\% & 23.1\% & 23.2\% & 92.48 & 92.48 & 92.48 & 92.48\\
-\% Latino & 18.8\% & 20.0\% & 18.8\% & 19.0\% & 79.27 & 79.27 & 79.27 & 79.27\\
-\% Asian & 2.2\% & 2.4\% & 2.2\% & 2.2\% & 98.45 & 98.45 & 98.45 & 98.45\\
-\% Male & 50.8\% & 49.8\% & 50.8\% & 50.8\% & 99.80 & 99.80 & 99.80 & 99.80\\
-\% Democrat & 42.0\% & 40.2\% & 42.0\% & 42.1\% & 92.87 & 92.87 & 92.87 & 92.87\\
-\% Republican & 24.6\% & 24.7\% & 24.6\% & 24.6\% & 100.00 & 100.00 & 100.00 & 100.00\\
-Age & 43.4 & 42.4 & 43.4 & 42.8 & 41.67 & -263.67 & 38.10 & 73.02\\
-Registration Date & 2006-06-27 & 2007-09-21 & 2006-06-27 & 2006-11-09 & 69.91 & 37.60 & 73.79 & 74.70\\
-Pre-2012 Tickets & 1.3 & 0.8 & 1.3 & 1.3 & 95.12 & 93.14 & 95.12 & 96.30\\
-Turnout\textsubscript{t=-3} & 33.2\% & 27.7\% & 33.2\% & 33.2\% & 99.99 & 99.99 & 99.99 & 99.99\\
-Turnout\textsubscript{t=-2} & 29.0\% & 25.9\% & 29.0\% & 29.0\% & 100.00 & 100.00 & 100.00 & 100.00\\
-Turnout\textsubscript{t=-1} & 47.1\% & 37.7\% & 47.1\% & 47.1\% & 99.89 & 99.89 & 99.89 & 99.89\\
-Median Income & \$63,885 & \$64,604 & \$63,885 & \$63,470 & 42.40 & 7.10 & -10.35 & -32.49\\
-\% with Some College & 74.6\% & 75.0\% & 74.6\% & 74.7\% & 67.33 & 27.90 & 29.43 & 15.52\\
-Unemployment Rate & 6.5\% & 6.3\% & 6.5\% & 6.3\% & -40.04 & -226.05 & -158.07 & -108.94\\
+\%White & 45.8\% & 47.4\% & 45.8\% & 45.8\% & 99.70 & 99.70 & 99.70 & 99.70\\
+\% Black & 26.1\% & 23.0\% & 26.1\% & 26.1\% & 99.85 & 99.85 & 99.85 & 99.85\\
+\% Latino & 19.1\% & 20.2\% & 19.1\% & 19.1\% & 99.97 & 99.97 & 99.97 & 99.97\\
+\% Asian & 2.0\% & 2.3\% & 2.0\% & 2.0\% & 100.00 & 100.00 & 100.00 & 100.00\\
+\% Male & 51.9\% & 50.8\% & 51.9\% & 51.2\% & 36.61 & 36.46 & 36.46 & 36.46\\
+\% Democrat & 43.6\% & 41.6\% & 43.6\% & 43.3\% & 86.44 & 86.44 & 86.44 & 86.44\\
+\% Republican & 22.9\% & 23.7\% & 22.9\% & 22.0\% & -5.57 & -5.57 & -5.57 & -5.57\\
+Age & 42.7 & 42.4 & 42.7 & 42.2 & -67.69 & 11.98 & 33.08 & 70.35\\
+Registration Date & 2006-09-25 & 2007-08-20 & 2006-09-25 & 2006-10-21 & 92.30 & 60.54 & 91.16 & 93.26\\
+Stops in pre-period & 2.248 & 1.437 & 2.248 & 2.206 & 94.79 & 69.37 & 94.81 & 95.91\\
+Turnout\textsubscript{t=-3} & 32.4\% & 28.4\% & 32.4\% & 32.5\% & 97.59 & 97.59 & 97.59 & 97.59\\
+Turnout\textsubscript{t=-2} & 30.2\% & 27.5\% & 30.2\% & 30.2\% & 99.94 & 99.94 & 99.94 & 99.94\\
+Turnout\textsubscript{t=-1} & 45.0\% & 38.2\% & 45.0\% & 45.0\% & 99.97 & 99.97 & 99.97 & 99.97\\
+Median Income & \$62,193 & \$63,412 & \$62,193 & \$62,111 & 93.27 & 82.89 & 79.16 & 68.07\\
+\% with Some College & 73.8\% & 74.4\% & 73.8\% & 73.9\% & 78.57 & 53.38 & 57.55 & 53.15\\
+Unemployment Rate & 6.7\% & 6.5\% & 6.7\% & 6.6\% & 49.02 & -19.29 & -20.95 & -17.34\\
 \bottomrule
 \end{tabular}}
 \end{table}
