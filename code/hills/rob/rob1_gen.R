@@ -95,13 +95,13 @@ samp <- pre %>%
 
 match_data <- samp %>% 
   select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
-         -name_first, -name_last, -birth_date, -v08, -v16, -pre, -v10) %>% 
-  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3), ~ ifelse(. == T, 1, 0)) %>% 
+         -v08, -v16, -pre, -v10) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date)) %>% 
-  select(first_tr_year, everything())
+  select(first_tr_year, paid, civil, everything())
 
 genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000,
-                   exact = c(T, rep(F, 18)))
+                   exact = c(rep(T, 3), rep(F, 18)))
 
 saveRDS(genout, "temp/genout_hills_y.rds")
 

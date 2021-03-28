@@ -68,17 +68,19 @@ hills18 <- bind_rows(hills18_t, hills18_c) %>%
          v3 = v16)
 
 ###########################################
-pre <- bind_rows(hills14, hills16, hills18)
+pre <- bind_rows(hills14, hills16, hills18) %>% 
+  select(-v08, -v16, -pre, -v10)
+
+saveRDS(pre, "temp/real_pre_match_hills.rds")
 ids <- pre %>%
   mutate(id = row_number()) %>%
-  select(id, voter_id)
+  select(id, voter_id, first_tr_year)
 
 X <- pre %>%
-  select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
-         -name_first, -name_last, -birth_date, -v08, -v16, -pre, -v10) %>% 
-  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3), ~ ifelse(. == T, 1, 0)) %>% 
+  select(-voter_id, -treated, -GEOID, -amount_paid, -last_date) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
   mutate(reg_date = as.integer(reg_date)) %>% 
-  select(first_tr_year, everything())
+  select(first_tr_year, paid, civil, everything())
 
 genout <- readRDS("temp/genout_hills_y.rds")
 
@@ -92,7 +94,7 @@ mout <- Matchby(Tr = pre$treated, X = X,
                        X$male,
                        X$dem,
                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 1, ties = T,
-                exact = c(T, rep(F, 18)))
+                exact = c(rep(T, 3), rep(F, 18)))
 
 
 save(mout, file = "./temp/mout_hills_y.RData")
@@ -109,7 +111,7 @@ matches <- data.table(voter = c(mout$index.control,
 
 
 matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
-  select(-voter) %>%
+  select(-voter, -first_tr_year) %>%
   rename(voter = voter_id)
 
 matches <- left_join(matches, ids, by = c("group" = "id")) %>%
@@ -124,91 +126,91 @@ balance <- MatchBalance(treated ~ white + black + latino + asian + male +
                         data = pre, match.out = mout)
 
 saveRDS(balance, "temp/balance_table.rds")
-# 
-# varnames <- c("white", "black", "latino", "asian", "male",
-#               "dem", "rep", "age", "reg_date", "pre_12", "v1", "v2", "v3",
-#               "median_income", "some_college", "unem")
-# 
-# balance <- readRDS("temp/balance_table.rds")
-# 
-# TrMean <- c()
-# PreMean <- c()
-# PreQQmed <- c()
-# PreQQmean <- c()
-# PreQQmax <- c()
-# PostMean <- c()
-# PostQQmed <- c()
-# PostQQmean <- c()
-# PostQQmax <- c()
-# 
-# for(i in c(1:length(balance$BeforeMatching))){
-#   TrMean <- unlist(c(TrMean, balance$BeforeMatching[[i]][3][1]))
-#   PreMean <- unlist(c(PreMean, balance$BeforeMatching[[i]][4][1]))
-#   PreQQmed <- unlist(c(PreQQmed, balance$BeforeMatching[[i]]$qqsummary[2]))
-#   PreQQmean <- unlist(c(PreQQmean, balance$BeforeMatching[[i]]$qqsummary[1]))
-#   PreQQmax <- unlist(c(PreQQmax, balance$BeforeMatching[[i]]$qqsummary[3]))
-#   
-#   PostMean <- unlist(c(PostMean, balance$AfterMatching[[i]][4][1]))
-#   PostQQmed <- unlist(c(PostQQmed, balance$AfterMatching[[i]]$qqsummary[2]))
-#   PostQQmean <- unlist(c(PostQQmean, balance$AfterMatching[[i]]$qqsummary[1]))
-#   PostQQmax <- unlist(c(PostQQmax, balance$AfterMatching[[i]]$qqsummary[3]))
-# }
-# 
-# 
-# 
-# df <- data.frame("TrMean" = TrMean,
-#                  "TrMean2" = TrMean,
-#                  "PreMean" = PreMean,
-#                  "PreQQmed" = PreQQmed,
-#                  "PreQQmean" = PreQQmean,
-#                  "PreQQmax" = PreQQmax,
-#                  "PostMean" = PostMean,
-#                  "PostQQmed" = PostQQmed,
-#                  "PostQQmean" = PostQQmean,
-#                  "PostQQmax" = PostQQmax,
-#                  "names" = varnames) %>%
-#   mutate(change_mean = 1 - (abs(TrMean - PostMean) / abs(TrMean - PreMean)),
-#          change_eqqmed = 1 - abs(PostQQmed / PreQQmed),
-#          change_eqqmean = 1 - abs(PostQQmean / PreQQmean),
-#          change_eqqmax = 1 - abs(PostQQmax / PreQQmax)) %>%
-#   mutate_at(vars(TrMean, PreMean, TrMean2, PostMean), ~ comma(round(., 3), accuracy = .001)) %>%
-#   mutate_at(vars(change_mean, change_eqqmed, change_eqqmean, change_eqqmax),
-#             ~ format(round(. * 100, 2), nsmall = 2)) %>%
-#   filter(names != "voted_primary")
-# 
-# 
-# ####
-# 
-# df <- full_join(df,
-#                 fread("./raw_data/var_orders.csv"),
-#                 by = c("names" = "variable")) %>%
-#   arrange(order) %>% 
-#   select(name, TrMean, PreMean, TrMean2, PostMean, change_mean, change_eqqmed, change_eqqmean, change_eqqmax) %>%
-#   filter(!is.na(TrMean))
-# 
-# 
-# df <- df %>% 
-#   mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-#             ~ ifelse(name == "Registration Date",
-#                      as.character(as.integer(gsub(",", "", .)) + as.Date("2000-01-01")),
-#                      .)) %>% 
-#   mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-#             ~ ifelse(name == "Age" | grepl("Pre", name),
-#                      round(as.numeric(.), 1),
-#                      .)) %>%
-#   mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-#             ~ ifelse(name == "Median Income",
-#                      dollar(as.numeric(gsub(",", "", .)), 1),
-#                      .)) %>%
-#   mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-#             ~ ifelse(name == "Income", dollar(round(as.numeric(gsub(",", "", .)))), .)) %>%
-#   mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
-#             ~ ifelse(substring(name, 1, 1) == "%"|grepl("Turnout|Unempl", name),
-#                      percent(as.numeric(.), accuracy = .1), .)) %>%
-#   filter(!is.na(name)) %>% 
-#   mutate_all(~ gsub("[%]", paste0("\\\\", "%"), .)) %>% 
-#   mutate_all(~ gsub("[$]", paste0("\\\\", "$"), .))
-# 
-# colnames(df) <- c("", "Treated", "Control", "Treated", "Control", "Mean Diff", "eQQ Med", "eQQ Mean", "eQQ Max")
-# 
-# saveRDS(df, "./temp/balance_table_y.rds")
+
+varnames <- c("white", "black", "latino", "asian", "male",
+              "dem", "rep", "age", "reg_date", "pre_stops", "v1", "v2", "v3",
+              "median_income", "some_college", "unem")
+
+balance <- readRDS("temp/balance_table.rds")
+
+TrMean <- c()
+PreMean <- c()
+PreQQmed <- c()
+PreQQmean <- c()
+PreQQmax <- c()
+PostMean <- c()
+PostQQmed <- c()
+PostQQmean <- c()
+PostQQmax <- c()
+
+for(i in c(1:length(balance$BeforeMatching))){
+  TrMean <- unlist(c(TrMean, balance$BeforeMatching[[i]][3][1]))
+  PreMean <- unlist(c(PreMean, balance$BeforeMatching[[i]][4][1]))
+  PreQQmed <- unlist(c(PreQQmed, balance$BeforeMatching[[i]]$qqsummary[2]))
+  PreQQmean <- unlist(c(PreQQmean, balance$BeforeMatching[[i]]$qqsummary[1]))
+  PreQQmax <- unlist(c(PreQQmax, balance$BeforeMatching[[i]]$qqsummary[3]))
+
+  PostMean <- unlist(c(PostMean, balance$AfterMatching[[i]][4][1]))
+  PostQQmed <- unlist(c(PostQQmed, balance$AfterMatching[[i]]$qqsummary[2]))
+  PostQQmean <- unlist(c(PostQQmean, balance$AfterMatching[[i]]$qqsummary[1]))
+  PostQQmax <- unlist(c(PostQQmax, balance$AfterMatching[[i]]$qqsummary[3]))
+}
+
+
+
+df <- data.frame("TrMean" = TrMean,
+                 "TrMean2" = TrMean,
+                 "PreMean" = PreMean,
+                 "PreQQmed" = PreQQmed,
+                 "PreQQmean" = PreQQmean,
+                 "PreQQmax" = PreQQmax,
+                 "PostMean" = PostMean,
+                 "PostQQmed" = PostQQmed,
+                 "PostQQmean" = PostQQmean,
+                 "PostQQmax" = PostQQmax,
+                 "names" = varnames) %>%
+  mutate(change_mean = 1 - (abs(TrMean - PostMean) / abs(TrMean - PreMean)),
+         change_eqqmed = 1 - abs(PostQQmed / PreQQmed),
+         change_eqqmean = 1 - abs(PostQQmean / PreQQmean),
+         change_eqqmax = 1 - abs(PostQQmax / PreQQmax)) %>%
+  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean), ~ comma(round(., 3), accuracy = .001)) %>%
+  mutate_at(vars(change_mean, change_eqqmed, change_eqqmean, change_eqqmax),
+            ~ format(round(. * 100, 2), nsmall = 2)) %>%
+  filter(names != "voted_primary")
+
+
+####
+
+df <- full_join(df,
+                fread("./raw_data/var_orders.csv"),
+                by = c("names" = "variable")) %>%
+  arrange(order) %>%
+  select(name, TrMean, PreMean, TrMean2, PostMean, change_mean, change_eqqmed, change_eqqmean, change_eqqmax) %>%
+  filter(!is.na(TrMean))
+
+
+df <- df %>%
+  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
+            ~ ifelse(name == "Registration Date",
+                     as.character(as.integer(gsub(",", "", .)) + as.Date("2000-01-01")),
+                     .)) %>%
+  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
+            ~ ifelse(name == "Age" | grepl("Pre", name),
+                     round(as.numeric(.), 1),
+                     .)) %>%
+  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
+            ~ ifelse(name == "Median Income",
+                     dollar(as.numeric(gsub(",", "", .)), 1),
+                     .)) %>%
+  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
+            ~ ifelse(name == "Income", dollar(round(as.numeric(gsub(",", "", .)))), .)) %>%
+  mutate_at(vars(TrMean, PreMean, TrMean2, PostMean),
+            ~ ifelse(substring(name, 1, 1) == "%"|grepl("Turnout|Unempl", name),
+                     percent(as.numeric(.), accuracy = .1), .)) %>%
+  filter(!is.na(name)) %>%
+  mutate_all(~ gsub("[%]", paste0("\\\\", "%"), .)) %>%
+  mutate_all(~ gsub("[$]", paste0("\\\\", "$"), .))
+
+colnames(df) <- c("", "Treated", "Control", "Treated", "Control", "Mean Diff", "eQQ Med", "eQQ Mean", "eQQ Max")
+
+saveRDS(df, "./temp/balance_table_y.rds")

@@ -1,17 +1,19 @@
 
 #####
-hills_pre_match <- readRDS("temp/hills_pre_match.rds") %>% 
+hills_pre_match <- readRDS("temp/real_pre_match_hills.rds") %>% 
   ungroup()
 
-matches <- readRDS("temp/matches_hills_y.rds")
+matches <- readRDS("temp/matches_hills_y.rds") %>% 
+  select(-first_tr_year.y) %>% 
+  rename(first_tr_year = first_tr_year.x)
 
-matches <- left_join(matches, select(hills_pre_match, voter_id, fd),
-                     by = c("group" = "voter_id")) %>% 
-  mutate(first_tr_year = ifelse(fd <= "2014-11-04", "2014-11-04",
-                                ifelse(fd <= "2016-11-08", "2016-11-08",
-                                       ifelse(fd <= "2018-11-06", "2018-11-06", "XX"))),
-         first_tr_year = as.Date(first_tr_year)) %>% 
-  select(-fd)
+matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
+                     by = c("group" = "voter_id", "first_tr_year")) %>% 
+  mutate(fd = first_tr_year,
+         first_tr_year = ifelse(first_tr_year == 1, "2014-11-04",
+                                ifelse(first_tr_year == 2, "2016-11-08",
+                                       ifelse(first_tr_year == 3, "2018-11-06", "XX"))),
+         first_tr_year = as.Date(first_tr_year))
 
 hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
   select(voter_id, starts_with("v1"), v08) %>%
@@ -32,35 +34,36 @@ periods <- fread("raw_data/period_lu.csv") %>%
   mutate_at(vars(first_tr_year, year), as.Date, "%m/%d/%Y")
 
 matches <- left_join(matches, periods) %>% 
-  filter(period %in% c(-2.5, -1.5, -.5, .5))
+  filter(period %in% c(-2.5, -1.5, -.5, .5, 1.5))
 
 matches <- left_join(matches,
                      hills_pre_match %>%
-                       select(-GEOID, -fd, -max_amount),
-                     by = c("voter" = "voter_id"))
+                       select(-GEOID, -amount_paid, -last_date),
+                     by = c("voter" = "voter_id", "fd" = "first_tr_year"))
 
 matches <- left_join(matches,
                      hills_pre_match %>%
-                       select(voter_id, max_amount, fd, black_t = black),
-                     by = c("group" = "voter_id")) %>% 
+                       select(voter_id, amount_paid, last_date, first_tr_year, black_t = black,
+                              dem_t = dem),
+                     by = c("group" = "voter_id", "fd" = "first_tr_year")) %>% 
   mutate(post = period >= 0.5,
          treated = voter == group)
 
 cleanup("matches")
 gc()
 ll <- matches %>%
-  filter(first_tr_year - fd <= 90,
-         year(first_tr_year) == 2018) %>%
-  group_by(treated, period, black_t) %>%
+  filter(first_tr_year - last_date <= 90, period <= 0.5) %>%
+  group_by(treated, period, black_t, paid) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black_t, "Black Voters", "Non-Black Voters"))
+         black = ifelse(black_t, "Black Voters", "Non-Black Voters"),
+         paid = ifelse(paid, "Paid Fine", "Did Not Pay Fine"))
 
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
 p1 <- ggplot(data = ll) + 
-  facet_grid(~ black) +
+  facet_grid(paid ~ black) +
   geom_rect(aes(xmin = 0.5-.125, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
@@ -86,15 +89,17 @@ p1
 saveRDS(p1, "temp/within90days_y.rds")
 ##########################
 ll <- matches %>%
-  group_by(treated, period, black_t) %>%
+  filter(period <= 1.5) %>% 
+  group_by(treated, period, black_t, paid = civil) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black_t, "Black Voters", "Non-Black Voters"))
+         black = ifelse(black_t, "Black Voters", "Non-Black Voters"),
+         paid = ifelse(paid, "Paid Fine", "Did Not Pay Fine"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
 p2 <- ggplot(data = ll) + 
-  facet_grid(~ black) +
+  facet_grid(paid ~ black) +
   geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
@@ -119,56 +124,55 @@ p2 <- ggplot(data = ll) +
 p2
 saveRDS(p2, "temp/stopped_any_time_y.rds")
 #####################
-matches$days_before = as.numeric(matches$first_tr_year - matches$fd)
+matches
+matches$days_before = as.numeric(matches$first_tr_year - matches$last_date)
 
 dat1 <- filter(matches, period <= 0.5)
-dat2 <- filter(matches, first_tr_year - fd <= 90, period <= 0.5)
-
 
 m1 <- to ~ treated * post + as.factor(year)
 m2 <- to ~ treated * post * days_before + as.factor(year)
+m3 <- to ~ treated * post * black_t + as.factor(year)
+m4 <- to ~ treated * post * civil + as.factor(year)
+m5 <- to ~ treated * post * paid + as.factor(year)
 
-models1 <- lapply(c(m1, m2), function(f){
+models1 <- lapply(c(m1, m2, m3, m4, m5), function(f){
   m <- lm(f, data = dat1,
           weight = dat1$weight)
-})
-
-models2 <- lapply(c(m1, m2), function(f){
-  m <- lm(f, data = dat2,
-          weight = dat2$weight)
 })
 
 
 ses_cl <- list(
   summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
   summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-  summary(lm.cluster(formula = m1, data = dat2, weights = dat2$weight, cluster = dat2$group))[ , 2],
-  summary(lm.cluster(formula = m2, data = dat2, weights = dat2$weight, cluster = dat2$group))[ , 2]
+  summary(lm.cluster(formula = m3, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+  summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+  summary(lm.cluster(formula = m5, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
 )
 
 
-stargazer(models1, models2,
+stargazer(models1,
           type = "text",
-          column.labels = c("Stopped Any Time", "Stopped within 90 Days of Election"),
-          column.separate = c(2, 2),
+          # column.labels = c("Stopped Any Time", "Stopped within 90 Days of Election"),
+          # column.separate = c(2, 2),
           omit.stat = c("f", "ser"),
           se = ses_cl,
           omit = c("as.fac"),
-          covariate.labels = c("Treated",
-                               "Post Treatment",
-                               "Black",
-                               "Treated $\\times$ Post Treatment",
-                               "Treated $\\times$ Black",
-                               "Post Treatment $\\times$ Black",
-                               "Treated $\\times$ Post Treatment $\\times$ Black"),
+          covariate.labels = c("Treated $\\times$ Post Treatment",
+                               "Treated $\\times$ Post Treatment $\\times$ Days before Election",
+                               "Treated $\\times$ Post Treatment $\\times$ Black",
+                               "Treated $\\times$ Post Treatment $\\times$ Civil Infraction",
+                               "Treated $\\times$ Post Treatment $\\times$ Paid Fine"),
+            
           table.layout = "-cm#-t-a-s-n",
+          keep = c("treatedTRUE:post"),
           notes = "TO REPLACE",
           title = "\\label{tab:dind-table} Turnout Effects of Tickets",
-          out = "temp/two_matches_reg_y.tex")
+          out = "temp/two_matches_reg_y.tex",
+          add.lines = list(c("Includes All Interactions", "X", "X", "X", "X", "X")))
 
 j <- fread("./temp/two_matches_reg_y.tex", header = F, sep = "+")
 
-note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
+note.latex <- "\\multicolumn{6}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
 
 j <- j %>% 
   mutate(n = row_number(),
@@ -183,17 +187,6 @@ j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 
   arrange(n) %>%
   select(-n)
 
-j <- mutate(j, n = row_number())
-
-j$V1 <- gsub("Stopped within 90 Days of Election", "Stopped within 90", j$V1)
-
-ins <- "&&&\\multicolumn{2}{c}{Days of Election} \\\\"
-
-j <- bind_rows(j,
-               data.table(V1 = ins,
-                          n = 9.1)) %>% 
-  arrange(n) %>% 
-  select(-n)
 
 write.table(j, "./temp/dind_reg_y.tex", quote = F, col.names = F,
             row.names = F)
@@ -203,7 +196,7 @@ write.table(j, "./temp/dind_reg_y.tex", quote = F, col.names = F,
 dat1$year <- as.factor(dat1$year)
 dat1$lnfee <- log(dat1$max_amount)
 
-tt <- lm(to ~ treated * post * days_before + year, dat1, weights = weight)
+tt <- lm(to ~ treated * post * amount_paid + year, dat1, weights = weight)
 
 h <- ggeffect(tt, terms = c("days_before[all]", "treated", "post"))
 
