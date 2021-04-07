@@ -98,11 +98,11 @@ models <- lapply(ms$m, function(f){
     group_by(GEOID) %>% 
     filter(n() == 2)
   
-  summary(plm(as.formula(paste0(f, " ~ ", covars)),
+  plm(as.formula(paste0(f, " ~ ", covars)),
       data = d,
       index = c("GEOID", "year"), 
       model = "within", 
-      effect = "twoways"))
+      effect = "twoways")
 })
 
 stargazer(models, type = "text",
@@ -202,19 +202,24 @@ cat <- full_join(cities1 %>%
 cities1 <- left_join(cities1,
                      cat)
 
-cities1 <- rename(cities1, share_s_fed = share_state_fed)
-
 covars <- gsub("\\n|            ", "", "treated * I(as.factor(year)) + nh_white + nh_black +
             latino + asian + pop_dens +
             median_income + some_college + median_age + share_over_64 +
-            state + total_revenue + share_taxes + share_s_fed")
+            share_taxes + share_state_fed")
 
 models <- lapply(ms$m, function(f){
+  print(f)
+  
+  d <- cities1 %>% 
+    select(!!sym(f), cv, treated)
+  
+  d <- d[complete.cases(d),]
+  d <- d[is.finite(rowSums(select(d, -GEOID))),] %>% 
+    group_by(GEOID) %>% 
+    filter(n() == 2)
+  
   plm(as.formula(paste0(f, " ~ ", covars)),
-      data = cities1 %>% 
-        group_by(GEOID) %>% 
-        mutate(r = sum(is.finite(!!sym(f)))) %>% 
-        filter(r == 2),
+      data = d,
       index = c("GEOID", "year"), 
       model = "within", 
       effect = "twoways")
@@ -232,7 +237,7 @@ stargazer(models, type = "text",
                                "Share with Some College",
                                "Median Age",
                                "Share over 64 Years Old",
-                               "Total Revenue",
+                               # "Total Revenue",
                                "Share of Revenue from Taxes",
                                "Share of Revenue from State / Federal Government"),
           column.labels = ms$name,
@@ -240,7 +245,7 @@ stargazer(models, type = "text",
           notes = "TO REPLACE",
           title = "\\label{tab:coarser} Two-Way Fixed Effects Models, Binary Treatment",
           out = "temp/coarser_reg.tex",
-          order = 13)
+          order = 12)
 
 j <- fread("./temp/coarser_reg.tex", header = F, sep = "+")
 
