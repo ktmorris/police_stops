@@ -224,6 +224,7 @@ joined <- left_join(hills_voters, hills_stops_ll,
 joined <- joined %>% 
   mutate(stop_count = ifelse(is.na(stop_count), 0, stop_count),
          pre_stops = ifelse(is.na(pre_stops), 0, pre_stops),
+         pre_stops_c = ifelse(is.na(pre_stops_c), 0, pre_stops_c),
          amount_paid = ifelse(is.na(amount_paid), 0, amount_paid),
          white = race == 5,
          black = race == 3,
@@ -260,4 +261,4 @@ match_data <- joined %>%
 
 match_data <- match_data[complete.cases(match_data),]
 
-#saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")
+saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")
