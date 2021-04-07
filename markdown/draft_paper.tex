@@ -120,7 +120,7 @@
 \makeatother
 \subtitle{Fines, Fees, and Turnout}
 \author{Jonathan Ben-Menachem\footnote{PhD Student, Columbia University, Department of Sociology (\href{mailto:jb4487@columbia.edu}{\nolinkurl{jb4487@columbia.edu}})} \and Kevin Morris\footnote{PhD Student, CUNY Graduate Center, Department of Sociology (\href{mailto:kmorris@gradcenter.cuny.edu}{\nolinkurl{kmorris@gradcenter.cuny.edu}})}}
-\date{March 25, 2021}
+\date{April 07, 2021}
 
 \begin{document}
 \maketitle
@@ -288,6 +288,13 @@ We also match treated and control voters on their 2010 and 2012 general election
 
 We then run ordinary least squares difference-in-difference regressions to test the following hypotheses.
 
+\begin{gather}
+\label{eq:1}
+v_{it}=\beta_0+\beta_1Treated_{i}+\beta_2Election Following Stop_{t} + \nonumber \\
+\beta_3Treated_{i}\times Election Following Stop_{t} + \\
+\delta{Z}_{i} + \mathcal{E}_{it}. \nonumber
+\end{gather}
+
 \emph{Hypothesis 3: Among individuals who were ticketed (``treated'') in Tampa, their likelihood of turning out in a subsequent election roughly matches the racioethnic distribution apparent in the national city-level data. If fines uniquely mobilize Black voters nationally, they should also uniquely mobilize Black voters in Tampa.}
 
 The use of administrative data marks an important step forward in our understanding of how low-level contact with the criminal legal system structures participation. Past work looking at the individual-level effects of low-level contact has relied entirely on survey or qualitative data (e.g. \protect\hyperlink{ref-Walker2014}{Walker 2014}; \protect\hyperlink{ref-Weaver2010}{Weaver and Lerman 2010}). Their in-depth research allows for the testing of specific psychological mechanisms and personal interpretations of criminal legal contact, but does not allow us to generalize more broadly. As Weaver and Lerman (\protect\hyperlink{ref-Weaver2010}{2010, 821}) note, it may also introduce measurement bias. Our analysis investigates actual voting behavior following actual ticketing events, not reported voting behavior or reported exposure to police ticketing. The administrative data therefore allow us both to sidestep reporting error and to observe the behavior of the 232,568 individuals ticketed over the 6 year period---a far larger pool than even the most robust surveys.
@@ -345,22 +352,22 @@ To directly observe the effect of being ticketed on voter participation, we now 
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-9}
  & Treated & Control & Treated & Control & Mean Diff & eQQ Med & eQQ Mean & eQQ Max\\
 \midrule
-\%White & 45.8\% & 47.4\% & 45.8\% & 45.8\% & 99.70 & 99.70 & 99.70 & 99.70\\
-\% Black & 26.1\% & 23.0\% & 26.1\% & 26.1\% & 99.85 & 99.85 & 99.85 & 99.85\\
-\% Latino & 19.1\% & 20.2\% & 19.1\% & 19.1\% & 99.97 & 99.97 & 99.97 & 99.97\\
-\% Asian & 2.0\% & 2.3\% & 2.0\% & 2.0\% & 100.00 & 100.00 & 100.00 & 100.00\\
-\% Male & 51.9\% & 50.8\% & 51.9\% & 51.2\% & 36.61 & 36.46 & 36.46 & 36.46\\
-\% Democrat & 43.6\% & 41.6\% & 43.6\% & 43.3\% & 86.44 & 86.44 & 86.44 & 86.44\\
-\% Republican & 22.9\% & 23.7\% & 22.9\% & 22.0\% & -5.57 & -5.57 & -5.57 & -5.57\\
-Age & 42.7 & 42.4 & 42.7 & 42.2 & -67.69 & 11.98 & 33.08 & 70.35\\
-Registration Date & 2006-09-25 & 2007-08-20 & 2006-09-25 & 2006-10-21 & 92.30 & 60.54 & 91.16 & 93.26\\
-Stops in pre-period & 2.248 & 1.437 & 2.248 & 2.206 & 94.79 & 69.37 & 94.81 & 95.91\\
-Turnout\textsubscript{t=-3} & 32.4\% & 28.4\% & 32.4\% & 32.5\% & 97.59 & 97.59 & 97.59 & 97.59\\
-Turnout\textsubscript{t=-2} & 30.2\% & 27.5\% & 30.2\% & 30.2\% & 99.94 & 99.94 & 99.94 & 99.94\\
-Turnout\textsubscript{t=-1} & 45.0\% & 38.2\% & 45.0\% & 45.0\% & 99.97 & 99.97 & 99.97 & 99.97\\
-Median Income & \$62,193 & \$63,412 & \$62,193 & \$62,111 & 93.27 & 82.89 & 79.16 & 68.07\\
-\% with Some College & 73.8\% & 74.4\% & 73.8\% & 73.9\% & 78.57 & 53.38 & 57.55 & 53.15\\
-Unemployment Rate & 6.7\% & 6.5\% & 6.7\% & 6.6\% & 49.02 & -19.29 & -20.95 & -17.34\\
+\%White & 47.3\% & 49.1\% & 47.3\% & 47.4\% & 97.14 & 97.14 & 97.14 & 97.14\\
+\% Black & 24.4\% & 21.0\% & 24.4\% & 24.4\% & 99.93 & 99.93 & 99.93 & 99.93\\
+\% Latino & 19.1\% & 20.2\% & 19.1\% & 19.5\% & 61.05 & 61.06 & 61.06 & 61.06\\
+\% Asian & 2.1\% & 2.4\% & 2.1\% & 2.1\% & 99.55 & 99.55 & 99.55 & 99.55\\
+\% Male & 53.2\% & 52.4\% & 53.2\% & 53.8\% & 19.36 & 19.66 & 19.66 & 19.66\\
+\% Democrat & 42.5\% & 40.0\% & 42.5\% & 42.4\% & 97.61 & 97.61 & 97.61 & 97.61\\
+\% Republican & 23.6\% & 24.5\% & 23.6\% & 23.2\% & 54.62 & 54.62 & 54.62 & 54.62\\
+Age & 42.3 & 41.5 & 42.3 & 41.8 & 36.76 & -135.34 & 29.65 & 71.41\\
+Registration Date & 2006-11-05 & 2007-12-11 & 2006-11-05 & 2007-01-04 & 84.91 & 78.16 & 79.83 & 72.00\\
+Stops in pre-period & 2.163 & 1.433 & 2.163 & 2.125 & 94.77 & 53.17 & 94.78 & 97.18\\
+Turnout\textsubscript{t=-3} & 31.9\% & 27.4\% & 31.9\% & 31.9\% & 99.89 & 99.89 & 99.89 & 99.89\\
+Turnout\textsubscript{t=-2} & 29.3\% & 26.7\% & 29.3\% & 29.3\% & 99.87 & 99.87 & 99.87 & 99.87\\
+Turnout\textsubscript{t=-1} & 44.9\% & 37.5\% & 44.9\% & 44.9\% & 99.85 & 99.85 & 99.85 & 99.85\\
+Median Income & \$62,832 & \$64,169 & \$62,832 & \$62,642 & 85.81 & 71.32 & 67.46 & 55.93\\
+\% with Some College & 73.9\% & 74.5\% & 73.9\% & 74.0\% & 88.43 & 46.05 & 53.04 & 45.74\\
+Unemployment Rate & 6.6\% & 6.4\% & 6.6\% & 6.5\% & 29.50 & -25.47 & -14.60 & -3.97\\
 \bottomrule
 \end{tabular}}
 \end{table}

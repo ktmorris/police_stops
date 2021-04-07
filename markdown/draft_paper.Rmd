@@ -183,6 +183,13 @@ We also match treated and control voters on their 2010 and 2012 general election
 
 We then run ordinary least squares difference-in-difference regressions to test the following hypotheses.
 
+\begin{gather}
+\label{eq:1}
+v_{it}=\beta_0+\beta_1Treated_{i}+\beta_2Election Following Stop_{t} + \nonumber \\
+\beta_3Treated_{i}\times Election Following Stop_{t} + \\
+\delta{Z}_{i} + \mathcal{E}_{it}. \nonumber
+\end{gather}
+
 *Hypothesis 3: Among individuals who were ticketed (“treated”) in Tampa, their likelihood of turning out in a subsequent election roughly matches the racioethnic distribution apparent in the national city-level data. If fines uniquely mobilize Black voters nationally, they should also uniquely mobilize Black voters in Tampa.* 
 
 <!-- Because Tampa holds off-year local elections, we are able to test whether mobilized voters target officials who are able to change local police practices. @Laniyonu2019 gives us reason to believe that the effect should be stronger for local elections.  -->
