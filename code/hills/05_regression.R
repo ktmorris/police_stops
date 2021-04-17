@@ -89,17 +89,16 @@ p1
 saveRDS(p1, "temp/within90days_y.rds")
 ##########################
 ll <- matches %>%
-  filter(period <= 1.5) %>% 
-  group_by(treated, period, black_t, paid = civil) %>%
+  filter(period <= 0.5) %>% 
+  group_by(treated, period, black = black_t) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black_t, "Black Voters", "Non-Black Voters"),
-         paid = ifelse(paid, "Paid Fine", "Did Not Pay Fine"))
+         black = ifelse(black, "Black Voters", "Non-Black Voters"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
 p2 <- ggplot(data = ll) + 
-  facet_grid(paid ~ black) +
+  facet_grid( ~ black) +
   geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +

@@ -11,7 +11,7 @@
 #   colnames(ja) <- clean_names(ja)
 # 
 #   ja <- ja %>%
-#     filter(!grepl("cam", tolower(statute_description))) %>% 
+#     filter(!grepl("cam", tolower(statute_description))) %>%
 #     select(last_name, first_name, middle_name,
 #            date_of_birth,
 #            street = address_line_1,
@@ -19,8 +19,12 @@
 #            state,
 #            zip = zip_code,
 #            offense_date,
-#            amount_paid) %>%
-#     mutate(civil = 1)
+#            amount_paid,
+#            law_enf_agency_name) %>%
+#     mutate(civil = 1,
+#            tampa_pd = grepl("tampa police", tolower(law_enf_agency_name)),
+#            tampa_pd = ifelse(tampa_pd, T, law_enf_agency_name == "TPD")) %>% 
+#     select(-law_enf_agency_name)
 # 
 #   return(ja)
 #   }
@@ -41,22 +45,26 @@
 #     ja <- ja %>%
 #       select(last_name, first_name, middle_name,
 #              date_of_birth,
-#              offense_date, amount_paid) %>%
-#       mutate(civil = 0)
+#              offense_date, amount_paid,
+#              law_enf_agency_name) %>%
+#       mutate(civil = 0,
+#              tampa_pd = grepl("tampa police", tolower(law_enf_agency_name)),
+#              tampa_pd = ifelse(tampa_pd, T, law_enf_agency_name == "TPD")) %>% 
+#       select(-law_enf_agency_name)
 # 
 #     return(ja)
 #   }
 # }))
 # hills_stops <- bind_rows(hills_stops, hills_stops_cr) %>%
-#   mutate(amount_paid = ifelse(is.na(amount_paid), 0, amount_paid))
-# 
-# saveRDS(hills_stops, "temp/hills_stops.rds")
-# # 
-# hills_stops <- readRDS("temp/hills_stops.rds") %>%
+#   mutate(amount_paid = ifelse(is.na(amount_paid), 0, amount_paid)) %>%
 #   mutate(offense_date = as.Date(offense_date, "%m/%d/%Y"),
 #          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y")) %>%
 #   mutate_at(vars(first_name,
 #                  last_name), ~ gsub("[[:punct:]]| ", "", ifelse(. == "", NA, toupper(.))))
+# 
+# saveRDS(hills_stops, "temp/hills_stops.rds")
+#
+# hills_stops <- readRDS("temp/hills_stops.rds")
 # 
 # zeros_only <- hills_stops %>%
 #   filter(offense_date > "2012-11-06",
@@ -70,8 +78,8 @@
 #   mutate(exclude = 1)
 # 
 # saveRDS(zeros_only, "temp/stopped_no_fine.rds")
-# 
-# ##########
+
+##########
 # 
 # pre12 <- filter(hills_stops, offense_date <= "2012-11-06")[,
 #                                                            .(stop_count = .N),
@@ -103,13 +111,15 @@
 # s12_14 <- filter(hills_stops, offense_date > "2012-11-06",
 #                  offense_date <= "2014-11-04")[,
 #                               .(amount_paid = sum(amount_paid),
-#                                 civil = min(civil)),
+#                                 civil = min(civil),
+#                                 tampa_pd = max(tampa_pd)),
 #                               .(first_name, last_name, date_of_birth, offense_date)]
 # s12_14 <- s12_14[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
 #                    amount_paid = sum(amount_paid),
-#                    civil = min(civil)),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2014-11-04"))
 # 
@@ -119,13 +129,15 @@
 # s14_16 <- filter(hills_stops, offense_date > "2014-11-04",
 #                  offense_date <= "2016-11-08")[,
 #                                                .(amount_paid = sum(amount_paid),
-#                                                  civil = min(civil)),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
 #                                                .(first_name, last_name, date_of_birth, offense_date)]
 # s14_16 <- s14_16[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
 #                    amount_paid = sum(amount_paid),
-#                    civil = min(civil)),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2016-11-08"))
 # 
@@ -137,13 +149,15 @@
 # s16_18 <- filter(hills_stops, offense_date > "2016-11-08",
 #                  offense_date <= "2018-11-06")[,
 #                                                .(amount_paid = sum(amount_paid),
-#                                                  civil = min(civil)),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
 #                                                .(first_name, last_name, date_of_birth, offense_date)]
 # s16_18 <- s16_18[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
 #                    amount_paid = sum(amount_paid),
-#                    civil = min(civil)),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2018-11-06"))
 # 
@@ -154,13 +168,15 @@
 # s18_20 <- filter(hills_stops, offense_date > "2018-11-06",
 #                  offense_date <= "2020-11-03")[,
 #                                                .(amount_paid = sum(amount_paid),
-#                                                  civil = min(civil)),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
 #                                                .(first_name, last_name, date_of_birth, offense_date)]
 # s18_20 <- s18_20[,
 #                  .(stop_count = .N,
 #                    last_date = max(offense_date),
 #                    amount_paid = sum(amount_paid),
-#                    civil = min(civil)),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
 #                  .(first_name, last_name, date_of_birth)] %>%
 #   mutate(first_tr_year = as.Date("2020-11-03"))
 # 
@@ -175,7 +191,7 @@
 # ) %>%
 #   mutate(pre_stops = ifelse(is.na(pre_stops), 0, pre_stops),
 #          pre_stops_c = ifelse(is.na(pre_stops_c), 0, pre_stops_c))
-# 
+
 # saveRDS(hills_stops_ll, "temp/hills_stops_ll_multi.rds")
 
 ########################
@@ -236,7 +252,7 @@ joined <- joined %>%
          reg_date = as.Date(registration_date, "%m/%d/%Y")) %>% 
   select(voter_id, GEOID, last_date,
          white, black, latino, asian, male, dem, rep, age, pre_stops_c, civil,
-         reg_date, pre_stops, amount_paid, name_first, name_last, birth_date,
+         reg_date, pre_stops, amount_paid, name_first, name_last, birth_date, tampa_pd,
          v08, v10, v12, v14, v16, v18, pre, latitude, longitude, first_tr_year) %>% 
   mutate(paid = amount_paid > 0)
 
@@ -261,4 +277,4 @@ match_data <- joined %>%
 
 match_data <- match_data[complete.cases(match_data),]
 
-saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")
+# saveRDS(select(match_data, -v18) %>% ungroup(), "temp/hills_pre_match.rds")

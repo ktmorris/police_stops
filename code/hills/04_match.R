@@ -77,10 +77,9 @@ ids <- pre %>%
   select(id, voter_id, first_tr_year)
 
 X <- pre %>%
-  select(-voter_id, -treated, -GEOID, -amount_paid, -last_date) %>% 
+  select(-voter_id, -treated, -GEOID, -amount_paid, -last_date, -reg_date) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
-  mutate(reg_date = as.integer(reg_date)) %>% 
-  select(first_tr_year, paid, civil, everything())
+  select(first_tr_year, paid, civil, tampa_pd, everything())
 
 genout <- readRDS("temp/genout_hills_y.rds")
 
@@ -94,7 +93,8 @@ mout <- Matchby(Tr = pre$treated, X = X,
                        X$male,
                        X$dem,
                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 1, ties = T,
-                exact = c(rep(T, 3), rep(F, 18)))
+                exact = c(rep(T, 4), rep(F, 17)))
+
 
 
 save(mout, file = "./temp/mout_hills_y.RData")

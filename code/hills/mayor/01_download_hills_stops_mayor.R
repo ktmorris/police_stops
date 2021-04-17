@@ -199,6 +199,7 @@ saveRDS(hills_stops_ll, "temp/hills_stops_ll_multi_mayor.rds")
 hills_stops_ll <- readRDS("temp/hills_stops_ll_multi_mayor.rds")
 
 hills_voters <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>% 
+  filter(tolower(city) == "tampa") %>% 
   group_by(name_first, name_last, birth_date) %>% 
   filter(row_number() == 1) %>% 
   ungroup()

@@ -1,9 +1,9 @@
 
 #####
-hills_pre_match <- readRDS("temp/real_pre_match_hills_mayor.rds") %>% 
+hills_pre_match <- readRDS("temp/real_pre_match_hills_mayor_narrow.rds") %>% 
   ungroup()
 
-matches <- readRDS("temp/matches_hills_y_mayor.rds")
+matches <- readRDS("temp/matches_hills_y_mayor_narrow.rds")
 
 matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                      by = c("group" = "voter_id", "first_tr_year")) %>% 
