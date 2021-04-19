@@ -41,7 +41,7 @@ hills14_c <- filter(hills_pre_match, first_tr_year == "2016-11-08",
   
 hills14 <- bind_rows(hills14_t, hills14_c) %>%  
   mutate(first_tr_year = 1) %>% 
-  select(-v14, -v16, -pre) %>% 
+  select(-v14, -v16) %>% 
   rename(v1 = v08,
          v2 = v10,
          v3 = v12)
@@ -94,7 +94,7 @@ samp <- pre %>%
 
 match_data <- samp %>% 
   select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
-         -v08, -v16, -pre, -v10, -reg_date) %>% 
+         -v08, -v16, -v10, -reg_date) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
   select(first_tr_year, paid, civil, tampa_pd, everything())
 

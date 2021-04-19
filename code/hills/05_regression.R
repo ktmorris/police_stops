@@ -53,17 +53,15 @@ cleanup("matches")
 gc()
 ll <- matches %>%
   filter(first_tr_year - last_date <= 90, period <= 0.5) %>%
-  group_by(treated, period, black_t, paid) %>%
+  group_by(treated, period, black) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black_t, "Black Voters", "Non-Black Voters"),
-         paid = ifelse(paid, "Paid Fine", "Did Not Pay Fine"))
-
+         black = ifelse(black, "Black Voters", "Non-Black Voters"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
 p1 <- ggplot(data = ll) + 
-  facet_grid(paid ~ black) +
+  facet_grid( ~ black) +
   geom_rect(aes(xmin = 0.5-.125, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
@@ -90,7 +88,7 @@ saveRDS(p1, "temp/within90days_y.rds")
 ##########################
 ll <- matches %>%
   filter(period <= 0.5) %>% 
-  group_by(treated, period, black = black_t) %>%
+  group_by(treated, period, black) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
          black = ifelse(black, "Black Voters", "Non-Black Voters"))
@@ -129,12 +127,20 @@ matches$days_before = as.numeric(matches$first_tr_year - matches$last_date)
 dat1 <- filter(matches, period <= 0.5)
 
 m1 <- to ~ treated * post + as.factor(year)
-m2 <- to ~ treated * post * days_before + as.factor(year)
-m3 <- to ~ treated * post * black_t + as.factor(year)
-m4 <- to ~ treated * post * civil + as.factor(year)
-m5 <- to ~ treated * post * paid + as.factor(year)
 
-models1 <- lapply(c(m1, m2, m3, m4, m5), function(f){
+m2 <- to ~ treated * post + as.factor(year) +
+  white + black + latino + asian + male +
+  dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
+  median_income + some_college + unem + civil + paid + tampa_pd
+
+m3 <- to ~ treated * post * black + as.factor(year)
+
+m4 <- to ~ treated * post * black + as.factor(year) +
+  white + black + latino + asian + male +
+  dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
+  median_income + some_college + unem + civil + paid + tampa_pd
+
+models1 <- lapply(c(m1, m2, m3, m4), function(f){
   m <- lm(f, data = dat1,
           weight = dat1$weight)
 })
@@ -144,34 +150,35 @@ ses_cl <- list(
   summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
   summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
   summary(lm.cluster(formula = m3, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-  summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-  summary(lm.cluster(formula = m5, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
+  summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
 )
 
 
 stargazer(models1,
           type = "text",
-          # column.labels = c("Stopped Any Time", "Stopped within 90 Days of Election"),
-          # column.separate = c(2, 2),
           omit.stat = c("f", "ser"),
           se = ses_cl,
           omit = c("as.fac"),
-          covariate.labels = c("Treated $\\times$ Post Treatment",
-                               "Treated $\\times$ Post Treatment $\\times$ Days before Election",
-                               "Treated $\\times$ Post Treatment $\\times$ Black",
-                               "Treated $\\times$ Post Treatment $\\times$ Civil Infraction",
-                               "Treated $\\times$ Post Treatment $\\times$ Paid Fine"),
-            
+          covariate.labels = c("Treated",
+                               "Post Treatment",
+                               "Black",
+                               "Treated $\\times$ Post Treatment",
+                               "Treated $\\times$ Black",
+                               "Post Treatment $\\times$ Black",
+                               "Treated $\\times$ Post Treatment $\\times$ Black"),
           table.layout = "-cm#-t-a-s-n",
-          keep = c("treatedTRUE:post"),
+          keep = c("treatedTRUE", "post", "blackTRUE", "Constant"),
+          order = c(1, 2, 4, 23, 24, 22, 25),
           notes = "TO REPLACE",
+          table.placement = "H",
           title = "\\label{tab:dind-table} Turnout Effects of Tickets",
           out = "temp/two_matches_reg_y.tex",
-          add.lines = list(c("Includes All Interactions", "X", "X", "X", "X", "X")))
+          add.lines = list(c("Includes Matched Covariates", "", "X", "", "X"),
+                           c("Includes Year Fixed Effects", "X", "X", "X", "X")))
 
 j <- fread("./temp/two_matches_reg_y.tex", header = F, sep = "+")
 
-note.latex <- "\\multicolumn{6}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
+note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
 
 j <- j %>% 
   mutate(n = row_number(),
@@ -234,3 +241,53 @@ ggplot() +
                      text = element_text(family = "LM Roman 10")) +
   geom_vline(xintercept = inte$x, linetype = "dashed")
 
+#######################################
+hills_voters <- readRDS("temp/full_raw_coded_hills_w_bgs.rds")
+hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+
+hills_voters <- filter(hills_voters, !(voter_id %in% hills_pre_match$voter_id)) %>% 
+  mutate(white = race == 5,
+         black = race == 3,
+         latino = race == 4,
+         asian = race == 2,
+         male = gender == "M",
+         dem = party_affiliation == "DEM",
+         rep = party_affiliation == "REP")
+
+hills_voters <- left_join(hills_voters, readRDS("../regular_data/census_bgs_18.rds") %>% 
+                            select(median_income, some_college, unem, GEOID)) %>% 
+  summarize_at(vars(c("white", "black", "latino",
+                      "asian", "male", "dem", "rep", "age", "median_income", "some_college", "unem")),
+               mean, na.rm = T) %>% 
+  mutate(treated = "Never Stopped")
+
+low_demos <- bind_rows(matches %>% 
+  group_by(treated = as.character(treated)) %>% 
+  summarize_at(vars(c("paid", "civil", "tampa_pd", "white", "black", "latino",
+                    "asian", "male", "dem", "rep", "age", "pre_stops", "v1",
+                    "v2", "v3", "median_income", "some_college", "unem")),
+                    ~ weighted.mean(., weight)),
+  hills_voters) %>% 
+  mutate_at(vars(paid, civil, tampa_pd, white, black, latino, asian, male, dem,
+                 rep, v1, v2, v3, some_college, unem), percent, accuracy = 0.1) %>% 
+  mutate_at(vars(age, pre_stops), ~format(round(., 1))) %>% 
+  mutate_at(vars(median_income), dollar, accuracy = 1) %>% 
+  pivot_longer(cols = c("paid", "civil", "tampa_pd", "white", "black", "latino",
+                        "asian", "male", "dem", "rep", "age", "pre_stops", "v1",
+                        "v2", "v3", "median_income", "some_college", "unem")) %>% 
+  pivot_wider(id_cols = "name", names_from = "treated", values_from = "value") %>% 
+  select(name, `Treated Voters` = `TRUE`, `Control Voters` = `FALSE`, `Never Stopped`)
+
+ord <- fread("./raw_data/var_orders.csv")
+
+low_demos <- left_join(low_demos, ord, by = c("name" = "variable")) %>% 
+  select(-name) %>% 
+  rename(name = name.y) %>% 
+  arrange(order) %>% 
+  select(-order) %>% 
+  mutate(`Never Stopped` = ifelse(is.na(`Never Stopped`)| `Never Stopped` == " NA", "", `Never Stopped`)) %>% 
+  select(Variable = name, everything()) %>%
+  mutate_all(~ gsub("[%]", paste0("\\\\", "%"), .)) %>%
+  mutate_all(~ gsub("[$]", paste0("\\\\", "$"), .))
+
+saveRDS(low_demos, "./temp/balance_table_y.rds")
