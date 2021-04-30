@@ -123,7 +123,8 @@ stargazer(models, type = "text",
           dep.var.labels = "",
           notes = "TO REPLACE",
           title = "\\label{tab:twfe} Two-Way Fixed Effects Models",
-          out = "temp/2wfe_reg.tex")
+          out = "temp/2wfe_reg.tex",
+          omit.stat = c("F", "ser"))
 
 j <- fread("./temp/2wfe_reg.tex", header = F, sep = "+")
 
@@ -245,7 +246,8 @@ stargazer(models, type = "text",
           notes = "TO REPLACE",
           title = "\\label{tab:coarser} Two-Way Fixed Effects Models, Binary Treatment",
           out = "temp/coarser_reg.tex",
-          order = 12)
+          order = 12,
+          omit.stat = c("F", "ser"))
 
 j <- fread("./temp/coarser_reg.tex", header = F, sep = "+")
 

@@ -79,9 +79,11 @@ p1
 
 #################################################
 
-full_set <- rename(full_set, share_s_fed = share_state_fed)
+full_set <- rename(full_set, share_s_fed = share_state_fed) %>% 
+  mutate(median_income = median_income / 10000,
+         lpd = log(pop_dens))
 
-covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + pop_dens +
+covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + lpd +
             median_income + some_college + median_age + share_over_64 +
             state + total_revenue + share_taxes + share_s_fed")
 
@@ -104,13 +106,13 @@ ses <- lapply(ms$m, function(f){
 stargazer(models, type = "text", omit = c("state"),
           column.labels = ms$name,
           dep.var.labels = "",
-          covariate.labels = c("Log(Dollars / Resident)",
+          covariate.labels = c("Log((Dollars / Resident) + 1)",
                                "% nonHispanic White",
                                "% nonHispanic Black",
                                "% Latinx",
                                "% Asian",
-                               "Population Density",
-                               "Median Income",
+                               "Log(Population Density)",
+                               "Median Income (dollarsign10,000s)",
                                "% with Some College",
                                "Median Age",
                                "Share over 64",
@@ -119,45 +121,84 @@ stargazer(models, type = "text", omit = c("state"),
                                "% of Rev from State / Fed Gov."),
           se = ses,
           add.lines = list(c("State fixed effects", "X", "X", "X")),
-          notes = "Robust standard errors clustered by state.")
+          notes = "TO REPLACE",
+          omit.stat = c("F", "ser"),
+          out = "temp/cog_cross_raw.tex",
+          table.placement = "H",
+          title = "\\label{tab:cog-cross-reg} Fees and Fines and 2020 Turnout")
+
+
+j <- fread("./temp/cog_cross_raw.tex", header = F, sep = "+") %>% 
+  mutate(V1 = gsub("[%]", "Share", V1))
+
+note.latex <- "\\multicolumn{4}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.\\\\Robust standard errors clustered by state.}}}"
+
+j <- j %>%
+  mutate(n = row_number(),
+         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
+         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
+  filter(!grepl("Note:", V1))
+
+insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
+  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
+  arrange(n) %>%
+  select(-n)
+
+write.table(j[c(3:nrow(j)),], "./temp/cog_cross_clean.tex", quote = F, col.names = F,
+            row.names = F)
 
 #############################
+minq <- round(min(full_set$lndper),digits = 3)
+q10 <-  round(quantile(full_set$lndper, 0.1), digits = 3)
+q25 <-  round(quantile(full_set$lndper, 0.25), digits = 3)
+q75 <-  round(quantile(full_set$lndper, 0.75), digits = 3)
+q90 <-  round(quantile(full_set$lndper, 0.9), digits = 3)
+maxq <- round(max(full_set$lndper), digits = 3)
 
-marg1 <- ggeffect(models[[2]], "lndper [all]", vcov.fun = "vcovCR", vcov.type = "CR0", 
+marg1 <- ggeffect(models[[2]], terms = paste("lndper [0", minq, q10, q25, q75, q90, maxq, "1]", sep = ", "),
+                  vcov.fun = "vcovCR", vcov.type = "CR0", 
                  vcov.args = list(cluster = filter(covars, vap_to_18_overall <= 1)$state)) %>% 
   mutate(model = "Black")
 
-marg2 <- ggeffect(models[[3]], "lndper [all]", vcov.fun = "vcovCR", vcov.type = "CR0", 
+marg2 <- ggeffect(models[[3]], terms = paste("lndper [0", minq, q10, q25, q75, q90, maxq, "1]", sep = ", "),
+                  vcov.fun = "vcovCR", vcov.type = "CR0", 
                   vcov.args = list(cluster = filter(full_set, vap_to_18_nonblack <= 1)$state)) %>% 
   mutate(model = "Non-Black")
 
-marg3 <- ggeffect(models[[1]], "lndper [all]", vcov.fun = "vcovCR", vcov.type = "CR0", 
+marg3 <- ggeffect(models[[1]], terms = paste("lndper [0", minq, q10, q25, q75, q90, maxq, "1]", sep = ", "),
+                  vcov.fun = "vcovCR", vcov.type = "CR0", 
                   vcov.args = list(cluster = filter(covars, vap_to_18_white <= 1)$state)) %>% 
   mutate(model = "Overall")
 
 
 marg <- bind_rows(marg1, marg2)
 
-bars <- data.frame(x = c(quantile(full_set$lndper, 0.1),
-                         quantile(full_set$lndper, 0.9)),
+bars <- data.frame(x = c(q10, q90),
                    y1 = c(
                      filter(marg1,
-                            x == round(quantile(full_set$lndper, 0.1), digits = 3)) %>% 
+                            x == q10) %>% 
                        select(predicted) %>% 
+                       distinct() %>% 
                        pull(),
                      filter(marg1,
-                            x == round(quantile(full_set$lndper, 0.9), digits = 3)) %>% 
+                            x == q90) %>% 
                        select(predicted) %>% 
+                       distinct() %>% 
                        pull()
                    ),
                    y2 = c(
                      filter(marg2,
-                            x == round(quantile(full_set$lndper, 0.1), digits = 3)) %>% 
+                            x == q10) %>% 
                        select(predicted) %>% 
+                       distinct() %>% 
                        pull(),
                      filter(marg2,
-                            x == round(quantile(full_set$lndper, 0.9), digits = 3)) %>% 
+                            x == q90) %>% 
                        select(predicted) %>% 
+                       distinct() %>% 
                        pull()
                    )) %>% 
   mutate(y1 = percent(y1, accuracy = 0.1),

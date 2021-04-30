@@ -3,9 +3,7 @@
 hills_pre_match <- readRDS("temp/real_pre_match_hills.rds") %>% 
   ungroup()
 
-matches <- readRDS("temp/matches_hills_y.rds") %>% 
-  select(-first_tr_year.y) %>% 
-  rename(first_tr_year = first_tr_year.x)
+matches <- readRDS("temp/matches_hills_yem.rds")
 
 matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                      by = c("group" = "voter_id", "first_tr_year")) %>% 
@@ -51,47 +49,14 @@ matches <- left_join(matches,
 
 cleanup("matches")
 gc()
-ll <- matches %>%
-  filter(first_tr_year - last_date <= 90, period <= 0.5) %>%
-  group_by(treated, period, black) %>%
-  summarize(to = weighted.mean(to, weight)) %>% 
-  mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black, "Black Voters", "Non-Black Voters"))
 
-ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
-
-p1 <- ggplot(data = ll) + 
-  facet_grid( ~ black) +
-  geom_rect(aes(xmin = 0.5-.125, xmax = 0.5, ymin = 0, ymax = Inf),
-            alpha = 0.03, color = "black", fill = "yellow") +
-  geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
-  geom_point(data = ll, aes(x = period, y = to, shape = treated)) +
-  scale_x_continuous(minor_breaks = seq(-3.5, 3.5, 1),
-                     breaks = seq(-3.5, 3.5, 1),
-                     labels = c("-4",
-                                "-3",
-                                "-2",
-                                "-1",
-                                "0",
-                                "1",
-                                "2",
-                                "3")) +
-  theme_bc(base_family = "LM Roman 10") +
-  scale_y_continuous(labels = percent) +
-  labs(x = "t", y = "Turnout",
-       linetype = "Treatment Group",
-       shape = "Treatment Group",
-       caption = "Treatment occurs inside of yellow band.") +
-  coord_cartesian(ylim = c(0.05, 0.75))
-p1
-saveRDS(p1, "temp/within90days_y.rds")
-##########################
+##########################################################
 ll <- matches %>%
   filter(period <= 0.5) %>% 
-  group_by(treated, period, black) %>%
+  group_by(treated, period, black_t) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black, "Black Voters", "Non-Black Voters"))
+         black = ifelse(black_t, "Black Voters", "Non-Black Voters"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
@@ -121,8 +86,6 @@ p2 <- ggplot(data = ll) +
 p2
 saveRDS(p2, "temp/stopped_any_time_y.rds")
 #####################
-matches
-matches$days_before = as.numeric(matches$first_tr_year - matches$last_date)
 
 dat1 <- filter(matches, period <= 0.5)
 
@@ -186,10 +149,8 @@ j <- j %>%
          V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>% 
   filter(!grepl("Note:", V1))
 
-insert1 <- "\\resizebox{1\\textwidth}{!}{%"
-insert2 <- "}"
 
-j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
+j <- j %>%
   arrange(n) %>%
   select(-n)
 

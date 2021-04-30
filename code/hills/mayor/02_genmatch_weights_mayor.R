@@ -44,10 +44,6 @@ hills19_t <- filter(hills_pre_match, first_tr_year == "2019-03-05") %>%
 ###########################################
 pre <- bind_rows(hills15_t, hills19_t)
 
-
-###########################################
-pre <- bind_rows(hills15_t, hills19_t)
-
 samp <- pre %>% 
   group_by(treated, first_tr_year) %>% 
   sample_frac(0.05) %>% 
@@ -55,16 +51,15 @@ samp <- pre %>%
 
 match_data <- samp %>% 
   select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
-         -pre, -v15, -v19, -v07) %>% 
+         -v15, -v19, -v07, -reg_date) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, paid), ~ ifelse(. == T, 1, 0)) %>% 
-  mutate(reg_date = as.integer(reg_date)) %>% 
-  select(first_tr_year, paid, civil, everything())
+  select(first_tr_year, paid, civil, tampa_pd, v1, v2, everything())
 
 
 match_data <- match_data[complete.cases(match_data), ]
 
 genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, pop.size = 1000,
-                   exact = c(rep(T, 3), rep(F, 17)), cluster = cl)
+                   exact = c(rep(T, 6), rep(F, 14)), cluster = cl)
 
 saveRDS(genout, "temp/genout_hills_y_mayor.rds")
 

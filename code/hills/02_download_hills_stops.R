@@ -209,31 +209,39 @@ joined <- left_join(hills_voters, hills_stops_ll,
   filter(!is.na(pre_stops))
 
 
-######################## test permuting birth dates to check for false positives
-# joined2 <- inner_join(hills_voters,
-#                     select(hills_stops_ll, first_name,
-#                            last_name, date_of_birth, count) %>%
-#                       mutate(date_of_birth = date_of_birth + 35),
-#                     by = c("name_first" = "first_name",
-#                            "name_last" = "last_name",
-#                            "birth_date" = "date_of_birth",
-#                            "count"))
-# 
-# joined3 <- inner_join(hills_voters,
-#                     select(hills_stops_ll, first_name,
-#                            last_name, date_of_birth, count) %>%
-#                       mutate(date_of_birth = date_of_birth - 35),
-#                     by = c("name_first" = "first_name",
-#                            "name_last" = "last_name",
-#                            "birth_date" = "date_of_birth",
-#                            "count"))
-# 
-# test <- data.table(dates = c("Good", "Plus", "Minus"),
-#                    values = c(sum(!is.na(joined$fd)),
-#                               nrow(joined2),
-#                               nrow(joined3)))
-# 
-# saveRDS(test, "temp/plus_minus_35.rds")
+####################### test permuting birth dates to check for false positives
+
+stops_names_dobs <- select(hills_stops_ll, first_name,
+                           last_name, date_of_birth) %>% 
+  distinct()
+
+j1 <- inner_join(hills_voters,
+                 stops_names_dobs,
+                 by = c("name_first" = "first_name",
+                        "name_last" = "last_name",
+                        "birth_date" = "date_of_birth"))
+
+joined2 <- inner_join(hills_voters,
+                      stops_names_dobs %>%
+                      mutate(date_of_birth = date_of_birth + 35),
+                    by = c("name_first" = "first_name",
+                           "name_last" = "last_name",
+                           "birth_date" = "date_of_birth"))
+
+joined3 <- inner_join(hills_voters,
+                      stops_names_dobs %>%
+                      mutate(date_of_birth = date_of_birth - 35),
+                    by = c("name_first" = "first_name",
+                           "name_last" = "last_name",
+                           "birth_date" = "date_of_birth"))
+
+test <- data.table(group = c("Actual Birthdate", "Birthdate + 35 Days", "Birthdate - 35 Days"),
+                   values = c(nrow(j1),
+                              nrow(joined2),
+                              nrow(joined3))) %>% 
+  mutate(values = comma(values))
+
+saveRDS(test, "temp/plus_minus_35.rds")
 ######################################
 
 joined <- joined %>% 

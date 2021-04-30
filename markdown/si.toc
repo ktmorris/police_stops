@@ -1,0 +1,6 @@
+\contentsline {section}{Testing Robustness of L2 Racial Estimates}{1}{section*.2}%
+\contentsline {section}{Regression Table for Survey Data}{2}{section*.3}%
+\contentsline {section}{Regression Table for 2018 Cross-Sectional Municipality Model}{3}{section*.4}%
+\contentsline {section}{Administrative Matching Robustness Check}{6}{section*.5}%
+\contentsline {section}{Sensitivity to Narrower Windows}{7}{section*.6}%
+\contentsline {section}{References}{9}{section*.7}%

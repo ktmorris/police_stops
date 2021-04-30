@@ -24,21 +24,18 @@ cl<-makeCluster(c(readLines(NodeFile)), type="SOCK")
 cl
 
 
-hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+hills_pre_match <- readRDS("temp/hills_pre_match_proximal.rds")
 
 ############## 2014
 
 hills14_t <- filter(hills_pre_match, first_tr_year == "2014-11-04") %>% 
-  mutate(treated = 1) %>% 
-  select(-pre_stops_c)
+  mutate(treated = 1)
 
 hills14_c <- filter(hills_pre_match, first_tr_year == "2016-11-08",
                     !(voter_id %in% hills14_t$voter_id)) %>% 
-  mutate(treated = 0) %>% 
-  select(-pre_stops) %>% 
-  rename(pre_stops = pre_stops_c)
-  
-  
+  mutate(treated = 0)
+
+
 hills14 <- bind_rows(hills14_t, hills14_c) %>%  
   mutate(first_tr_year = 1) %>% 
   select(-v14, -v16) %>% 
@@ -49,14 +46,11 @@ hills14 <- bind_rows(hills14_t, hills14_c) %>%
 ############## 2016
 
 hills16_t <- filter(hills_pre_match, first_tr_year == "2016-11-08") %>% 
-  mutate(treated = 1) %>% 
-  select(-pre_stops_c)
+  mutate(treated = 1)
 
 hills16_c <- filter(hills_pre_match, first_tr_year == "2018-11-06",
                     !(voter_id %in% hills16_t$voter_id)) %>% 
-  mutate(treated = 0) %>% 
-  select(-pre_stops) %>% 
-  rename(pre_stops = pre_stops_c)
+  mutate(treated = 0)
 
 
 hills16 <- bind_rows(hills16_t, hills16_c) %>%  
@@ -68,15 +62,11 @@ hills16 <- bind_rows(hills16_t, hills16_c) %>%
 ############## 2018
 
 hills18_t <- filter(hills_pre_match, first_tr_year == "2018-11-06") %>% 
-  mutate(treated = 1) %>% 
-  select(-pre_stops_c)
+  mutate(treated = 1)
 
 hills18_c <- filter(hills_pre_match, first_tr_year == "2020-11-03",
                     !(voter_id %in% hills18_t$voter_id)) %>% 
-  mutate(treated = 0) %>% 
-  select(-pre_stops) %>% 
-  rename(pre_stops = pre_stops_c)
-
+  mutate(treated = 0)
 
 hills18 <- bind_rows(hills18_t, hills18_c) %>%  
   mutate(first_tr_year = 3) %>% 
@@ -93,14 +83,14 @@ samp <- pre %>%
   ungroup()
 
 match_data <- samp %>% 
-  select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
+  select(-voter_id, -treated, -GEOID,
          -v08, -v16, -v10, -reg_date) %>% 
-  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
-  select(first_tr_year, paid, civil, tampa_pd, v1, v2, v3, everything())
+  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3), ~ ifelse(. == T, 1, 0)) %>% 
+  select(first_tr_year, v1, v2, v3, everything())
 
 genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000,
-                   exact = c(rep(T, 7), rep(F, 14)))
+                   exact = c(rep(T, 4), rep(F, 13)))
 
-saveRDS(genout, "temp/genout_hills_yem.rds")
+saveRDS(genout, "temp/genout_hills_yem_prox.rds")
 
 

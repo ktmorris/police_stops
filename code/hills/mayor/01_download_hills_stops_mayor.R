@@ -85,115 +85,123 @@ hills_stops <- readRDS("temp/hills_stops.rds") %>%
 # CONSIDERED TREATED
 
 # WE'LL START BY PULLING ALL THE PRE-TREATEMENT PERIOD STOPS FOR BOTH GROUPS TO MERGE BACK IN LATER
-pre13 <- filter(hills_stops, offense_date <= "2013-03-03")[,
-                                                           .(stop_count = .N),
-                                                           .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
-pre13 <-  pre13[,
-                .(stop_count = .N),
-                .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
-
-pre17 <- filter(hills_stops, offense_date <= "2017-03-05")[,
-                                                           .(stop_count = .N),
-                                                           .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
-
-pre17 <-  pre17[,
-                .(stop_count = .N),
-                .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
-
-
-##############################
-
-# FROM HERE IT'S RELATIVELY STRAIGHTFORWARD: WE NEED TO MAKE THOSE 4 GROUPS
-# TREATNEBT GROUP 1
-s13_15 <- filter(hills_stops, offense_date > "2013-03-03",
-                 offense_date <= "2015-03-03")[,
-                                               .(amount_paid = sum(amount_paid),
-                                                 civil = min(civil)),
-                                               .(first_name, last_name, date_of_birth, offense_date)]
-s13_15 <- s13_15[,
-                 .(stop_count = .N,
-                   last_date = max(offense_date),
-                   amount_paid = sum(amount_paid),
-                   civil = min(civil)),
-                 .(first_name, last_name, date_of_birth)] %>%
-  mutate(first_tr_year = as.Date("2015-03-03"))
-
-s13_15 <- left_join(s13_15, pre13) %>% 
-  rename(pre_stops = stop_count)
-
-# CONTROL GROUP 1
-s15_17 <- filter(hills_stops, offense_date > "2015-03-03",
-                 offense_date <= "2017-03-03")[,
-                                               .(amount_paid = sum(amount_paid),
-                                                 civil = min(civil)),
-                                               .(first_name, last_name, date_of_birth, offense_date)]
-s15_17 <- s15_17[,
-                 .(stop_count = .N,
-                   last_date = max(offense_date),
-                   amount_paid = sum(amount_paid),
-                   civil = min(civil)),
-                 .(first_name, last_name, date_of_birth)] %>%
-  mutate(first_tr_year = as.Date("2015-03-03"))
-
-# POTENTIAL CONTROLS SHOULDNT HAVE BEEN STOPPED 2013-2015 SO WE NEED TO REMOVE THEM
-
-s15_17 <- filter(s15_17,
-                 !(paste0(first_name, last_name, date_of_birth) %in%
-                     with(s13_15, paste0(first_name, last_name, date_of_birth))))
-
-s15_17 <- left_join(s15_17, pre13) %>% 
-  rename(pre_stops = stop_count)
-##########################
-
-s17_19 <- filter(hills_stops, offense_date > "2017-03-05",
-                 offense_date <= "2019-03-05")[,
-                                               .(amount_paid = sum(amount_paid),
-                                                 civil = min(civil)),
-                                               .(first_name, last_name, date_of_birth, offense_date)]
-s17_19 <- s17_19[,
-                 .(stop_count = .N,
-                   last_date = max(offense_date),
-                   amount_paid = sum(amount_paid),
-                   civil = min(civil)),
-                 .(first_name, last_name, date_of_birth)] %>%
-  mutate(first_tr_year = as.Date("2019-03-05"))
-
-s17_19 <- left_join(s17_19, pre17) %>% 
-  rename(pre_stops = stop_count)
-
-# CONTROL GROUP 2
-s19_21 <- filter(hills_stops, offense_date > "2019-03-05",
-                 offense_date <= "2021-03-05")[,
-                                               .(amount_paid = sum(amount_paid),
-                                                 civil = min(civil)),
-                                               .(first_name, last_name, date_of_birth, offense_date)]
-s19_21 <- s19_21[,
-                 .(stop_count = .N,
-                   last_date = max(offense_date),
-                   amount_paid = sum(amount_paid),
-                   civil = min(civil)),
-                 .(first_name, last_name, date_of_birth)] %>%
-  mutate(first_tr_year = as.Date("2019-03-05"))
-
-# POTENTIAL CONTROLS SHOULDNT HAVE BEEN STOPPED 2017-2019 SO WE NEED TO REMOVE THEM
-
-s19_21 <- filter(s19_21,
-                 !(paste0(first_name, last_name, date_of_birth) %in%
-                     with(s17_19, paste0(first_name, last_name, date_of_birth))))
-
-s19_21 <- left_join(s19_21, pre17) %>% 
-  rename(pre_stops = stop_count)
-###########################
-
-hills_stops_ll <- bind_rows(
-  s13_15,
-  s15_17,
-  s17_19,
-  s19_21,
-) %>%
-  mutate(pre_stops = ifelse(is.na(pre_stops), 0, pre_stops))
-
-saveRDS(hills_stops_ll, "temp/hills_stops_ll_multi_mayor.rds")
+# pre13 <- filter(hills_stops, offense_date <= "2013-03-03")[,
+#                                                            .(stop_count = .N),
+#                                                            .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
+# pre13 <-  pre13[,
+#                 .(stop_count = .N),
+#                 .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
+# 
+# pre17 <- filter(hills_stops, offense_date <= "2017-03-05")[,
+#                                                            .(stop_count = .N),
+#                                                            .(first_name, last_name, date_of_birth, offense_date)]  # using data.table syntax for speed
+# 
+# pre17 <-  pre17[,
+#                 .(stop_count = .N),
+#                 .(first_name, last_name, date_of_birth)]  # using data.table syntax for speed
+# 
+# 
+# ##############################
+# 
+# # FROM HERE IT'S RELATIVELY STRAIGHTFORWARD: WE NEED TO MAKE THOSE 4 GROUPS
+# # TREATNEBT GROUP 1
+# s13_15 <- filter(hills_stops, offense_date > "2013-03-03",
+#                  offense_date <= "2015-03-03")[,
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s13_15 <- s13_15[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2015-03-03"))
+# 
+# s13_15 <- left_join(s13_15, pre13) %>% 
+#   rename(pre_stops = stop_count)
+# 
+# # CONTROL GROUP 1
+# s15_17 <- filter(hills_stops, offense_date > "2015-03-03",
+#                  offense_date <= "2017-03-03")[,
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s15_17 <- s15_17[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2015-03-03"))
+# 
+# # POTENTIAL CONTROLS SHOULDNT HAVE BEEN STOPPED 2013-2015 SO WE NEED TO REMOVE THEM
+# 
+# s15_17 <- filter(s15_17,
+#                  !(paste0(first_name, last_name, date_of_birth) %in%
+#                      with(s13_15, paste0(first_name, last_name, date_of_birth))))
+# 
+# s15_17 <- left_join(s15_17, pre13) %>% 
+#   rename(pre_stops = stop_count)
+# ##########################
+# 
+# s17_19 <- filter(hills_stops, offense_date > "2017-03-05",
+#                  offense_date <= "2019-03-05")[,
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s17_19 <- s17_19[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2019-03-05"))
+# 
+# s17_19 <- left_join(s17_19, pre17) %>% 
+#   rename(pre_stops = stop_count)
+# 
+# # CONTROL GROUP 2
+# s19_21 <- filter(hills_stops, offense_date > "2019-03-05",
+#                  offense_date <= "2021-03-05")[,
+#                                                .(amount_paid = sum(amount_paid),
+#                                                  civil = min(civil),
+#                                                  tampa_pd = max(tampa_pd)),
+#                                                .(first_name, last_name, date_of_birth, offense_date)]
+# s19_21 <- s19_21[,
+#                  .(stop_count = .N,
+#                    last_date = max(offense_date),
+#                    amount_paid = sum(amount_paid),
+#                    civil = min(civil),
+#                    tampa_pd = max(tampa_pd)),
+#                  .(first_name, last_name, date_of_birth)] %>%
+#   mutate(first_tr_year = as.Date("2019-03-05"))
+# 
+# # POTENTIAL CONTROLS SHOULDNT HAVE BEEN STOPPED 2017-2019 SO WE NEED TO REMOVE THEM
+# 
+# s19_21 <- filter(s19_21,
+#                  !(paste0(first_name, last_name, date_of_birth) %in%
+#                      with(s17_19, paste0(first_name, last_name, date_of_birth))))
+# 
+# s19_21 <- left_join(s19_21, pre17) %>% 
+#   rename(pre_stops = stop_count)
+# ###########################
+# 
+# hills_stops_ll <- bind_rows(
+#   s13_15,
+#   s15_17,
+#   s17_19,
+#   s19_21,
+# ) %>%
+#   mutate(pre_stops = ifelse(is.na(pre_stops), 0, pre_stops))
+# 
+# saveRDS(hills_stops_ll, "temp/hills_stops_ll_multi_mayor.rds")
 
 ########################
 hills_stops_ll <- readRDS("temp/hills_stops_ll_multi_mayor.rds")
@@ -252,8 +260,8 @@ joined <- joined %>%
          reg_date = as.Date(registration_date, "%m/%d/%Y")) %>% 
   select(voter_id, GEOID, last_date,
          white, black, latino, asian, male, dem, rep, age, civil,
-         reg_date, pre_stops, amount_paid, name_first, name_last, birth_date,
-         v07, v11, v15, v19, pre, latitude, longitude, first_tr_year) %>% 
+         reg_date, pre_stops, amount_paid, name_first, name_last, birth_date, tampa_pd,
+         v07, v11, v15, v19, latitude, longitude, first_tr_year) %>% 
   mutate(paid = amount_paid > 0)
 
 ### remove people who were stopped, not fined
