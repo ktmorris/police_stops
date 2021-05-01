@@ -38,12 +38,14 @@ to <- bind_rows(city_to %>%
             to_16 = sum(votes_16) / sum(count),
             votes_18 = sum(votes_18),
             votes_16 = sum(votes_16),
-            votes_10 = sum(votes_10)) %>% 
+            votes_10 = sum(votes_10),
+            voters = sum(count)) %>% 
   pivot_wider(id_cols = "plasub", names_from = "race", values_from = c("to_18",
                                                                        "to_16",
                                                                        "votes_18",
                                                                        "votes_16",
-                                                                       "votes_10"))
+                                                                       "votes_10",
+                                                                       "voters"))
 
 full_set <- inner_join(cog, to, by = c("GEOID" = "plasub")) %>% 
   mutate(vap_to_18_overall = votes_18_overall / cvap,
@@ -61,7 +63,9 @@ full_set <- inner_join(cog, to, by = c("GEOID" = "plasub")) %>%
          vap_to_18_asian = votes_18_asian / asian_cvap,
          vap_to_10_asian = votes_10_asian / asian_cvap,
          vap_to_18_other = votes_18_other / other_cvap,
-         vap_to_10_other = votes_10_other / other_cvap)
+         vap_to_10_other = votes_10_other / other_cvap,
+         share_electorate_black = voters_black / voters_overall,
+         cvap_share_black = black_cvap / cvap)
 
 p1 <- ggplot(full_set, aes(x = lndper, y = vap_to_18_black)) + geom_point(shape = 1) + geom_smooth(method = "lm") +
   xlab("Dollars per Resident") +
@@ -82,6 +86,8 @@ p1
 full_set <- rename(full_set, share_s_fed = share_state_fed) %>% 
   mutate(median_income = median_income / 10000,
          lpd = log(pop_dens))
+
+saveRDS(full_set, "temp/full_set_for_mae.rds")
 
 covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + lpd +
             median_income + some_college + median_age + share_over_64 +
@@ -125,7 +131,7 @@ stargazer(models, type = "text", omit = c("state"),
           omit.stat = c("F", "ser"),
           out = "temp/cog_cross_raw.tex",
           table.placement = "H",
-          title = "\\label{tab:cog-cross-reg} Fees and Fines and 2020 Turnout")
+          title = "\\label{tab:cog-cross-reg} Fees and Fines and 2018 Turnout")
 
 
 j <- fread("./temp/cog_cross_raw.tex", header = F, sep = "+") %>% 

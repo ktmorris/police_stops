@@ -113,7 +113,7 @@
 
 \title{Policing for Profit and the Mobilization of Black Voters}
 \author{Jonathan Ben-Menachem\footnote{PhD Student, Columbia University, Department of Sociology (\href{mailto:jb4487@columbia.edu}{\nolinkurl{jb4487@columbia.edu}})} \and Kevin Morris\footnote{PhD Student, CUNY Graduate Center, Department of Sociology (\href{mailto:kmorris@gradcenter.cuny.edu}{\nolinkurl{kmorris@gradcenter.cuny.edu}})}}
-\date{April 28, 2021}
+\date{May 01, 2021}
 
 \begin{document}
 \maketitle
@@ -250,7 +250,7 @@ The COG data are useful to isolate ticketing practices because other fines and f
 
 \textbf{Registered Voter Files}: The COG data do not include estimates of turnout at the local level. To estimate local turnout, we leverage registered voter files provided by data vendor L2 Political. In Washington, DC, and every state in the country (with the exception of North Dakota) voters are required to register to vote prior to participating. These files are considered public record, and in most states contain information about each voter's age, residential address, political affiliation, and participation history. L2 collects voter files from around the country and merges them with proprietary data that estimates other voter- and household-level characteristics such as race and education. L2 also geocodes voters' residential addresses.
 
-We merge the geocoded voter files with ``place'' and ``county subdivision'' shapefiles published by the US Census Bureau. By aggregating individual-level records to the municipal level, we are able to estimate the number of registered voters and the number of ballots cast in every city in the country. Moreover, by using the racial estimates provided by L2 we can estimate the number of ballots cast by voters of each race in each city. Each voters' race is modeled based on L2's algorithms and not self-reported, surely leading to errors at the individual-voter level. We assume this does not present a problem when records are aggregated to the municipal level.
+We merge the geocoded voter files with ``place'' and ``county subdivision'' shapefiles published by the US Census Bureau. By aggregating individual-level records to the municipal level, we are able to estimate the number of registered voters and the number of ballots cast in every city in the country. Moreover, by using the racial estimates provided by L2 we can estimate the number of ballots cast by voters of each race in each city. While in a few states race is self-reported by voters, race is in most cases modeled by L2 using first, middle, and last name, as well as Census block demographic information. Although this is a commonly used way to determine voters' races (\protect\hyperlink{ref-Imai2016}{Imai and Khanna 2016/ed}), it is subject to some error. We assume, however, that after controlling for other municipality-level characteristics, the errors in these predictions will be uncorrelated with fees and fines collections. Put differently, although we acknowledge that these estimates are imprecise, we expect that these errors are effectively random. Further, as we show in the Supplemental Information, the estimated Black share of the electorate tracks very closely with the share of the citizen voting age population that is non-Hispanic Black. After accounting for state-level voter registration differentials, the mean absolute error between these two measures is 2.4\% and is unrelated to per-capita fines and fees after controlling for other covariates (\emph{p} = 0.92). The individual-level racial estimates, when aggregated to the municipal level, thus provide a reasonably unbiased picture of the municipal electorate.
 
 We calculate turnout by dividing the number of ballots cast according to L2 by the 5-year estimate of each municipality's citizen voting-age population (CVAP) from the US Census Bureau. These estimates are available for individual racial groups. Because our turnout numerator and denominators come from different sources there is slight measurement error: our estimate indicates, for instance, that roughly 1 percent of municipalities had Black turnout above 100 percent. Where more votes were cast than the Census estimate for CVAP, we recode turnout as 100 percent. Our results do not change if we instead simply remove these municipalities, or use unmodified turnout estimates.
 
@@ -563,6 +563,9 @@ Hinton, Elizabeth, and DeAnza Cook. 2021. {``The {Mass Criminalization} of {Blac
 
 \leavevmode\hypertarget{ref-Holpuch2015}{}%
 Holpuch, Amanda. 2015. {``Walter {Scott}: Protesters Demand Justice -- and an End to Police Discrimination.''} \emph{The Guardian: US News}, April 8, 2015. \url{http://www.theguardian.com/us-news/2015/apr/08/protesters-demand-justice-walter-scott-north-charleston}.
+
+\leavevmode\hypertarget{ref-Imai2016}{}%
+Imai, Kosuke, and Kabir Khanna. 2016/ed. {``Improving {Ecological Inference} by {Predicting Individual Ethnicity} from {Voter Registration Records}.''} \emph{Political Analysis} 24 (2): 263--72. \url{https://doi.org/10.1093/pan/mpw001}.
 
 \leavevmode\hypertarget{ref-Imai2020}{}%
 Imai, Kosuke, In Song Kim, and Erik Wang. 2020. {``Matching {Methods} for {Causal Inference} with {Time}-{Series Cross}-{Sectional Data}.''} \emph{Working Paper}. \url{https://doi.org/Matching\%20Methods\%20for\%20Causal\%20Inference\%20with\%20Time-Series\%20Cross-Sectional\%20Data}.

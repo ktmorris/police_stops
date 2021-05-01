@@ -131,28 +131,32 @@
 
 As discussed in the body of this manuscript, our municipality-level racial estimates are constructed by aggregating up from individual-level records provided by L2. Because L2 uses statistical modeling to infer voters' race---not self-reported information---there is potential room for error in these estimates.
 
-While most states in the country do not ask voters to self-report their race when they register to vote, a handful \emph{do} collect this information. The raw voter files in these states, then, include true individual-level information about the racial makeup of the electorate.
+Because there are no precise estimates of the racial demographics of the registered electorate in each state, we compare the estimated Black share of each municipality to the Black share of the citizen voting age population (CVAP) in each municipality. This method is not without drawbacks: if different cities have different racial registration rates, they will not track the perfectly. To mitigate some of this discrepancy, we adjust the Black share of the electorate in each municipality by the racial registration gap in that municipality's state, according to the Current Population Survey's (CPS) 2018 data. For example, according to the CPS, 27.0\% of the CVAP in Alabama was Black in 2018, but just 26.4\% of registered voters were Black. We therefore add 0.6\% to the estimated Black share of the electorate in each municipality in Alabama, so that it might more closely mirror the Black share of CVAP.
 
-To test the validity of the L2 records, we use the L2 estimates and self-reported race from the raw voter files in Florida, Georgia, and North Carolina. We use both sets of data to estimate the Black share of the electorate in each municipality used in the body of this paper. Comparing the ``estimated'' share Black from L2 to the ``real'' share Black from the voter file gives us a good sense of how well our approach works in these states.
-
-In Table \ref{tab:mae} we present the mean absolute error (MAE) of the L2 estimates aggregated up to the municipality level. The MAE is commonly used to measure how different an estimated set of numbers are from their real value. Because it seems possible that these errors vary by population size, we present the MAE for each quartile of the set of municipalities as measured by population, as well as the overall MAE.
+In Table \ref{tab:mae} we present the mean absolute error (MAE) of the L2 estimates aggregated up to the municipality level and adjusted according to the CPS, relative to the Census Bureau's CVAP estimate. Because it seems possible that these errors vary by population size, we present the MAE for each quartile of the set of municipalities as measured by population, as well as the overall MAE.
 
 \begin{singlespace}
 \begin{table}[H]
 
-\caption{\label{tab:mae-chunck}\label{tab:mae} MAE of L2 Municipality Estimates (Florida, Georgia, North Carolina)}
+\caption{\label{tab:mae-chunck}\label{tab:mae} MAE of L2 Municipality Estimates, CVAP}
 \centering
 \begin{tabular}[t]{ccccc}
 \toprule
 Bottom Quartile & Second Quartile & Third Quartile & Fourth Quartile & Overall\\
 \midrule
-1.08\% & 1.38\% & 1.36\% & 1.48\% & 1.32\%\\
+2.40\% & 2.38\% & 2.24\% & 2.70\% & 2.42\%\\
 \bottomrule
 \end{tabular}
 \end{table}
 \end{singlespace}
 
-Table \ref{tab:mae} makes clear that for no group of municipalities does the MAE exceed 1.5\%. Although this robustness check is limited to just 3 states, the available evidence indicates that aggregating from individual-level racial estimates in the L2 data to municipality-level demographics of the electorate does not result in unacceptable biases.
+Table \ref{tab:mae} makes clear that the adjusted Black estimates of the electorate mirror the Black share of CVAP very closely: for no group of municipalities does the MAE exceed 3\%. This seems to indicate that the L2 racial estimates are quite good when aggregated to the municipal level.
+
+In Table \ref{tab:mae:reg}, we show that the difference between the adjusted estimate of the Black share of the electorate and the Black share of the CVAP is entirely unrelated to cities' per-capita fees and fines, after controlling for other characteristics. Given the low MAE and the lack of relationship between the error and the fees and fines, we conclude that the municipal-level racial estimates from the individual-level records are reasonable and unbiased.
+
+\begin{singlespace}
+\input{"../temp/mae_clean.tex"}
+\end{singlespace}
 
 \hypertarget{regression-table-for-survey-data}{%
 \section*{Regression Table for Survey Data}\label{regression-table-for-survey-data}}
