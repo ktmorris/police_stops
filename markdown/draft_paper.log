@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.4.30)  1 MAY 2021 18:02
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.4.30)  7 MAY 2021 16:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -656,9 +656,6 @@ Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
 
 LaTeX Warning: Label `' multiply defined.
 
-
-LaTeX Warning: Label `' multiply defined.
-
 )
 \openout1 = `draft_paper.aux'.
 
@@ -1045,21 +1042,21 @@ Underfull \hbox (badness 10000) in paragraph at lines 123--124
 ] [1] [2] [3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [
 18]
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 8.4pt on input line 281.
+(Font)              scaled to size 8.4pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 6.0pt on input line 281.
+(Font)              scaled to size 6.0pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 12.0011pt on input line 281.
+(Font)              scaled to size 12.0011pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 8.40076pt on input line 281.
+(Font)              scaled to size 8.40076pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 6.00055pt on input line 281.
+(Font)              scaled to size 6.00055pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 11.99872pt on input line 281.
+(Font)              scaled to size 11.99872pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 8.3991pt on input line 281.
+(Font)              scaled to size 8.3991pt on input line 282.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 5.99936pt on input line 281.
+(Font)              scaled to size 5.99936pt on input line 282.
 [19] [20] [21] [22]
 File: draft_paper_files/figure-latex/anes-cross-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/anes-cross-1.pdf>
@@ -1073,63 +1070,63 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
 (Font)              scaled to size 8.00073pt on input line 60.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 7.99915pt on input line 60.
-) [27] (../temp/coarser_reg_clean.tex) [28] [29] [30]
+) [27] [28] [29]
 File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did1-1.pdf>
-[31] (../temp/dind_reg_y.tex) [32] [33] [34] [35] [36] [37]
-Underfull \hbox (badness 10000) in paragraph at lines 501--503
+[30] (../temp/dind_reg_y.tex) [31] [32] [33] [34] [35] [36] [37]
+Underfull \hbox (badness 10000) in paragraph at lines 496--498
 [][][][] [] [][][][][][][][] [] [][][][][] [] [][][][][][][] [][] [][][][] [][]
  [][][][][][] [][] [][][] [][] [][][][] [][] [][][][][][] [][] [][][][][] [][] 
 [][][][][] [][] [][][][][][][] [][] [][][][] [][]
  []
 
 [38]
-Underfull \hbox (badness 1389) in paragraph at lines 522--524
+Underfull \hbox (badness 1389) in paragraph at lines 517--519
 [][]\TU/lmr/m/n/12 Ehrenfreund, Max. 2014. “How Segregation Led to Speed Traps,
  Traffic Tick-
  []
 
 
-Underfull \hbox (badness 1270) in paragraph at lines 522--524
+Underfull \hbox (badness 1270) in paragraph at lines 517--519
 \TU/lmr/m/n/12 ets and Distrust Outside St. Louis.” \TU/lmr/m/it/12 Washington 
 Post\TU/lmr/m/n/12 , November 26, 2014.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 522--524
+Underfull \hbox (badness 10000) in paragraph at lines 517--519
 []$[][][][][] [] [] [] [][][] [] [][][][][][][][][][][][][][] [] [][][] [] [][]
 [][] [] [][][][] [] [][] [] [][][][] [] [][] [] [][] [] [][][] [][] [][][][][][
 ][][][][][] [][]
  []
 
 [39] [40]
-Underfull \hbox (badness 1997) in paragraph at lines 570--572
+Underfull \hbox (badness 1997) in paragraph at lines 565--567
 [][]\TU/lmr/m/n/12 Imai, Kosuke, In Song Kim, and Erik Wang. 2020. “Matching Me
 thods for
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 570--572
+Underfull \hbox (badness 10000) in paragraph at lines 565--567
 [] [] [][][] [] [][][] [] [][][][][][][][] [] [][][][][][][][][] [] [][][][][] 
 [] [][][][][][][][] [] [][][][][][][][][][][] [] [][][][][][] [] [][][][][][] [
 ][]
  []
 
 [41]
-Underfull \hbox (badness 10000) in paragraph at lines 582--584
+Underfull \hbox (badness 10000) in paragraph at lines 577--579
 []$[][][][][] [] [] [] [][][] [] [][][][][][][] [] [][][] [] [][][][] [] [][] [
 ] [][] [] [][] [] [][][][][][] [][] [][][][][][][][] [][] [][][][][][][][] [][]
  [][][][][] [][] [][][][][][][][][] [][] [] [][]
  []
 
 [42] [43] [44] [45]
-Underfull \hbox (badness 1675) in paragraph at lines 699--701
+Underfull \hbox (badness 1675) in paragraph at lines 694--696
 \TU/lmr/m/n/12 the Cops — If You’re Black.” \TU/lmr/m/it/12 Tampa Bay Times\TU/
 lmr/m/n/12 , April 15, 2015. []$[][][][][] []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 699--701
+Underfull \hbox (badness 10000) in paragraph at lines 694--696
 [] [] [][][] [] [][][][][][][][] [] [][][] [] [][][][] [] [][][][][][][][][][][
 ][] [] [][][] [][] [][][][][][] [][] [][][][] [][] [][][][] [][] [][][] [][] []
 [][][] [][] [][][] [][] [][] [][]
@@ -1143,10 +1140,10 @@ Package rerunfilecheck Info: File `draft_paper.out' has not changed.
 (rerunfilecheck)             Checksum: F593ADA2A519C4FE9502BA1614408985;2762.
  ) 
 Here is how much of TeX's memory you used:
- 17579 strings out of 478918
- 312350 string characters out of 5864899
- 791662 words of memory out of 5000000
- 37141 multiletter control sequences out of 15000+600000
+ 17574 strings out of 478918
+ 312233 string characters out of 5864899
+ 790594 words of memory out of 5000000
+ 37139 multiletter control sequences out of 15000+600000
  408628 words of font info for 79 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  98i,15n,122p,1996b,496s stack positions out of 5000i,500n,10000p,200000b,80000s

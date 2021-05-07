@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.4.30)  30 APR 2021 15:18
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.4.30)  7 MAY 2021 16:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1070,7 +1070,7 @@ Overfull \vbox (16.857pt too high) has occurred while \output is active []
 
 [3] (../temp/anes_clean.tex
 
-LaTeX Warning: Float too large for page by 19.3747pt on input line 117.
+LaTeX Warning: Float too large for page by 19.43784pt on input line 120.
 
 ) [4] [5] (../temp/cog_cross_clean.tex) [6]
 Overfull \vbox (14.68272pt too high) has occurred while \output is active []
@@ -1088,7 +1088,7 @@ Package rerunfilecheck Info: File `si.out' has not changed.
 Here is how much of TeX's memory you used:
  17534 strings out of 478918
  310788 string characters out of 5864899
- 825402 words of memory out of 5000000
+ 826402 words of memory out of 5000000
  37106 multiletter control sequences out of 15000+600000
  408572 words of font info for 72 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
