@@ -11,7 +11,8 @@ anes_pre <- anes_pre %>%
          latino = V201549x == 3,
          asian = V201549x == 4,
          party = ifelse(V201228 == 1 | V201230 == 3, "DEM",
-                        ifelse(V201228 == 2 | V201230 == 1, "REP", "OTH")))
+                        ifelse(V201228 == 2 | V201230 == 1, "REP", "OTH")),
+         vote16 = as.integer(V201101 == 1 | V201102 == 1))
 
 anes_pre$party <- factor(anes_pre$party, levels = c("DEM", "REP", "OTH"))
 
@@ -22,7 +23,12 @@ anes_pre <- left_join(anes_pre, income) %>%
 
 reg_d <- select(anes_pre, ideol, white, black, latino, party, V200002,
                 age, income, V200010b, to, asian, V201600, V201201,
-                state = V201011, V201510, V202456, V202457) %>% 
+                state = V201011, V201510, V202456, V202457,
+                police_therm = V202171,
+                fair_police = V202493x,
+                self_descrim = V202537,
+                linked_fate_black = V202507,
+                blm = V202174, vote16) %>% 
   filter(V202456 %in% c(1, 2),
          V202457 %in% c(1, 2)) %>% 
   mutate(stopped = V202456 == 1,
@@ -60,22 +66,25 @@ reg_d <- select(anes_pre, ideol, white, black, latino, party, V200002,
                       ifelse(V201600 == 1, "Male", "Female")),
          hied = educ %in% c("Bachelor's Degree",
                             "Post-Graduate Education"),
-         hiinc = income > 10) %>% 
+         hiinc = income > 10,
+         vote16 = factor(vote16)) %>% 
   mutate_at(vars(white, latino, asian, to, black, stopped, arrested), ~ ifelse(., 1, 0))
 
 
-m_stop <- lm(to ~ stopped*black + white + asian + latino + age + party + income + sex +
-               ideol + educ, filter(reg_d), weight = V200010b)
+m_stop <- lm(to ~ stopped*black + white + latino + asian + age + party + income + sex +
+               ideol + educ + vote16, filter(reg_d), weight = V200010b)
 
 m_stop2 <- lm(to ~ stopped*asian + white + latino + black + age + party + income + sex +
-               ideol + educ, filter(reg_d), weight = V200010b)
+               ideol + educ + vote16, filter(reg_d), weight = V200010b)
 
 m_stop3 <- lm(to ~ stopped*latino + white + asian + black + age + party + income + sex +
-                ideol + educ, filter(reg_d), weight = V200010b)
+                ideol + educ + vote16, filter(reg_d), weight = V200010b)
 
-summary(m_stop)
+m_stop4 <- lm(to ~ stopped*blm + age + party + income + sex +
+                ideol + educ + vote16, filter(reg_d, black == 1, blm >= 0), weight = V200010b)
+
 m_arrest <- lm(to ~ arrested*black + white + asian + latino + age + party + income + sex +
-               ideol + educ, filter(reg_d), weight = V200010b)
+               ideol + educ + vote16, filter(reg_d), weight = V200010b)
 
 
 stargazer(m_stop, m_stop2, m_stop3, m_arrest, type = "text",
@@ -101,6 +110,7 @@ stargazer(m_stop, m_stop2, m_stop3, m_arrest, type = "text",
                                "Associate's Degree",
                                "Bachelor's Degree",
                                "Post-Graduate Education",
+                               "Voted in 2016",
                                "Stopped in Past 12 Months $\\times$ Black",
                                "Stopped in Past 12 Months $\\times$ Asian",
                                "Stopped in Past 12 Months $\\times$ Latinx",
@@ -182,8 +192,10 @@ p2 <- ggplot(h3, aes(x = x, y = predicted, color = group, shape = group, linetyp
        linetype = "Racial Group",
        x = NULL,
        y = "Predicted Turnout",
-       caption = "Note: Covariates include race / ethnicity; age; party; ideology; income; education; sex.") +
+       caption = "Note: Covariates include race / ethnicity; age; party; ideology; income; education; sex; 2016 turnout.") +
   scale_y_continuous(labels = percent) +
   scale_linetype_manual(values = c("solid", "dashed"))
 p2
 save(p2, file = "temp/anes_plot.rdata")
+
+#############################
