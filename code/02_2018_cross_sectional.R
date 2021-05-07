@@ -221,8 +221,9 @@ p2 <- ggplot() +
   scale_y_continuous(labels = percent) +
   coord_cartesian(xlim = c(-.3, log(201)), ylim = c(0, .825)) +
   labs(caption = "Notes: Distribution of Dollars per Resident shown at bottom. Robust standard errors clustered by state.
-Covariates: % White, % Black, % Latinx, % Asian, Median Income, % with Some College, Median Age, % Over 64 Years Old, 
-Population Density, Total Revenue, Share of Revenue from Taxes, Share of Revenue from State / Fed. Gov, State Fixed Effects.") +
+Covariates: % White, % Black, % Latinx, % Asian, Median Income, % with Some College,
+Median Age, % Over 64 Years Old, Population Density, Total Revenue,
+Share of Revenue from Taxes, Share of Revenue from State / Fed. Gov, State Fixed Effects.") +
   theme_bw() + theme(plot.caption = element_text(hjust = 0),
                      text = element_text(family = "LM Roman 10")) +
   geom_vline(xintercept = bars$x[1], color = "black", linetype = "dashed") +
