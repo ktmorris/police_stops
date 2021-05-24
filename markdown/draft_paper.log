@@ -1,11 +1,11 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.4.30)  7 MAY 2021 16:56
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.5.18)  24 MAY 2021 16:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **draft_paper.tex
 (./draft_paper.tex
 LaTeX2e <2020-10-01> patch level 4
-L3 programming layer <2021-02-18>
+L3 programming layer <2021-05-11>
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/size12.clo
@@ -136,11 +136,11 @@ Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
 code-math.sty
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3kernel/expl3.s
 ty
-Package: expl3 2021-02-18 L3 programming layer (loader) 
+Package: expl3 2021-05-11 L3 programming layer (loader) 
 
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3backend/l3back
 end-xetex.def
-File: l3backend-xetex.def 2021-03-18 L3 backend support: XeTeX
+File: l3backend-xetex.def 2021-05-07 L3 backend support: XeTeX
 (|extractbb --version)
 \c__kernel_sys_dvipdfmx_version_int=\count195
 \l__color_backend_stack_int=\count196
@@ -166,7 +166,7 @@ e/xparse-2020-10-01.sty
 e/xparse-generic.tex)))
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3packages/l3key
 s2e/l3keys2e.sty
-Package: l3keys2e 2021-03-12 LaTeX2e option processing using LaTeX3 keys
+Package: l3keys2e 2021-05-07 LaTeX2e option processing using LaTeX3 keys
 )
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/fontspec/fontspe
 c.sty
@@ -1065,11 +1065,11 @@ File: draft_paper_files/figure-latex/cross-18-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/cross-18-1.pdf>
 [25] [26] (../temp/2wfe_reg_clean.tex
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 8.0pt on input line 60.
+(Font)              scaled to size 8.0pt on input line 63.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 8.00073pt on input line 60.
+(Font)              scaled to size 8.00073pt on input line 63.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 7.99915pt on input line 60.
+(Font)              scaled to size 7.99915pt on input line 63.
 ) [27] [28] [29]
 File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/did1-1.pdf>
@@ -1140,12 +1140,12 @@ Package rerunfilecheck Info: File `draft_paper.out' has not changed.
 (rerunfilecheck)             Checksum: F593ADA2A519C4FE9502BA1614408985;2762.
  ) 
 Here is how much of TeX's memory you used:
- 17574 strings out of 478918
- 312233 string characters out of 5864899
- 790594 words of memory out of 5000000
- 37139 multiletter control sequences out of 15000+600000
+ 17691 strings out of 478764
+ 315411 string characters out of 5862367
+ 796132 words of memory out of 5000000
+ 37410 multiletter control sequences out of 15000+600000
  408628 words of font info for 79 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 98i,15n,122p,1996b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 85i,15n,121p,1996b,496s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 Output written on draft_paper.pdf (47 pages).

@@ -1,6 +1,7 @@
 library(splitstackshape)
 library(PanelMatch)
 library(rgdal)
+library(sqldf)
 library(Metrics)
 library(RSQLite)
 library(multcomp)

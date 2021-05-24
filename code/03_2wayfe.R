@@ -22,10 +22,34 @@ census <- bind_rows(
 cities <- left_join(cities, census)
 
 place_to <- readRDS("temp/place_to.rds") %>% 
-  rename(plasub = place)
+  rename(plasub = place) %>% 
+  mutate(votes_18 = count * to_18) %>% 
+  select(plasub, votes_18, voters_18 = count,
+         EthnicGroups_EthnicGroup1Desc)
 
+p14 <- readRDS("temp/places_14_national.rds") %>% 
+  select(plasub = place,
+         EthnicGroups_EthnicGroup1Desc,
+         votes_14 = ballots_14,
+         voters_14)
+
+place_to <- full_join(place_to, p14) %>% 
+  mutate_at(vars(starts_with("vote")), ~ ifelse(is.na(.), 0, .))
+################################
 county_s_to <- readRDS("temp/county_s_to.rds") %>% 
-  rename(plasub = county_s)
+  rename(plasub = county_s) %>% 
+  mutate(votes_18 = count * to_18) %>% 
+  select(plasub, votes_18, voters_18 = count,
+         EthnicGroups_EthnicGroup1Desc)
+
+cs14 <- readRDS("temp/countysubs_14_national.rds") %>% 
+  select(plasub = cousub,
+         EthnicGroups_EthnicGroup1Desc,
+         votes_14 = ballots_14,
+         voters_14)
+
+county_s_to <- full_join(county_s_to, cs14) %>% 
+  mutate_at(vars(starts_with("vote")), ~ ifelse(is.na(.), 0, .))
 
 county_s_to <- county_s_to[!(county_s_to$plasub %in% place_to$plasub),]
 
@@ -48,13 +72,13 @@ to <- bind_rows(city_to %>%
                   mutate(race = ifelse(EthnicGroups_EthnicGroup1Desc == "Hispanic and Portuguese", "latino",
                                        ifelse(EthnicGroups_EthnicGroup1Desc == "East and South Asian", "asian", "other")))) %>% 
   group_by(plasub, race) %>%
-  mutate(votes_18 = count * to_18,
-         votes_14 = count * to_14) %>% 
-  summarize(to_18 = sum(votes_18) / sum(count),
-            to_14 = sum(votes_14) / sum(count),
-            votes_18 = sum(votes_18),
-            votes_14 = sum(votes_14)) %>% 
-  pivot_longer(cols = c("to_18", "to_14", "votes_18", "votes_14"), names_to = "year_var") %>% 
+  summarize(voters_14 = sum(voters_14),
+            voters_18 = sum(voters_18),
+            votes_14 = sum(votes_14),
+            votes_18 = sum(votes_18)) %>% 
+  mutate(to_14 = votes_14 / voters_14,
+         to_18 = votes_18 / voters_18) %>% 
+  pivot_longer(cols = c("to_18", "to_14", "votes_18", "votes_14", "voters_18", "voters_14"), names_to = "year_var") %>% 
   cSplit("year_var", sep = "_", type.convert = F) %>% 
   rename(year = year_var_2, var = year_var_1) %>% 
   mutate(var = paste0(var, "_", race),
@@ -71,17 +95,20 @@ cities1 <- inner_join(cities, to, by = c("GEOID" = "plasub", "year")) %>%
          vap_to_latino =   votes_latino / latino_cvap,
          vap_to_asian =    votes_asian / asian_cvap,
          vap_to_other =    votes_other / other_cvap,
-         state = substring(GEOID, 1, 2)) %>% 
+         state = substring(GEOID, 1, 2),
+         median_income = median_income / 10000,
+         pop_dens = log(pop_dens),
+         total_revenue = log(total_revenue)) %>% 
   mutate_at(vars(starts_with("vap_to")), ~ ifelse(is.finite(.) & . > 1, 1, .))
 
 #################################
-cv <- c("lndper", "nh_white", "nh_black", "latino", "asian", "pop_dens",
-          "median_income", "some_college", "median_age", "share_over_64",
-          "share_taxes", "share_state_fed", "year", "GEOID")
+cv <- c("lndper", "nh_white", "nh_black", "latino", "asian", "pop_dens", "total_revenue",
+        "median_income", "some_college", "median_age", "share_over_64",
+        "share_taxes", "share_state_fed", "year", "GEOID")
 
 
 covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + pop_dens +
-            median_income + some_college + median_age + share_over_64 +
+            median_income + some_college + median_age + share_over_64 + total_revenue +
             share_taxes + share_state_fed")
 
 ms <- data.frame(m = c("vap_to_overall", "vap_to_black", "vap_to_nonblack"),
@@ -91,12 +118,19 @@ models <- lapply(ms$m, function(f){
   print(f)
   
   d <- cities1 %>% 
-    select(!!sym(f), cv)
+    select(!!sym(f), cv, voters_black)
+  
+  if(f == "vap_to_black"){
+    d <- filter(d, voters_black > 0)
+  }
+  d <- select(d, -voters_black)
   
   d <- d[complete.cases(d),]
   d <- d[is.finite(rowSums(select(d, -GEOID))),] %>% 
     group_by(GEOID) %>% 
     filter(n() == 2)
+  
+  saveRDS(d, paste0("temp/", f, "_reg_data.rds"))
   
   plm(as.formula(paste0(f, " ~ ", covars)),
       data = d,
@@ -111,12 +145,12 @@ stargazer(models, type = "text",
                                "Share non-Hispanic Black",
                                "Share Latinx",
                                "Share Asian",
-                               "Population Density",
-                               "Median Income",
+                               "Log(Population Density)",
+                               "Median Income (dollarsign10,000s)",
                                "Share with Some College",
                                "Median Age",
                                "Share over 64 Years Old",
-                               # "Total Revenue",
+                               "Log(Total Revenue)",
                                "Share of Revenue from Taxes",
                                "Share of Revenue from State / Federal Government"),
           column.labels = ms$name,

@@ -85,7 +85,8 @@ p1
 
 full_set <- rename(full_set, share_s_fed = share_state_fed) %>% 
   mutate(median_income = median_income / 10000,
-         lpd = log(pop_dens))
+         lpd = log(pop_dens),
+         total_revenue = log(total_revenue))
 
 saveRDS(full_set, "temp/full_set_for_mae.rds")
 
@@ -122,7 +123,7 @@ stargazer(models, type = "text", omit = c("state"),
                                "% with Some College",
                                "Median Age",
                                "Share over 64",
-                               "Total Revenue",
+                               "Log(Total Revenue)",
                                "% of Rev from Taxes",
                                "% of Rev from State / Fed Gov."),
           se = ses,
