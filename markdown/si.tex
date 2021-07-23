@@ -5,14 +5,13 @@
 \documentclass[
   12pt,
 ]{article}
+\usepackage{amsmath,amssymb}
 \usepackage{lmodern}
-\usepackage{amsmath}
 \usepackage{ifxetex,ifluatex}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
-  \usepackage{amssymb}
 \else % if luatex or xetex
   \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
@@ -43,7 +42,7 @@
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=1in]{geometry}
-\usepackage{longtable,booktabs}
+\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -125,63 +124,6 @@
 \pagenumbering{arabic}
 \doublespacing
 
-\hypertarget{testing-robustness-of-l2-racial-estimates}{%
-\section*{Testing Robustness of L2 Racial Estimates}\label{testing-robustness-of-l2-racial-estimates}}
-\addcontentsline{toc}{section}{Testing Robustness of L2 Racial Estimates}
-
-As discussed in the body of this manuscript, our municipality-level racial estimates are constructed by aggregating up from individual-level records provided by L2. Because L2 uses statistical modeling to infer voters' race---not self-reported information---there is potential room for error in these estimates.
-
-Because there are no precise estimates of the racial demographics of the registered electorate in each state, we compare the estimated Black share of each municipality to the Black share of the citizen voting age population (CVAP) in each municipality. This method is not without drawbacks: if different cities have different racial registration rates, they will not track the perfectly. To mitigate some of this discrepancy, we adjust the Black share of the electorate in each municipality by the racial registration gap in that municipality's state, according to the Current Population Survey's (CPS) 2018 data. For example, according to the CPS, 27.0\% of the CVAP in Alabama was Black in 2018, but just 26.4\% of registered voters were Black. We therefore add 0.6\% to the estimated Black share of the electorate in each municipality in Alabama, so that it might more closely mirror the Black share of CVAP.
-
-In Table \ref{tab:mae} we present the mean absolute error (MAE) of the L2 estimates aggregated up to the municipality level and adjusted according to the CPS, relative to the Census Bureau's CVAP estimate. Because it seems possible that these errors vary by population size, we present the MAE for each quartile of the set of municipalities as measured by population, as well as the overall MAE.
-
-\begin{singlespace}
-\begin{table}[H]
-
-\caption{\label{tab:mae-chunck}\label{tab:mae} MAE of L2 Municipality Estimates, CVAP}
-\centering
-\begin{tabular}[t]{ccccc}
-\toprule
-Bottom Quartile & Second Quartile & Third Quartile & Fourth Quartile & Overall\\
-\midrule
-2.40\% & 2.38\% & 2.24\% & 2.70\% & 2.42\%\\
-\bottomrule
-\end{tabular}
-\end{table}
-\end{singlespace}
-
-Table \ref{tab:mae} makes clear that the adjusted Black estimates of the electorate mirror the Black share of CVAP very closely: for no group of municipalities does the MAE exceed 3\%. This seems to indicate that the L2 racial estimates are quite good when aggregated to the municipal level.
-
-In Table \ref{tab:mae:reg}, we show that the difference between the adjusted estimate of the Black share of the electorate and the Black share of the CVAP is entirely unrelated to cities' per-capita fees and fines, after controlling for other characteristics. Given the low MAE and the lack of relationship between the error and the fees and fines, we conclude that the municipal-level racial estimates from the individual-level records are reasonable and unbiased.
-
-\begin{singlespace}
-\input{"../temp/mae_clean.tex"}
-\end{singlespace}
-
-\hypertarget{regression-table-for-survey-data}{%
-\section*{Regression Table for Survey Data}\label{regression-table-for-survey-data}}
-\addcontentsline{toc}{section}{Regression Table for Survey Data}
-
-Here we present the regression table reported in the national survey data section of the manuscript. In model 1 we test whether personal or proximal contact with a police stop is differentially associated with turnout for Black and non-Black respondents. In this model, \emph{Stopped in Past 12 Months} captures the relationship between police stops and non-Black respondents; \emph{Stopped in Past 12 Months × Black} tests whether this relationship is different for Black respondents.
-
-Models 2, 3, and 4 test whether the relationship is different for other non-white groups. Finally, model 5 tests the relationship between turnout and a historical arrest.
-
-\begin{singlespace}
-\input{"../temp/anes_clean.tex"}
-\end{singlespace}
-
-Model 1 in Table \ref{tab:anes-reg} shows that Black individuals who had been stopped by the police (or had a family member stopped) in the preceding 12 months were 9 percentage points more likely to vote in 2020, other things equal; they were not related to turnout for non-Black respondents. Police stops are not, however, associated with different turnout effects for other non-white groups. Moreover, as discussed in the body of the paper, historical arrests were uniformly associated with a decrease in turnout of 4 percentage points for Black and non-Black respondents alike.
-
-\hypertarget{regression-table-for-2018-cross-sectional-municipality-model}{%
-\section*{Regression Table for 2018 Cross-Sectional Municipality Model}\label{regression-table-for-2018-cross-sectional-municipality-model}}
-\addcontentsline{toc}{section}{Regression Table for 2018 Cross-Sectional Municipality Model}
-
-In Table \ref{tab:cog-cross-reg} we present the full results of the econometric used to test the cross-sectional relationship between per-capita fees and fines, and 2018 municipal turnout. The table shows that a doubling of the fees and fines collected per capita is associated with a 0.3 percentage point reduction in overall turnout. That same doubling, however, is associated with a 0.4 percentage point \emph{increase} in the Black turnout. While these point estimates are quite small, it is worth keeping in mind that the range of fees and fines per capita is very wide. The interquartile ranges of fees and fines per capita stretches from \$1.96 to \$20.63---a more than ten-fold increase.
-
-\begin{singlespace}
-\input{"../temp/cog_cross_clean.tex"}
-\end{singlespace}
-
 \hypertarget{administrative-matching-robustness-check}{%
 \section*{Administrative Matching Robustness Check}\label{administrative-matching-robustness-check}}
 \addcontentsline{toc}{section}{Administrative Matching Robustness Check}
@@ -225,6 +167,81 @@ Figure \ref{fig:rob-window} shows that our overall treatment effect is remarkabl
 
 \caption{\label{fig:rob-window}Estimated Treatment Effect for Different Treatment Windows}\label{fig:windows}
 \end{figure}
+
+\hypertarget{regression-tables-for-individual-treatment-years}{%
+\section*{Regression Tables for Individual Treatment Years}\label{regression-tables-for-individual-treatment-years}}
+\addcontentsline{toc}{section}{Regression Tables for Individual Treatment Years}
+
+In the body of this manuscript, we present only the overall treatment effects for the police stops in Hillsborough County, which are effectively averaged across all three years. Here, in Tables \ref{tab:dind-table-2014}--\ref{tab:dind-table-2018}, we present the results for each group of treated and control voters. In Table \ref{tab:dind-table-2014}, all treated voters were stopped between the 2012 and 2014 elections, and all controls were stopped between the 2014 and 2016 elections. In Table \ref{tab:dind-table-2016}, treated voters were stopped between 2014 and 2016, while controls were stopped between 2016 and 2018. Finally, Table \ref{tab:dind-table-2018} presents the treatment effect for voters stopped between 2016 and 2018, relative to their controls stopped between the 2018 and 2020 elections. In every year, there is a statistically significant, negative treatment effect for non-Black voters. In 2014 and 2016, the effect is significantly smaller for Black individuals, though in 2018 the treatment effect for Black and non-Black voters is statistically indistinguishable.
+
+\begin{singlespace}
+\input{"../temp/dind_reg_y2014-11-04.tex"}
+\end{singlespace}
+
+\begin{singlespace}
+\input{"../temp/dind_reg_y2016-11-08.tex"}
+\end{singlespace}
+
+\begin{singlespace}
+\input{"../temp/dind_reg_y2018-11-06.tex"}
+\end{singlespace}
+
+\hypertarget{testing-robustness-of-l2-racial-estimates}{%
+\section*{Testing Robustness of L2 Racial Estimates}\label{testing-robustness-of-l2-racial-estimates}}
+\addcontentsline{toc}{section}{Testing Robustness of L2 Racial Estimates}
+
+As discussed in the body of this manuscript, our municipality-level racial estimates are constructed by aggregating up from individual-level records provided by L2. Because L2 uses statistical modeling to infer voters' race---not self-reported information---there is potential room for error in these estimates.
+
+Because there are no precise estimates of the racial demographics of the registered electorate in each city, we compare the estimated Black share of each municipality to the Black share of the citizen voting age population (CVAP) in each municipality. This method is not without drawbacks: if different cities have different racial registration rates, they will not track perfectly. To mitigate some of this discrepancy, we adjust the Black share of the electorate in each municipality by the racial registration gap in that municipality's state, according to the Current Population Survey's (CPS) 2018 data. For example, according to the CPS, 27.0\% of the citizen population in Alabama was Black in 2018, but just 26.4\% of registered voters were Black. We therefore add 0.6\% to the estimated Black share of the electorate in each municipality in Alabama, so that it might more closely mirror the Black share of CVAP.
+
+In Table \ref{tab:mae} we present the mean absolute error (MAE) of the L2 estimates aggregated up to the municipality level and adjusted according to the CPS, relative to the Census Bureau's CVAP estimate. Because it seems possible that these errors vary by population size, we present the MAE for each quartile of the set of municipalities as measured by population, as well as the overall MAE.
+
+\begin{singlespace}
+\begin{table}[H]
+
+\caption{\label{tab:mae-chunck}\label{tab:mae} MAE of L2 Municipality Estimates, CVAP}
+\centering
+\begin{tabular}[t]{ccccc}
+\toprule
+Bottom Quartile & Second Quartile & Third Quartile & Fourth Quartile & Overall\\
+\midrule
+2.40\% & 2.38\% & 2.24\% & 2.70\% & 2.42\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{singlespace}
+
+Table \ref{tab:mae} makes clear that the adjusted Black estimates of the electorate mirror the Black share of CVAP very closely: for no group of municipalities does the MAE exceed 3\%. This seems to indicate that the L2 racial estimates are quite good when aggregated to the municipal level.
+
+In Table \ref{tab:mae:reg}, we show that the difference between the adjusted estimate of the Black share of the electorate and the Black share of the CVAP is entirely unrelated to cities' per-capita fees and fines, after controlling for other characteristics. Given the low MAE and the lack of relationship between the error and the fees and fines, we conclude that the municipal-level racial estimates from the individual-level records are reasonable and unbiased.
+
+\begin{singlespace}
+\input{"../temp/mae_clean.tex"}
+\end{singlespace}
+
+\hypertarget{regression-table-for-2018-cross-sectional-municipality-model}{%
+\section*{Regression Table for 2018 Cross-Sectional Municipality Model}\label{regression-table-for-2018-cross-sectional-municipality-model}}
+\addcontentsline{toc}{section}{Regression Table for 2018 Cross-Sectional Municipality Model}
+
+In Table \ref{tab:cog-cross-reg} we present the full results of the econometric used to test the cross-sectional relationship between per-capita fees and fines, and 2018 municipal turnout. The table shows that a doubling of the fees and fines collected per capita is associated with a 0.3 percentage point reduction in overall turnout. That same doubling, however, is associated with a 0.4 percentage point \emph{increase} in the Black turnout. While these point estimates are quite small, it is worth keeping in mind that the range of fees and fines per capita is very wide. The interquartile ranges of fees and fines per capita stretches from \$1.96 to \$20.63---a more than ten-fold increase.
+
+\begin{singlespace}
+\input{"../temp/cog_cross_clean.tex"}
+\end{singlespace}
+
+\hypertarget{regression-table-for-survey-data}{%
+\section*{Regression Table for Survey Data}\label{regression-table-for-survey-data}}
+\addcontentsline{toc}{section}{Regression Table for Survey Data}
+
+Here we present the regression table reported in the national survey data section of the manuscript. In model 1 we test whether personal or proximal contact with a police stop is differentially associated with turnout for Black and non-Black respondents. In this model, \emph{Stopped in Past 12 Months} captures the relationship between police stops and non-Black respondents; \emph{Stopped in Past 12 Months × Black} tests whether this relationship is different for Black respondents.
+
+Models 2, 3, and 4 test whether the relationship is different for other non-white groups. Finally, model 5 tests the relationship between turnout and a historical arrest.
+
+\begin{singlespace}
+\input{"../temp/anes_clean.tex"}
+\end{singlespace}
+
+Model 1 in Table \ref{tab:anes-reg} shows that Black individuals who had been stopped by the police (or had a family member stopped) in the preceding 12 months were 9 percentage points more likely to vote in 2020, other things equal; they were not related to turnout for non-Black respondents. Police stops are not, however, associated with different turnout effects for other non-white groups. Moreover, as discussed in the body of the paper, historical arrests were uniformly associated with a decrease in turnout of 4 percentage points for Black and non-Black respondents alike.
 
 \newpage
 

@@ -16,7 +16,7 @@ anes_pre <- anes_pre %>%
 
 anes_pre$party <- factor(anes_pre$party, levels = c("DEM", "REP", "OTH"))
 
-income <- fread("../washington_covid/raw_data/income_lu.csv")
+income <- fread("../regular_data/anes/income_lu.csv")
 
 anes_pre <- left_join(anes_pre, income) %>% 
   mutate(income = income / 10000)

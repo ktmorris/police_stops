@@ -59,7 +59,7 @@ lapply(c(1:23), function(i){
 
 
 #####################################
-hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
+hist <- readRDS("C:/Users/morrisk/Desktop/full_raw_coded_hills_w_bgs.rds") %>%
   select(voter_id, starts_with("v1"), v08, v07) %>%
   pivot_longer(!starts_with("vo"), names_to = "year", values_to = "to")
 

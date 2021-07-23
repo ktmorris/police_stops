@@ -13,7 +13,7 @@ matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                                        ifelse(first_tr_year == 3, "2018-11-06", "XX"))),
          first_tr_year = as.Date(first_tr_year))
 
-hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
+hist <- readRDS("C:/Users/morrisk/Desktop/full_raw_coded_hills_w_bgs.rds") %>%
   select(voter_id, starts_with("v1"), v08) %>%
   pivot_longer(!starts_with("vo"), names_to = "year", values_to = "to")
 
@@ -51,17 +51,24 @@ cleanup("matches")
 gc()
 
 ##########################################################
-ll <- matches %>%
+ll <- bind_rows(mutate(matches, first_tr_year = as.character(first_tr_year)),
+                mutate(matches, first_tr_year = "Overall")) %>%
   filter(period <= 0.5) %>% 
-  group_by(treated, period, black_t) %>%
+  group_by(treated, period, black_t, first_tr_year) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
          black = ifelse(black_t, "Black Voters", "Non-Black Voters"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
+ll <- ll %>% 
+  mutate(first_tr_year = ifelse(first_tr_year == "Overall", first_tr_year,
+                                paste("t = 0\nin", substring(first_tr_year, 1, 4))))
+
+ll$first_tr_year <- factor(ll$first_tr_year, levels = unique(ll$first_tr_year))
+
 p2 <- ggplot(data = ll) + 
-  facet_grid( ~ black) +
+  facet_grid(first_tr_year ~ black) +
   geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
             alpha = 0.03, color = "black", fill = "yellow") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
@@ -81,13 +88,12 @@ p2 <- ggplot(data = ll) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
        shape = "Treatment Group",
-       caption = "Treatment occurs inside of yellow band.") +
+       caption = "Treatment occurs inside of yellow band.", ) +
   coord_cartesian(ylim = c(0.05, 0.75))
 p2
 saveRDS(p2, "temp/stopped_any_time_y.rds")
-#####################
 
-dat1 <- filter(matches, period <= 0.5)
+#####################
 
 m1 <- to ~ treated * post + as.factor(year)
 
@@ -103,60 +109,78 @@ m4 <- to ~ treated * post * black + as.factor(year) +
   dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
   median_income + some_college + unem + civil + paid + tampa_pd
 
-models1 <- lapply(c(m1, m2, m3, m4), function(f){
-  m <- lm(f, data = dat1,
-          weight = dat1$weight)
-})
+matches$first_tr_year <- as.character(matches$first_tr_year)
+
+for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
+  
+  if(gg == "overall"){
+    dat1 <- filter(matches, period <= 0.5)
+    tit = "\\label{tab:dind-table} Overall Treatment Effect"
+    ooo = c(1, 2, 4, 23, 24, 22, 25)
+  }else{
+    dat1 <- dplyr::filter(matches, period <= 0.5, first_tr_year == gg)
+    tit = paste0("\\label{tab:dind-table-", substring(gg, 1, 4), "}Treatment Effect for Voters Stopped before ", substring(gg, 1, 4), " Election")
+    ooo = c(1, 2, 7, 23, 24, 22, 25)
+  }
+ 
+  models1 <- lapply(c(m1, m2, m3, m4), function(f){
+    m <- lm(f, data = dat1,
+            weight = dat1$weight)
+  })
+  
+  
+  ses_cl <- list(
+    summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+    summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+    summary(lm.cluster(formula = m3, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
+    summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
+  )
+  
+  
+  stargazer(models1,
+            type = "text",
+            omit.stat = c("f", "ser"),
+            se = ses_cl,
+            omit = c("as.fac"),
+            covariate.labels = c("Treated",
+                                 "Post Treatment",
+                                 "Black",
+                                 "Treated $\\times$ Post Treatment",
+                                 "Treated $\\times$ Black",
+                                 "Post Treatment $\\times$ Black",
+                                 "Treated $\\times$ Post Treatment $\\times$ Black"),
+            table.layout = "-cm#-t-a-s-n",
+            keep = c("treatedTRUE", "post", "blackTRUE", "Constant"),
+            order = ooo,
+            notes = "TO REPLACE",
+            table.placement = "H",
+            title = tit,
+            out = paste0("temp/two_matches_reg_y_", gg, ".tex"),
+            add.lines = list(c("Includes Matched Covariates", "", "X", "", "X"),
+                             c("Includes Year Fixed Effects", "X", "X", "X", "X")))
+  
+  j <- fread(paste0("temp/two_matches_reg_y_", gg, ".tex"), header = F, sep = "+")
+  
+  note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
+  
+  j <- j %>% 
+    mutate(n = row_number(),
+           V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
+           V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>% 
+    filter(!grepl("Note:", V1))
+  
+  
+  j <- j %>%
+    arrange(n) %>%
+    select(-n)
+  
+  
+  write.table(j, paste0("./temp/dind_reg_y", gg, ".tex"), quote = F, col.names = F,
+              row.names = F)
+   
+}
 
 
-ses_cl <- list(
-  summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-  summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-  summary(lm.cluster(formula = m3, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-  summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
-)
-
-
-stargazer(models1,
-          type = "text",
-          omit.stat = c("f", "ser"),
-          se = ses_cl,
-          omit = c("as.fac"),
-          covariate.labels = c("Treated",
-                               "Post Treatment",
-                               "Black",
-                               "Treated $\\times$ Post Treatment",
-                               "Treated $\\times$ Black",
-                               "Post Treatment $\\times$ Black",
-                               "Treated $\\times$ Post Treatment $\\times$ Black"),
-          table.layout = "-cm#-t-a-s-n",
-          keep = c("treatedTRUE", "post", "blackTRUE", "Constant"),
-          order = c(1, 2, 4, 23, 24, 22, 25),
-          notes = "TO REPLACE",
-          table.placement = "H",
-          title = "\\label{tab:dind-table} Turnout Effects of Tickets",
-          out = "temp/two_matches_reg_y.tex",
-          add.lines = list(c("Includes Matched Covariates", "", "X", "", "X"),
-                           c("Includes Year Fixed Effects", "X", "X", "X", "X")))
-
-j <- fread("./temp/two_matches_reg_y.tex", header = F, sep = "+")
-
-note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
-
-j <- j %>% 
-  mutate(n = row_number(),
-         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>% 
-  filter(!grepl("Note:", V1))
-
-
-j <- j %>%
-  arrange(n) %>%
-  select(-n)
-
-
-write.table(j, "./temp/dind_reg_y.tex", quote = F, col.names = F,
-            row.names = F)
 
 ########################
 

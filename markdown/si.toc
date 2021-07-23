@@ -1,6 +1,7 @@
-\contentsline {section}{Testing Robustness of L2 Racial Estimates}{1}{section*.2}%
-\contentsline {section}{Regression Table for Survey Data}{4}{section*.3}%
-\contentsline {section}{Regression Table for 2018 Cross-Sectional Municipality Model}{4}{section*.4}%
-\contentsline {section}{Administrative Matching Robustness Check}{8}{section*.5}%
-\contentsline {section}{Sensitivity to Narrower Windows}{9}{section*.6}%
-\contentsline {section}{References}{11}{section*.7}%
+\contentsline {section}{Administrative Matching Robustness Check}{1}{section*.2}%
+\contentsline {section}{Sensitivity to Narrower Windows}{2}{section*.3}%
+\contentsline {section}{Regression Tables for Individual Treatment Years}{4}{section*.4}%
+\contentsline {section}{Testing Robustness of L2 Racial Estimates}{7}{section*.5}%
+\contentsline {section}{Regression Table for 2018 Cross-Sectional Municipality Model}{11}{section*.6}%
+\contentsline {section}{Regression Table for Survey Data}{13}{section*.7}%
+\contentsline {section}{References}{15}{section*.8}%

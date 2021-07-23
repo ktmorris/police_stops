@@ -1,4 +1,4 @@
-files <- list.files("D:/national/post_2014", full.names = T, pattern = "*.zip")
+files <- list.files("E:/national/post_2014", full.names = T, pattern = "*.zip")
 
 
 for(f in files){
@@ -41,7 +41,7 @@ for(f in files){
 ##############################
 files <- list.files("temp", pattern = "*to_14_no_block.rds", full.names = T)
 
-db18 <- dbConnect(SQLite(), "D:/national_file.db")
+db18 <- dbConnect(SQLite(), "E:/national_file.db")
 
 for(f in files){
   s <- substring(f, 6, 7)
