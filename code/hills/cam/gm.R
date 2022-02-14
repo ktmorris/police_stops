@@ -12,7 +12,19 @@ require(snow)
 require(parallel)
 
 
-hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+Sys.info()
+
+NodeFile = Sys.getenv("MY_HOSTFILE")
+
+print(NodeFile)
+
+readLines(NodeFile)
+
+cl<-makeCluster(c(readLines(NodeFile)), type="SOCK")
+cl
+
+
+hills_pre_match <- readRDS("temp/hills_pre_match_cam.rds")
 
 ############## 2014
 
@@ -75,53 +87,20 @@ hills18 <- bind_rows(hills18_t, hills18_c) %>%
 ###########################################
 pre <- bind_rows(hills14, hills16, hills18)
 
-saveRDS(pre, "temp/real_pre_match_hills.rds")
+samp <- pre %>% 
+  group_by(treated, first_tr_year) %>% 
+  sample_frac(0.05) %>% 
+  ungroup()
 
-ids <- pre %>%
-  mutate(id = row_number()) %>%
-  select(id, voter_id, first_tr_year)
-
-X <- pre %>%
+match_data <- samp %>% 
   select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
          -v08, -v16, -v10, -reg_date) %>% 
   mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
   select(first_tr_year, paid, civil, tampa_pd, v1, v2, v3, everything())
 
-genout <- readRDS("temp/genout_hills_yem.rds")
+genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000,
+                   exact = c(rep(T, 7), rep(F, 14)))
+
+saveRDS(genout, "temp/genout_hills_yem_cam.rds")
 
 
-mout <- Matchby(Tr = pre$treated, X = X,
-                by = c(X$first_tr_year,
-                       X$white,
-                       X$black,
-                       X$latino,
-                       X$asian,
-                       X$male,
-                       X$dem,
-                       X$rep), estimand = "ATT", Weight.matrix = genout, M = 1,
-                exact = c(rep(T, 7), rep(F, 14)), ties = T)
-
-
-
-save(mout, file = "./temp/mout_hills_y.RData")
-
-load("temp/mout_hills_y.RData")
-
-matches <- data.table(voter = c(mout$index.control,
-                                mout$index.treated),
-                      group = rep(mout$index.treated, 2),
-                      weight = rep(mout$weights, 2)) %>%
-  group_by(voter, group) %>%
-  summarize(weight = sum(weight)) %>%
-  ungroup()
-
-
-matches <- left_join(matches, ids, by = c("voter" = "id")) %>%
-  select(-voter, -first_tr_year) %>%
-  rename(voter = voter_id)
-
-matches <- left_join(matches, ids, by = c("group" = "id")) %>%
-  select(-group) %>%
-  rename(group = voter_id)
-
-saveRDS(matches, "temp/matches_hills_yem.rds")

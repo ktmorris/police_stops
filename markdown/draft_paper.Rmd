@@ -5,7 +5,12 @@ author:
 - Jonathan Ben-Menachem^[PhD Student, Columbia University, Department of Sociology (jb4487@columbia.edu)]
 - Kevin Morris^[PhD Student, CUNY Graduate Center, Department of Sociology (kmorris@gradcenter.cuny.edu)]
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: word_document
+output:
+  bookdown::pdf_document2:
+    toc: no
+    fig_caption: yes
+    latex_engine: xelatex
+    keep_tex: true
 bibliography: "policing_turnout.bib"
 link-citations: yes
 fontsize: 12pt
@@ -194,24 +199,28 @@ Next, we test the relationship between fines and fees revenue reliance and voter
 
 To directly observe the effect of being stopped by the police on voter participation, we now turn to our individual-level analysis in Hillsborough County, Florida. As discussed above, we match individuals who were ticketed between the 2012 and 2018 elections to individuals who were stopped following the subsequent general election.^2^ Matching is done with replacement and ties are not broken. This means that some treated voters have multiple controls; the regression weights are calculated to account for this possibility. In Table 1 we present the results of the matching algorithm. As the table demonstrates, the selected control voters are very similar to the treated voters.
 
-TABLE 1 ABOUT HERE
-
-
+\begin{singlespace}
+\input{"../temp/balance_table.tex"}
+\end{singlespace}
 
 It is worth noting that voters who were ticketed between 2012 and 2020 were far more likely to be Black and male than the general electorate, and live in Census block groups with moderately lower incomes. 
 
 In Figure 1, we plot the turnout of treated and control voters in the elections before and after the treated voter was stopped. In the top row, we present the turnout in 2008--2014 of the individuals stopped between 2012 and 2014 and their controls; the second row shows the 2010--2016 turnout for individuals stopped between 2014 and 2016 and their controls; and the third shows the treatment effect for those stopped in the 2 years prior to the 2018 midterms. Finally, in the bottom row, we present the overall turnout effects for these three elections. The first election following a treated voter’s stop is denoted as *t = 0* while the years in which *t* is less than zero are the periods prior to the stop.
 
 
-FIGURE 1 ABOUT HERE
+```{r did1, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "!htb", fig.align = "center"}
+p2 <- readRDS("temp/stopped_any_time_y.rds")
+print(p2)
+```
 
 
 Figure 1 makes a number of things immediately apparent. First, we can see that for both Black and non-Black voters the pre-treatment trends are identical. This, combined with the fact that treated and control voters mirror one another in terms of other characteristics, lends credibility to the parallel trends assumption. Secondly, Figure 1 provides preliminary visual evidence of the demobilizing effects of police stops in Hillsborough County. However, as the figure also makes clear, it seems that the negative effects are concentrated in the lower-salience midterm elections; there is little evidence of turnout effects in the 2016 presidential election.
 
 Table 2 formalizes the final row of Figure 1 into an ordinary least squares regression (the regression tables broken out for each year can be found in the Supplementary Information). Models 1 and 2 show our overall causal effect, while models 3 and 4 allow for the possibility that a ticket differentially mobilizes Black voters. In models 1 and 3, we include only the treatment, timing, and race dummies, while the full set of covariates used for the matching procedure are included in models 2 and 4. The empirical estimands are *Treated × Post Treatment* and *Treated × Post Treatment × Black*. In models 1 and 2, *Treated × Post Treatment* measures the overall treatment effect, and in models 3 and 4 it measures the treatment effect for non-Black voters. *Treated × Post Treatment × Black* measures any effect for Black voters above-and-beyond the effect measured for non-Black voters.
 
-TABLE 2 ABOUT HERE
-
+\begin{singlespace}
+\input{"../temp/dind_reg_y.tex"}
+\end{singlespace}
 
 As both Figure 1 and Table 2 make clear, police tickets meaningfully depressed turnout. In models 1 and 2, the estimated overall treatment effect is -1.5 percentage points. In models 3 and 4, we can see that a ticket was less demobilizing for Black individuals than for others---non-Black turnout was depressed by 1.7 percentage points, while the negative effect was just 1.2 points for Black individuals. Although the treatment effect is still substantively quite large for Black individuals, Hillsborough County Black voters' turnout in federal elections was not as negatively impacted by police contact as that of non-Black individuals.
 
@@ -219,13 +228,18 @@ As both Figure 1 and Table 2 make clear, police tickets meaningfully depressed t
 
 Before testing the causal effect of fees and fines collections on turnout, we begin with a cross-sectional analysis of the relationship using ordinary least squares. Here, we regress municipality-level turnout in 2018 against fees and fines collections as reported in the 2017 COG, as well as a number of other covariates. In Figure 2 we present the marginal effect of fees and fines on municipal-level turnout. The plot shows the results from two separate models: one in which the dependent variable is Black turnout (as a share of CVAP), and a second in which the dependent variable is non-Black turnout. The figure also marks the interdecile range. The full regression table can be found in the Supplementary Information.
 
-FIGURE 2 ABOUT HERE
+```{r cross-18, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:mef-2018}Predicted Turnout, 2018", fig.pos = "!htb", fig.align = "center"}
+load("temp/mef_to.rdata")
+print(p2)
+```
 
 As Figure 2 makes clear, turnout was lower for non-Black voters in municipalities with higher fees and fines collections per resident: it dropped by roughly 1.5 percentage points over the interdecile range, after controlling for the other covariates. The opposite is true for Black voters: over the same range, Black turnout *increases* by roughly 2.4 percentage points. Both relationships are statistically significant at the 95 confidence level. This does not prove that higher fees and fines increase Black turnout; cross-sectional regressions cannot establish causality. Nevertheless, Figure 2 is consistent with this story.
 
 We turn now to our two-way fixed effects model. As discussed above, we retain each municipality that reported their fees and fines data to the COG in both 2012 and 2017 (and met the other criteria discussed in the *Data and Design* section). The dependent variable in each model is calculated by dividing the number of ballots cast in 2014 and 2018 by the 5-year CVAP estimate from the same year. We run the two-way fixed effects on overall turnout, Black turnout, and non-Black turnout. The results of these models can be found in Table 3. The average municipality included in this analysis raised $2.17 in fees and fines per resident in 2012, and the average municipality increased this per-capita figure by $0.47 between 2012 and 2017. Just over 10% of municipalities raised no revenue from fees and fines in either year.
 
-TABLE 3 ABOUT HERE
+\begin{singlespace}
+\input{"../temp/2wfe_reg_clean.tex"}
+\end{singlespace}
 
 The results of the two-way fixed effects model are different from what we saw in the 2018 cross-sectional approach; namely, Table 3 indicates that higher fees and fines cause lower turnout among non-Black individuals, but do not significantly impact Black turnout. The estimated coefficient, however, is small: a 10 percent increase in fees and fines is associated with a decrease in turnout of about 0.04 percentage points.
 
@@ -235,7 +249,10 @@ In this section we make use of the American National Election Studies 2020 Time 
 
 Roughly 15 percent of non-Black respondents reported a police stop in the preceding 12 months, while the same was true for more than 22 percent of Black respondents. In Figure 3 we present the results of our econometric models. In the left-hand panel, we show the predicted turnout of respondents who answered “yes” or “no” to the question *During the past 12 months, were you or any of your family members stopped or questioned by a police officer, or did this not happen in the past 12 months?* The right-hand panel, meanwhile, plots these relationships for respondents who answered “yes” or “no” to the question *Have you ever been arrested, or has that never happened to you?*. These are the predicted probabilities after controlling for respondents’ race / ethnicity; age; party; ideology; income; education; and 2016 turnout. The full regression table can be found in the Supplementary Information..
 
-FIGURE 3 ABOUT HERE
+```{r anes-cross, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:anes}Predicted Turnout, 2020", fig.pos = "!htpb", fig.align = "center"}
+load("temp/anes_plot.rdata")
+print(p2)
+```
 
 Figure 3 demonstrates that Black voters who were stopped by the police, or had a family member stopped by the police, were substantially more likely to vote in 2020 than Black individuals with neither direct nor proximal contact with a police stop (*p* = 0.005). The same was not true for non-Black respondents, for whom contact with a police stop was not statistically associated with turnout in 2020 (*p* = 0.27). Importantly, this effect is not a remnant of a white--nonwhite divide. As we show in the Supplementary Information, police stops were not differently related to turnout for Latinos than for non-Latinos; nor did they impact turnout differently for Asians than for non-Asians. The ANES results point, then, to the fact that police stops are uniquely associated with higher turnout for Black respondents.
 
@@ -287,40 +304,4 @@ Although we have generated new evidence suggesting that police stops and related
 
 
 <div id="refs"></div>
-
-\newpage
-
-
-# Tables {-}
-
-\begin{singlespace}
-\input{"../temp/balance_table.tex"}
-\end{singlespace}
-
-\begin{singlespace}
-\input{"../temp/dind_reg_y.tex"}
-\end{singlespace}
-
-\begin{singlespace}
-\input{"../temp/2wfe_reg_clean.tex"}
-\end{singlespace}
-
-
-
-# Figures {-}
-
-```{r did1, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/stopped_any_time_y.rds")
-print(p2)
-```
-
-```{r cross-18, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:mef-2018}Predicted Turnout, 2018", fig.pos = "H", fig.align = "center"}
-load("temp/mef_to.rdata")
-print(p2)
-```
-
-```{r anes-cross, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:anes}Predicted Turnout, 2020", fig.pos = "!htpb", fig.align = "center"}
-load("temp/anes_plot.rdata")
-print(p2)
-```
 

@@ -1,6 +1,11 @@
 ---
 title: "Supplementary Information"
-output: word_document
+output:
+  bookdown::pdf_document2:
+    toc: no
+    fig_caption: yes
+    latex_engine: xelatex
+    keep_tex: true
 bibliography: "policing_turnout.bib"
 link-citations: yes
 fontsize: 12pt
@@ -57,7 +62,7 @@ Here, we re-run our matching process on a variety of different windows around th
 
 Figure 1 shows that our overall treatment effect is remarkably consistent regardless of the size of the window drawn around the election. As we expand the window, we gain more treated voters (and treated voters have a larger pool of potential controls). As such, the confidence interval shrinks, but the overall effect is clearly robust to very strict assumptions. In each case, we are re-estimating our primary models in which the covariates used in the matching exercise are also included in the econometric model.
 
-```{r windows, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:rob-window}Estimated Treatment Effect for Different Treatment Windows", fig.pos = "H", fig.align = "center"}
+```{r windows, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:rob-window}Estimated Treatment Effect for Different Treatment Windows", fig.pos = "!htb", fig.align = "center"}
 p2 <- readRDS("temp/windows_rob.rds")
 print(p2)
 ```

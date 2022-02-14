@@ -1,5 +1,5 @@
 
-anes_pre <- read.dta13("../regular_data/anes/anes_timeseries_2020_stata_20210324/anes_timeseries_2020_stata_20210324.dta")
+anes_pre <- fread("F:/regular_data/anes/anes_timeseries_2020_csv_20210719/anes_timeseries_2020_csv_20210719.csv")
 
 
 anes_pre <- anes_pre %>% 
@@ -12,14 +12,16 @@ anes_pre <- anes_pre %>%
          asian = V201549x == 4,
          party = ifelse(V201228 == 1 | V201230 == 3, "DEM",
                         ifelse(V201228 == 2 | V201230 == 1, "REP", "OTH")),
-         vote16 = as.integer(V201101 == 1 | V201102 == 1))
+         vote16 = as.integer(V201101 == 1 | V201102 == 1),
+         imp = V202500x)
 
 anes_pre$party <- factor(anes_pre$party, levels = c("DEM", "REP", "OTH"))
 
 income <- fread("../regular_data/anes/income_lu.csv")
 
 anes_pre <- left_join(anes_pre, income) %>% 
-  mutate(income = income / 10000)
+  mutate(income = income / 10000,
+         cd = paste(V203000, V203002))
 
 reg_d <- select(anes_pre, ideol, white, black, latino, party, V200002,
                 age, income, V200010b, to, asian, V201600, V201201,
@@ -28,7 +30,7 @@ reg_d <- select(anes_pre, ideol, white, black, latino, party, V200002,
                 fair_police = V202493x,
                 self_descrim = V202537,
                 linked_fate_black = V202507,
-                blm = V202174, vote16) %>% 
+                blm = V202174, vote16, cd, imp) %>% 
   filter(V202456 %in% c(1, 2),
          V202457 %in% c(1, 2)) %>% 
   mutate(stopped = V202456 == 1,
@@ -71,77 +73,42 @@ reg_d <- select(anes_pre, ideol, white, black, latino, party, V200002,
   mutate_at(vars(white, latino, asian, to, black, stopped, arrested), ~ ifelse(., 1, 0))
 
 
-m_stop <- lm(to ~ stopped*black + white + latino + asian + age + party + income + sex +
-               ideol + educ + vote16, filter(reg_d), weight = V200010b)
+m_stop <- feols(to ~ stopped*black + white + latino + asian + age + party + income + sex +
+               ideol + vote16 + cd + educ, filter(reg_d), weight = reg_d$V200010b)
 
-m_stop2 <- lm(to ~ stopped*asian + white + latino + black + age + party + income + sex +
-               ideol + educ + vote16, filter(reg_d), weight = V200010b)
+m_stop2 <- feols(to ~ stopped*asian + white + latino + black + age + party + income + sex +
+                ideol + vote16 + cd + educ, filter(reg_d), weight = reg_d$V200010b)
 
-m_stop3 <- lm(to ~ stopped*latino + white + asian + black + age + party + income + sex +
-                ideol + educ + vote16, filter(reg_d), weight = V200010b)
+m_stop3 <- feols(to ~ stopped*latino + white + asian + black + age + party + income + sex +
+                ideol + vote16 + cd + educ, filter(reg_d), weight = reg_d$V200010b)
 
-m_stop4 <- lm(to ~ stopped*blm + age + party + income + sex +
-                ideol + educ + vote16, filter(reg_d, black == 1, blm >= 0), weight = V200010b)
+m_arrest <- feols(to ~ arrested*black + white + asian + latino + age + party + income + sex +
+               ideol + vote16 + cd + educ, filter(reg_d), weight = reg_d$V200010b)
 
-m_arrest <- lm(to ~ arrested*black + white + asian + latino + age + party + income + sex +
-               ideol + educ + vote16, filter(reg_d), weight = V200010b)
+################################
+rows <- tribble(~term,          ~m_stop, ~m_arrest,
+                "Age", "$\\checkmark$", "$\\checkmark$", 
+                "Income", "$\\checkmark$", "$\\checkmark$", 
+                "2016 Turnout", "$\\checkmark$", "$\\checkmark$", 
+                "Race Fixed Effects", "$\\checkmark$", "$\\checkmark$", 
+                "Gender Fixed Effects", "$\\checkmark$", "$\\checkmark$", 
+                "Ideology Fixed Effects", "$\\checkmark$", "$\\checkmark$", 
+                "Party Fixed Effects", "$\\checkmark$", "$\\checkmark$", 
+                "Education Fixed Effects", "$\\checkmark$", "$\\checkmark$", 
+                "Congressional District Fixed Effects", "$\\checkmark$", "$\\checkmark$")
+attr(rows, 'position') <- c(11:19)
 
-
-stargazer(m_stop, m_stop2, m_stop3, m_arrest, type = "text",
-          covariate.labels = c("Stopped in Past 12 Months",
-                               "Ever Arrested",
-                               "Black",
-                               "White",
-                               "Asian",
-                               "Latinx",
-                               "Age",
-                               "Republican",
-                               "Other Party",
-                               "Income (dollarsign10,000s)",
-                               "Male",
-                               "Refused Sex Question",
-                               "Ideology Missing",
-                               "Don't Know Ideology",
-                               "Extremely Liberal", "Liberal", "Slightly Liberal",
-                               "Slightly Conservative", "Conservative", "Extremely Conservative",
-                               "Education Missing",
-                               "No High School Diploma",
-                               "Some College, No Degree",
-                               "Associate's Degree",
-                               "Bachelor's Degree",
-                               "Post-Graduate Education",
-                               "Voted in 2016",
-                               "Stopped in Past 12 Months $\\times$ Black",
-                               "Stopped in Past 12 Months $\\times$ Asian",
-                               "Stopped in Past 12 Months $\\times$ Latinx",
-                               "Ever Arrested $\\times$ Black"),
-          dep.var.labels = "Turnout in 2020",
-          table.placement = "!htpb",
-          notes = "TO REPLACE",
-          omit.stat = c("F", "ser"),
-          out = "temp/anes_raw.tex",
-          title = "\\label{tab:anes-reg} Criminal Legal System Contact and 2020 Turnout")
-
-j <- fread("./temp/anes_raw.tex", header = F, sep = "+")
-
-note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.\\\\Race dummies relative to \"other.\" Party dummies relative to \"Democrat.\" Sex dummies relative to \"Female.\" Ideology dummies relative to \"Moderate.\" Education dummies relative to \"High School Diploma.\"}}}"
-
-j <- j %>%
-  mutate(n = row_number(),
-         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
-  filter(!grepl("Note:", V1))
-
-insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
-insert2 <- "}"
-
-j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
-  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
-  arrange(n) %>%
-  select(-n)
-
-write.table(j, "./temp/anes_clean.tex", quote = F, col.names = F,
-            row.names = F)
+modelsummary(list(m_stop, m_arrest),
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("stopped" = "Stopped in Past 12 Months",
+                          "arrested" = "Ever Arrested",
+                          "black" = "Black",
+                          "stopped:black" = "Stopped $\\times$ Black",
+                          "arrested:black" = "Arrested $\\times$ Black",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "\\label{tab:anes-reg} Criminal Legal System Contact and 2020 Turnout",
+             add_rows = rows)
 
 
 #######################################
@@ -199,3 +166,13 @@ p2
 save(p2, file = "temp/anes_plot.rdata")
 
 #############################
+
+bl <- filter(reg_d, black == 1, linked_fate_black > 0)
+
+m_stop2 <- lm(to ~ stopped*linked_fate_black + white + latino + asian + age + party + income + sex +
+                  ideol + vote16 + educ + state, filter(bl), weight = bl$V200010b)
+
+summary(m_stop2)
+
+h <- ggeffect(m_stop2, terms = c("stopped", "linked_fate_black"))
+plot(h)

@@ -1,11 +1,11 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.7.23)  23 JUL 2021 16:45
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.9.20)  1 OCT 2021 23:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **draft_paper.tex
 (./draft_paper.tex
 LaTeX2e <2021-06-01> patch level 1
-L3 programming layer <2021-07-12>
+L3 programming layer <2021-08-27>
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2021/02/12 v1.4n Standard LaTeX document class
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/size12.clo
@@ -150,11 +150,11 @@ Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
 code-math.sty
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3kernel/expl3.s
 ty
-Package: expl3 2021-07-12 L3 programming layer (loader) 
+Package: expl3 2021-08-27 L3 programming layer (loader) 
 
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3backend/l3back
 end-xetex.def
-File: l3backend-xetex.def 2021-07-12 L3 backend support: XeTeX
+File: l3backend-xetex.def 2021-08-04 L3 backend support: XeTeX
 (|extractbb --version)
 \c__kernel_sys_dvipdfmx_version_int=\count198
 \l__color_backend_stack_int=\count199
@@ -174,11 +174,11 @@ TeX
 
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3packages/xpars
 e/xparse.sty
-Package: xparse 2021-06-18 L3 Experimental document command parser
+Package: xparse 2021-08-27 L3 Experimental document command parser
 )
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3packages/l3key
 s2e/l3keys2e.sty
-Package: l3keys2e 2021-06-18 LaTeX2e option processing using LaTeX3 keys
+Package: l3keys2e 2021-08-27 LaTeX2e option processing using LaTeX3 keys
 )
 (c:/Users/morrisk/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/fontspec/fontspe
 c.sty
@@ -1071,77 +1071,76 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 8.3991pt on input line 242.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 5.99936pt on input line 242.
-[14] [15] [16] [17] [18] [19] [20] [21] [22] [23] [24] [25] [26] [27] [28] [29]
-[30] [31] [32] [33]
-Underfull \hbox (badness 1997) in paragraph at lines 480--482
-[][]\TU/lmr/m/n/12 Imai, Kosuke, In Song Kim, and Erik Wang. 2020. “Matching Me
-thods for
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 480--482
-[] [] [][][] [] [][][] [] [][][][][][][][] [] [][][][][][][][][] [] [][][][][] 
-[] [][][][][][][][] [] [][][][][][][][][][][] [] [][][][][][] [] [][][][][][] [
-][]
- []
-
-[34]
-Underfull \hbox (badness 10000) in paragraph at lines 492--494
-[]$[][][][][] [] [] [] [][][] [] [][][][][][][] [] [][][] [] [][][][] [] [][] [
-] [][] [] [][] [] [][][][][][] [][] [][][][][][][][] [][] [][][][][][][][] [][]
- [][][][][] [][] [][][][][][][][][] [][] [] [][]
- []
-
-[35]
-Underfull \hbox (badness 2884) in paragraph at lines 519--521
-\TU/lmr/m/n/12 Plundering ‘Collection Agency’.” \TU/lmr/m/it/12 Washington Post
-\TU/lmr/m/n/12 , March 5, 2015. []$[][][][][] []
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 519--521
-[] [] [][][] [] [][][][][][][][][][][][][][] [] [][][] [] [][][][] [] [][][][][
-][][] [][] [][][] [] [][] [] [][][][] [] [][] [] [][] [] [][][][][][][][] [][] 
-[][][][][] [][]
- []
-
-[36] [37]
-Underfull \hbox (badness 10000) in paragraph at lines 567--569
-[][][][][][][][] [][] [][] [][] [][][] [][] [][][][][][][][][][] [][] [][][][][
-][][] [][] [][][][][] [][] [][][][] [][] [][][][][][][] [][] [][][][] [][] [][]
-[][] [][] [][][][] [][] [][] [][] [][][][] [][] [][][] [][]
- []
-
-[38] [39] [40] (../temp/balance_table.tex) (../temp/dind_reg_y.tex
+[14] [15] [16] [17] [18] [19] [20] (../temp/balance_table.tex)
+File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
+<use draft_paper_files/figure-latex/did1-1.pdf>
+[21] [22] (../temp/dind_reg_y.tex
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
 (Font)              scaled to size 8.0pt on input line 42.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
 (Font)              scaled to size 8.00073pt on input line 42.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 (Font)              scaled to size 7.99915pt on input line 42.
-) [41] (../temp/2wfe_reg_clean.tex)
-File: draft_paper_files/figure-latex/did1-1.pdf Graphic file (type pdf)
-<use draft_paper_files/figure-latex/did1-1.pdf>
-[42] [43]
+) [23] [24]
 File: draft_paper_files/figure-latex/cross-18-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/cross-18-1.pdf>
-[44]
+[25] (../temp/2wfe_reg_clean.tex) [26] [27]
 File: draft_paper_files/figure-latex/anes-cross-1.pdf Graphic file (type pdf)
 <use draft_paper_files/figure-latex/anes-cross-1.pdf>
-[45] [46] (./draft_paper.aux)
+[28] [29] [30] [31] [32] [33] [34] [35] [36] [37] [38]
+Underfull \hbox (badness 1997) in paragraph at lines 507--509
+[][]\TU/lmr/m/n/12 Imai, Kosuke, In Song Kim, and Erik Wang. 2020. “Matching Me
+thods for
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 507--509
+[] [] [][][] [] [][][] [] [][][][][][][][] [] [][][][][][][][][] [] [][][][][] 
+[] [][][][][][][][] [] [][][][][][][][][][][] [] [][][][][][] [] [][][][][][] [
+][]
+ []
+
+[39]
+Underfull \hbox (badness 10000) in paragraph at lines 519--521
+[]$[][][][][] [] [] [] [][][] [] [][][][][][][] [] [][][] [] [][][][] [] [][] [
+] [][] [] [][] [] [][][][][][] [][] [][][][][][][][] [][] [][][][][][][][] [][]
+ [][][][][] [][] [][][][][][][][][] [][] [] [][]
+ []
+
+[40]
+Underfull \hbox (badness 2884) in paragraph at lines 546--548
+\TU/lmr/m/n/12 Plundering ‘Collection Agency’.” \TU/lmr/m/it/12 Washington Post
+\TU/lmr/m/n/12 , March 5, 2015. []$[][][][][] []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 546--548
+[] [] [][][] [] [][][][][][][][][][][][][][] [] [][][] [] [][][][] [] [][][][][
+][][] [][] [][][] [] [][] [] [][][][] [] [][] [] [][] [] [][][][][][][][] [][] 
+[][][][][] [][]
+ []
+
+[41] [42]
+Underfull \hbox (badness 10000) in paragraph at lines 594--596
+[][][][][][][][] [][] [][] [][] [][][] [][] [][][][][][][][][][] [][] [][][][][
+][][] [][] [][][][][] [][] [][][][] [][] [][][][][][][] [][] [][][][] [][] [][]
+[][] [][] [][][][] [][] [][] [][] [][][][] [][] [][][] [][]
+ []
+
+[43] [44] [45] (./draft_paper.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `draft_paper.out' has not changed.
-(rerunfilecheck)             Checksum: F40FD22DD58EDB7C6A0C0C8B3EEBD034;2768.
+(rerunfilecheck)             Checksum: A536C9FEF5F6305F72273BD405CB6F38;2611.
  ) 
 Here is how much of TeX's memory you used:
- 18072 strings out of 478475
- 320018 string characters out of 5857445
- 808520 words of memory out of 5000000
- 38074 multiletter control sequences out of 15000+600000
+ 18070 strings out of 478492
+ 320017 string characters out of 5860269
+ 801501 words of memory out of 5000000
+ 38055 multiletter control sequences out of 15000+600000
  411924 words of font info for 95 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  87i,15n,120p,2666b,500s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on draft_paper.pdf (47 pages).
+Output written on draft_paper.pdf (46 pages).

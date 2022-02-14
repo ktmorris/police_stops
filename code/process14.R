@@ -12,17 +12,17 @@ for(f in files){
   }
   if(!file.exists(paste0("temp/", state, "_to_14_block.rds"))){
     l <- list.files(f2, full.names = T, pattern = "*.tab")
-    k <- read.csv.sql(l, sep = "\t",
-                      sql = "select LALVOTERID, Voters_FIPS,
-                             Residence_Addresses_AddressLine, 
-                             Residence_Addresses_ExtraAddressLine, 
-                             Residence_Addresses_City, 
-                             Residence_Addresses_State,
-                             Residence_Addresses_CensusTract,
-                             Residence_Addresses_CensusBlockGroup,
-                             Residence_Addresses_CensusBlock,
-                             EthnicGroups_EthnicGroup1Desc,
-                             [General_2014.11.04] from file") %>%
+    k <- fread(l, sep = "\t",
+                      select = c("LALVOTERID", "Voters_FIPS",
+                             "Residence_Addresses_AddressLine", 
+                             "Residence_Addresses_ExtraAddressLine", 
+                             "Residence_Addresses_City", 
+                             "Residence_Addresses_State",
+                             "Residence_Addresses_CensusTract",
+                             "Residence_Addresses_CensusBlockGroup",
+                             "Residence_Addresses_CensusBlock",
+                             "EthnicGroups_EthnicGroup1Desc",
+                             "General_2014-11-04")) %>%
       mutate(state = state)
     
     saveRDS(filter(k,
@@ -41,7 +41,7 @@ for(f in files){
 ##############################
 files <- list.files("temp", pattern = "*to_14_no_block.rds", full.names = T)
 
-db18 <- dbConnect(SQLite(), "E:/national_file.db")
+db18 <- dbConnect(SQLite(), "D:/national_file.db")
 
 for(f in files){
   s <- substring(f, 6, 7)

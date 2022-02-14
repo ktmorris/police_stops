@@ -2,8 +2,10 @@ library(splitstackshape)
 library(PanelMatch)
 library(rgdal)
 library(sqldf)
+library(fixest)
 library(Metrics)
 library(RSQLite)
+library(modelsummary)
 library(tidycensus)
 library(multcomp)
 library(miceadds)
@@ -20,7 +22,7 @@ library(tidyverse)
 library(kevostools)
 
 save <- c("db", "cleanup", "theme_bc", "save", "weighted.ttest.ci")
-
+options("modelsummary_format_numeric_latex" = "plain")
 
 cleanup <- function(...){
   save2 <- c(save, ...)
