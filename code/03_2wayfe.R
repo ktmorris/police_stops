@@ -139,47 +139,48 @@ models <- lapply(ms$m, function(f){
       effect = "twoways")
 })
 
-stargazer(models, type = "text",
-          covariate.labels = c("Log(Dollars / Resident)",
-                               "Share non-Hispanic White",
-                               "Share non-Hispanic Black",
-                               "Share Latinx",
-                               "Share Asian",
-                               "Log(Population Density)",
-                               "Median Income (dollarsign10,000s)",
-                               "Share with Some College",
-                               "Median Age",
-                               "Share over 64 Years Old",
-                               "Log(Total Revenue)",
-                               "Share of Revenue from Taxes",
-                               "Share of Revenue from State / Federal Government"),
-          column.labels = ms$name,
-          dep.var.labels = "",
-          notes = "TO REPLACE",
-          title = "\\label{tab:twfe} Two-Way Fixed Effects Models",
-          out = "temp/2wfe_reg.tex",
-          omit.stat = c("F", "ser"))
+names(models) <- ms$name
 
-j <- fread("./temp/2wfe_reg.tex", header = F, sep = "+")
 
-note.latex <- "\\multicolumn{3}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.}}}"
+modelsummary(models,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("lndper" = "Log((Dollars / Resident) + 1)",
+                          "nh_white" = "Share non-Hispanic White",
+                          "nh_black" = "Share non-Hispanic Black",
+                          "latino" = "Share Latinx",
+                          "asian" = "Share Asian",
+                          "pop_dens" = "Log(Population Density)",
+                          "median_income" = "Median Income (\\$10,000s)",
+                          "some_college" = "Share with Some College",
+                          "median_age" = "Median Age",
+                          "share_over_64" = "Share over 64 Years Old",
+                          "total_revenue" = "Log(Total Revenue)",
+                          "share_taxes" = "Share of Revenue from Taxes",
+                          "share_state_fed" = "Share of Revenue from State / Federal Government",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "\\label{tab:twfe} Two-Way Fixed Effects Models",
+             output = "latex",
+             escape = FALSE) %>% 
+  kable_styling(latex_options = c("scale_down", "HOLD_position")) %>%
+  save_kable("temp/2wfe_reg_clean.tex")
 
-j <- j %>%
-  mutate(n = row_number(),
-         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
-  filter(!grepl("Note:", V1))
+modelsummary(models,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("lndper" = "Log(Dollars / Resident)"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "\\label{tab:twfe} Two-Way Fixed Effects Models",
+             latex_options = "scale_down",
+             notes = rev(c("Covariates include: year and municipality fixed effects;
+racial characteristics;", "population density; median income;
+share with some college; median age", "and share of population over 64; total municipal revenue; share of municipal",
+"revenue from taxes; share of municipal revenue from state and federal sources.")),
+             output = "temp/2wfe_reg_clean_small.tex",
+             escape = FALSE)
 
-insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
-insert2 <- "}"
 
-j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
-  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
-  arrange(n) %>%
-  select(-n)
-
-write.table(j, "./temp/2wfe_reg_clean.tex", quote = F, col.names = F,
-            row.names = F)
 
 # marg <- ggeffect(m1, "lndper [0.01476405, 1.113368, 3.856901, 7.9801]")
 # 

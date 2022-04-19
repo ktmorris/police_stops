@@ -1,0 +1,82 @@
+---
+title: "Supplementary Information"
+output:
+  bookdown::pdf_document2:
+    toc: no
+    fig_caption: yes
+    latex_engine: xelatex
+    keep_tex: true
+bibliography: "policing_turnout.bib"
+link-citations: yes
+fontsize: 12pt
+always_allow_html: true
+header-includes:
+    - \usepackage{rotating}
+    - \usepackage{setspace}
+---
+```{r setup, echo = F, message = F, warning = F}
+knitr::opts_knit$set(root.dir = "..", dev = "cairo_pdf")
+library(systemfit)
+library(AER)
+library(sandwich)
+library(lmtest)
+library(scales)
+library(tidyverse)
+library(extrafont)
+library(kableExtra)
+library(data.table)
+library(stargazer)
+loadfonts()
+```
+\pagenumbering{gobble}
+\pagenumbering{arabic}
+\doublespacing
+
+
+# Testing Robustness of L2 Racial Estimates {-}
+
+As discussed in the body of this manuscript, our municipality-level racial estimates are constructed by aggregating up from individual-level records provided by L2. Because L2 uses statistical modeling to infer voters' race---not self-reported information---there is potential room for error in these estimates.
+
+Because there are no precise estimates of the racial demographics of the registered electorate in each city, we compare the estimated Black share of each municipality to the Black share of the citizen voting age population (CVAP) in each municipality. This method is not without drawbacks: if different cities have different racial registration rates, they will not track perfectly. To mitigate some of this discrepancy, we adjust the Black share of the electorate in each municipality by the racial registration gap in that municipality's state, according to the Current Population Survey's (CPS) 2018 data. For example, according to the CPS, 27.0% of the citizen population in Alabama was Black in 2018, but just 26.4% of registered voters were Black. We therefore add 0.6% to the estimated Black share of the electorate in each municipality in Alabama, so that it might more closely mirror the Black share of CVAP.
+
+In Table \ref{tab:mae} we present the mean absolute error (MAE) of the L2 estimates aggregated up to the municipality level and adjusted according to the CPS, relative to the Census Bureau's CVAP estimate. Because it seems possible that these errors vary by population size, we present the MAE for each quartile of the set of municipalities as measured by population, as well as the overall MAE.
+
+\begin{singlespace}
+```{r mae-chunck, echo = F, warning = F}
+t <- readRDS("./temp/maes.rds") %>%
+  mutate_all(~ gsub("[%]", "\\\\%", .))
+j <- t %>%
+  mutate_all(linebreak) %>%
+  knitr::kable(booktabs = T, caption = "(\\#tab:mae) MAE of L2 Municipality Estimates, CVAP", linesep = "", escape = F,
+               col.names = linebreak(colnames(t)),
+               align = "c") %>%
+  kable_styling(latex_options = c("HOLD_position"),
+                position = "center")
+j
+```
+\end{singlespace}
+
+Table \ref{tab:mae} makes clear that the adjusted Black estimates of the electorate mirror the Black share of CVAP very closely: for no group of municipalities does the MAE exceed 3%. This seems to indicate that the L2 racial estimates are quite good when aggregated to the municipal level.
+
+In Table \ref{tab:mae-reg}, we show that the difference between the adjusted estimate of the Black share of the electorate and the Black share of the CVAP is entirely unrelated to cities' per-capita fees and fines, after controlling for other characteristics. Given the low MAE and the lack of relationship between the error and the fees and fines, we conclude that the municipal-level racial estimates from the individual-level records are reasonable and unbiased.
+
+\begin{singlespace}
+\input{"../temp/mae_clean.tex"}
+\end{singlespace}
+
+# Regression Table for 2018 Cross-Sectional Municipality Model {-}
+
+In Table \ref{tab:cog-cross-reg} we present the full results of the econometric used to test the cross-sectional relationship between per-capita fees and fines, and 2018 municipal turnout. The table shows that a doubling of the fees and fines collected per capita is associated with a 0.3 percentage point reduction in overall turnout. That same doubling, however, is associated with a 0.4 percentage point *increase* in the Black turnout. While these point estimates are quite small, it is worth keeping in mind that the range of fees and fines per capita is very wide. The interquartile ranges of fees and fines per capita stretches from \$1.96 to \$20.63---a more than ten-fold increase.
+
+\begin{singlespace}
+\input{"../temp/cog_cross_clean.tex"}
+\end{singlespace}
+
+# Full Regression Table for TWFE Model {-}
+
+In Table \ref{tab:twfe} we present the full regression table for the two-way fixed effects models presented in the body of the manuscript.
+
+\begin{singlespace}
+\input{"../temp/2wfe_reg_clean.tex"}
+\end{singlespace}
+

@@ -1,0 +1,53 @@
+---
+title: "Ticketing and Turnout: The Participatory Consequences of Low-Level Police Contact"
+
+# author:
+# - Jonathan Ben-Menachem^[PhD Student, Columbia University, Department of Sociology (jb4487@columbia.edu)]
+# - Kevin Morris^[PhD Student, CUNY Graduate Center, Department of Sociology (kmorris@gradcenter.cuny.edu)]
+# thanks: Earlier versions of this work were presented at the 2021 American Sociological Association Annual Meeting, the 2021 American Political Science Association Annual Meeting, and the Justice Lab at Columbia University. We would like to thank Bruce Western, Joshua Whitford,  Gerard Torrats-Espinosa, Brittany Friedman, Brendan McQuade, Flavien Ganter, Hannah Pullen-Blasnik, Tim Ittner, LeShae Henderson, and Van Tran for their engagement with our paper in its earliest stages. Special thanks to Sam Donahue for identifying the Tampa dataset that became the core of our analysis and eyeballing many, many iterations of analysis results. And finally, we would like to thank Hannah Walker for deep, charitable feedback that pushed us not to undersell our own contribution
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  bookdown::pdf_document2:
+    toc: no
+    fig_caption: yes
+    latex_engine: xelatex
+    keep_tex: true
+bibliography: "policing_turnout.bib"
+link-citations: yes
+fontsize: 12pt
+header-includes:
+    - \usepackage{rotating}
+    - \usepackage{setspace}
+abstract: |
+  TJT
+---
+
+\pagenumbering{gobble}
+\pagebreak
+```{r setup, echo = F, message = F, warning = F}
+knitr::opts_knit$set(root.dir = "..", dev = "cairo_pdf")
+library(systemfit)
+library(kevostools)
+library(AER)
+library(sandwich)
+library(lmtest)
+library(scales)
+library(ggpubr)
+library(tidyverse)
+library(extrafont)
+library(kableExtra)
+library(data.table)
+library(stargazer)
+loadfonts()
+```
+\pagenumbering{arabic}
+\doublespacing
+
+```{r cross-18, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:mef-2018}Predicted Turnout, 2018", fig.pos = "H", fig.align = "center"}
+load("temp/mef_to.rdata")
+print(p2)
+```
+
+\begin{singlespace}
+\input{"../temp/2wfe_reg_clean.tex"}
+\end{singlespace}

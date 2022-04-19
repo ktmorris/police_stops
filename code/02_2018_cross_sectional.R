@@ -92,70 +92,43 @@ saveRDS(full_set, "temp/full_set_for_mae.rds")
 
 covars <- gsub("\\n|            ", "", "lndper + nh_white + nh_black + latino + asian + lpd +
             median_income + some_college + median_age + share_over_64 +
-            state + total_revenue + share_taxes + share_s_fed")
+            total_revenue + share_taxes + share_s_fed | state")
 
 ms <- data.frame(m = c("vap_to_18_overall", "vap_to_18_black", "vap_to_18_nonblack"),
                  name = c("Overall Turnout", "Black Turnout", "Non-Black Turnout"))
 
 
 models <- lapply(ms$m, function(f){
-  lm(as.formula(paste0(f, " ~ ", covars)),
-     data = filter(full_set, !!sym(f) <= 1))
+  feols(as.formula(paste0(f, " ~ ", covars)),
+     data = filter(full_set, !!sym(f) <= 1), cluster = ~ state)
 })
 
-ses <- lapply(ms$m, function(f){
-  summary(lm.cluster(as.formula(paste0(f, " ~ ", covars)),
-                     data = filter(full_set, !!sym(f) <= 1),
-                     cluster = filter(full_set, !!sym(f) <= 1)$state))[,2]
-})
+names(models) <- ms$name
 
-
-stargazer(models, type = "text", omit = c("state"),
-          column.labels = ms$name,
-          dep.var.labels = "",
-          covariate.labels = c("Log((Dollars / Resident) + 1)",
-                               "% nonHispanic White",
-                               "% nonHispanic Black",
-                               "% Latinx",
-                               "% Asian",
-                               "Log(Population Density)",
-                               "Median Income (dollarsign10,000s)",
-                               "% with Some College",
-                               "Median Age",
-                               "Share over 64",
-                               "Log(Total Revenue)",
-                               "% of Rev from Taxes",
-                               "% of Rev from State / Fed Gov."),
-          se = ses,
-          add.lines = list(c("State fixed effects", "X", "X", "X")),
-          notes = "TO REPLACE",
-          omit.stat = c("F", "ser"),
-          out = "temp/cog_cross_raw.tex",
-          table.placement = "H",
-          title = "\\label{tab:cog-cross-reg} Fees and Fines and 2018 Turnout")
-
-
-j <- fread("./temp/cog_cross_raw.tex", header = F, sep = "+") %>% 
-  mutate(V1 = gsub("[%]", "Share", V1))
-
-note.latex <- "\\multicolumn{4}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.\\\\Robust standard errors clustered by state.}}}"
-
-j <- j %>%
-  mutate(n = row_number(),
-         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
-  filter(!grepl("Note:", V1))
-
-insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
-insert2 <- "}"
-
-j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
-  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
-  arrange(n) %>%
-  select(-n)
-
-write.table(j[c(3:nrow(j)),], "./temp/cog_cross_clean.tex", quote = F, col.names = F,
-            row.names = F)
+modelsummary(models,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("lndper" = "Log((Dollars / Resident) + 1)",
+                          "nh_white" = "Share non-Hispanic White",
+                          "nh_black" = "Share non-Hispanic Black",
+                          "latino" = "Share Latinx",
+                          "asian" = "Share Asian",
+                          "lpd" = "Log(Population Density)",
+                          "median_income" = "Median Income (\\$10,000s)",
+                          "some_college" = "Share with Some College",
+                          "median_age" = "Median Age",
+                          "share_over_64" = "Share over 64 Years Old",
+                          "total_revenue" = "Log(Total Revenue)",
+                          "share_taxes" = "Share of Revenue from Taxes",
+                          "share_s_fed" = "Share of Revenue from State / Federal Government",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "\\label{tab:cog-cross-reg} Fees and Fines and 2018 Turnout",
+             output = "latex",
+             escape = FALSE,
+             notes = c("State fixed effects not shown.", "Robust standard errors clustered by state.")) %>% 
+  kable_styling(latex_options = c("scale_down", "HOLD_position")) %>%
+  save_kable("temp/cog_cross_clean.tex")
 
 #############################
 minq <- round(min(full_set$lndper),digits = 3)

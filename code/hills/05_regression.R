@@ -88,7 +88,8 @@ p2 <- ggplot(data = ll) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
        shape = "Treatment Group",
-       caption = "Treatment occurs inside of yellow band.", ) +
+       caption = "Treatment occurs inside of yellow band.
+Full regression tables in section 3 of SI.", ) +
   coord_cartesian(ylim = c(0.05, 0.75))
 p2
 saveRDS(p2, "temp/stopped_any_time_y.rds")
@@ -124,54 +125,77 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
   }
  
   models1 <- lapply(c(m1, m2, m3, m4), function(f){
-    m <- lm(f, data = dat1,
-            weight = dat1$weight)
+    m <- feols(f, data = dat1,
+            weight = ~ weight, cluster = "group")
   })
+
+  rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
+                  "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
   
+  attr(rows, 'position') <- c(13)
   
-  ses_cl <- list(
-    summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-    summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-    summary(lm.cluster(formula = m3, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-    summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
-  )
+  modelsummary(models1,
+               statistic = "std.error",
+               stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+               coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                            "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                            "treatedTRUE" = "Treated",
+                            "postTRUE" = "Post Treatment",
+                            "blackTRUE" = "Black",
+                            "(Intercept)" = "Intercept"),
+               gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+               title = tit,
+               latex_options = "scale_down",
+               add_rows = rows,
+               output = paste0("temp/small_two_matches_reg_y_", gg, ".tex"),
+               escape = FALSE)
   
+  attr(rows, 'position') <- 53
+  modelsummary(models1,
+               statistic = "std.error",
+               stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+               coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                            "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                            "treatedTRUE" = "Treated",
+                            "postTRUE" = "Post Treatment",
+                            "blackTRUE" = "Black",
+                            "whiteTRUE" = "White",
+                            "latinoTRUE" = "Latino",
+                            "asianTRUE" = "Asian",
+                            "maleTRUE" = "Male",
+                            "demTRUE" = "Democrat",
+                            "repTRUE" = "Republican",
+                            "age" = "Age",
+                            "reg_date" = "Registration Date",
+                            "pre_stops" = "Traffic Stops before Period",
+                            "v1TRUE" = "Turnout (t = -3)",
+                            "v2TRUE" = "Turnout (t = -2)",
+                            "v3TRUE" = "Turnout (t = -1)",
+                            "median_income" = "Nhood Median Income",
+                            "some_college" = "Nhood w/ Some College",
+                            "unem" = "Nhood Unemployment Rate",
+                            "civil" = "Civil Infraction",
+                            "paidTRUE" = "Paid Money on Stop",
+                            "tampa_pd" = "Stopped by Tampa Police Department",
+                            "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                            "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                            "(Intercept)" = "Intercept"),
+               gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+               title = tit,
+               latex_options = "scale_down",
+               add_rows = rows,
+               output = paste0("temp/two_matches_reg_y_", gg, ".tex"),
+               escape = FALSE)
   
-  stargazer(models1,
-            type = "text",
-            omit.stat = c("f", "ser"),
-            se = ses_cl,
-            omit = c("as.fac"),
-            covariate.labels = c("Treated",
-                                 "Post Treatment",
-                                 "Black",
-                                 "Treated $\\times$ Post Treatment",
-                                 "Treated $\\times$ Black",
-                                 "Post Treatment $\\times$ Black",
-                                 "Treated $\\times$ Post Treatment $\\times$ Black"),
-            table.layout = "-cm#-t-a-s-n",
-            keep = c("treatedTRUE", "post", "blackTRUE", "Constant"),
-            order = ooo,
-            notes = "TO REPLACE",
-            table.placement = "H",
-            title = tit,
-            out = paste0("temp/two_matches_reg_y_", gg, ".tex"),
-            add.lines = list(c("Includes Matched Covariates", "", "X", "", "X"),
-                             c("Includes Year Fixed Effects", "X", "X", "X", "X")))
+  j <- fread(paste0("temp/two_matches_reg_y_", gg, ".tex"), header = F, sep = "+") %>% 
+    mutate(n = row_number())
   
-  j <- fread(paste0("temp/two_matches_reg_y_", gg, ".tex"), header = F, sep = "+")
+  insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+  insert2 <- "}"
   
-  note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
-  
-  j <- j %>% 
-    mutate(n = row_number(),
-           V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-           V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>% 
-    filter(!grepl("Note:", V1))
-  
-  
-  j <- j %>%
-    arrange(n) %>%
+  j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>% 
+    mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>% 
+    arrange(n) %>% 
     select(-n)
   
   

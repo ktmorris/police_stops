@@ -52,57 +52,32 @@ saveRDS(dat, "temp/maes.rds")
 
 test_set$er <- abs(test_set$share_electorate_black - test_set$cvap_share_black)
 
-m1a <- lm(er ~ lndper + nh_white + nh_black + latino + asian + lpd +
+m1a <- feols(er ~ lndper + nh_white + nh_black + latino + asian + lpd +
             median_income + some_college + median_age + share_over_64 +
-            state + total_revenue + share_taxes + share_s_fed, data = test_set)
+            total_revenue + share_taxes + share_s_fed | state, data = test_set,
+            cluster = ~ state)
 
-m1 <- summary(lm.cluster(er ~ lndper + nh_white + nh_black + latino + asian + lpd +
-                           median_income + some_college + median_age + share_over_64 +
-                           state + total_revenue + share_taxes + share_s_fed, data = test_set, cluster = test_set$state))[,2]
-
-
-stargazer(m1a, type = "text", omit = c("state"),
-          column.labels = "Error",
-          dep.var.labels = "",
-          covariate.labels = c("Log((Dollars / Resident) + 1)",
-                               "% nonHispanic White",
-                               "% nonHispanic Black",
-                               "% Latinx",
-                               "% Asian",
-                               "Log(Population Density)",
-                               "Median Income (dollarsign10,000s)",
-                               "% with Some College",
-                               "Median Age",
-                               "Share over 64",
-                               "Total Revenue",
-                               "% of Rev from Taxes",
-                               "% of Rev from State / Fed Gov."),
-          se = list(m1),
-          add.lines = list(c("State fixed effects", "X", "X", "X")),
-          notes = "TO REPLACE",
-          omit.stat = c("F", "ser"),
-          out = "temp/cog_rob_mae.tex",
-          table.placement = "H",
-          title = "\\label{tab:mae:reg} Absolute Value of Difference Between CVAP, Electorate Share Black")
-
-j <- fread("./temp/cog_rob_mae.tex", header = F, sep = "+") %>% 
-  mutate(V1 = gsub("[%]", "Share", V1))
-
-note.latex <- "\\multicolumn{2}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$.\\\\Robust standard errors clustered by state.}}}"
-
-j <- j %>%
-  mutate(n = row_number(),
-         V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-         V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>%
-  filter(!grepl("Note:", V1))
-
-insert1 <- "\\resizebox{1\\textwidth}{.5\\textheight}{%"
-insert2 <- "}"
-
-j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, nrow(j) + 1 - 0.01))) %>%
-  mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>%
-  arrange(n) %>%
-  select(-n)
-
-write.table(j[c(3:nrow(j)),], "./temp/mae_clean.tex", quote = F, col.names = F,
-            row.names = F)
+modelsummary(m1a,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("lndper" = "Log((Dollars / Resident) + 1)",
+                          "nh_white" = "Share non-Hispanic White",
+                          "nh_black" = "Share non-Hispanic Black",
+                          "latino" = "Share Latinx",
+                          "asian" = "Share Asian",
+                          "lpd" = "Log(Population Density)",
+                          "median_income" = "Median Income (\\$10,000s)",
+                          "some_college" = "Share with Some College",
+                          "median_age" = "Median Age",
+                          "share_over_64" = "Share over 64 Years Old",
+                          "total_revenue" = "Log(Total Revenue)",
+                          "share_taxes" = "Share of Revenue from Taxes",
+                          "share_s_fed" = "Share of Revenue from State / Federal Government",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "\\label{tab:mae-reg} Absolute Value of Difference Between CVAP, Electorate Share Black",
+             output = "latex",
+             escape = FALSE,
+             notes = c("State fixed effects not shown.", "Robust standard errors clustered by state.")) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  save_kable("temp/mae_clean.tex")
