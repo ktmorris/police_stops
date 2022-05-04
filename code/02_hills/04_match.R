@@ -87,7 +87,7 @@ X <- pre %>%
   mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
   select(first_tr_year, paid, civil, tampa_pd, v1, v2, v3, everything())
 
-genout <- readRDS("temp/genout_hills_yem.rds")
+genout <- readRDS("temp/genout_hills.rds")
 
 
 mout <- Matchby(Tr = pre$treated, X = X,
@@ -103,9 +103,9 @@ mout <- Matchby(Tr = pre$treated, X = X,
 
 
 
-save(mout, file = "./temp/mout_hills_y.RData")
+save(mout, file = "./temp/mout_hills.RData")
 
-load("temp/mout_hills_y.RData")
+load("temp/mout_hills.RData")
 
 matches <- data.table(voter = c(mout$index.control,
                                 mout$index.treated),
@@ -124,4 +124,4 @@ matches <- left_join(matches, ids, by = c("group" = "id")) %>%
   select(-group) %>%
   rename(group = voter_id)
 
-saveRDS(matches, "temp/matches_hills_yem.rds")
+saveRDS(matches, "temp/matches_hills.rds")

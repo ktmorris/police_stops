@@ -1,0 +1,137 @@
+---
+title: "Ticketing and Turnout: The Participatory Consequences of Low-Level Police Contact"
+
+# author:
+# - Jonathan Ben-Menachem^[PhD Student, Columbia University, Department of Sociology (jb4487@columbia.edu)]
+# - Kevin Morris^[PhD Student, CUNY Graduate Center, Department of Sociology (kmorris@gradcenter.cuny.edu)]
+# thanks: Earlier versions of this work were presented at the 2021 American Sociological Association Annual Meeting, the 2021 American Political Science Association Annual Meeting, and the Justice Lab at Columbia University. We would like to thank Bruce Western, Joshua Whitford,  Gerard Torrats-Espinosa, Brittany Friedman, Brendan McQuade, Flavien Ganter, Hannah Pullen-Blasnik, Tim Ittner, LeShae Henderson, and Van Tran for their engagement with our paper in its earliest stages. Special thanks to Sam Donahue for identifying the Tampa dataset that became the core of our analysis and eyeballing many, many iterations of analysis results. And finally, we would like to thank Hannah Walker for deep, charitable feedback that pushed us not to undersell our own contribution
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  bookdown::pdf_document2:
+    toc: no
+    fig_caption: yes
+    latex_engine: xelatex
+    keep_tex: true
+bibliography: "policing_turnout.bib"
+link-citations: yes
+fontsize: 12pt
+header-includes:
+    - \usepackage{rotating}
+    - \usepackage{setspace}
+---
+
+\pagenumbering{gobble}
+\pagebreak
+```{r setup, echo = F, message = F, warning = F}
+knitr::opts_knit$set(root.dir = "..", dev = "cairo_pdf")
+library(systemfit)
+library(kevostools)
+library(AER)
+library(sandwich)
+library(lmtest)
+library(scales)
+library(ggpubr)
+library(tidyverse)
+library(extrafont)
+library(kableExtra)
+library(data.table)
+library(stargazer)
+loadfonts()
+```
+\pagenumbering{arabic}
+\doublespacing
+
+
+```{r did-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/stopped_any_time.rds")
+print(p2)
+```
+
+```{r did-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/stopped_any_time_no_prior.rds")
+print(p2)
+```
+
+```{r did-no-matching, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no matching at all)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/stopped_any_time_no_matching.rds")
+print(p2)
+```
+
+Tables 1--4 are with prior turnout in the match. Tables 5--8 have no prior turnout. Table 9--12 have no matching at all
+\begin{singlespace}
+\input{"../temp/small_two_matches_reg_overall.tex"}
+\input{"../temp/small_two_matches_reg_2014-11-04.tex"}
+\input{"../temp/small_two_matches_reg_2016-11-08.tex"}
+\input{"../temp/small_two_matches_reg_2018-11-06.tex"}
+
+\input{"../temp/small_table_overall_no_prior.tex"}
+\input{"../temp/small_table_2014-11-04_no_prior.tex"}
+\input{"../temp/small_table_2016-11-08_no_prior.tex"}
+\input{"../temp/small_table_2018-11-06_no_prior.tex"} 
+
+\input{"../temp/small_two_matches_reg_overall_no_matching.tex"}
+\input{"../temp/small_two_matches_reg_2014-11-04_no_matching.tex"}
+\input{"../temp/small_two_matches_reg_2016-11-08_no_matching.tex"}
+\input{"../temp/small_two_matches_reg_2018-11-06_no_matching.tex"}
+\end{singlespace}
+
+```{r coef-plot-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/coef_plot.rds")
+print(p2)
+```
+
+```{r coef-plot-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/coef_plot_no_prior.rds")
+print(p2)
+```
+
+```{r event-study-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/event_study.rds")
+print(p2)
+```
+
+```{r event-study-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/event_study_no_prior.rds")
+print(p2)
+```
+
+
+```{r black-overall-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Overall", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/black_overall_effect.rds")
+print(p2)
+```
+
+```{r black-overall-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Overall (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/black_overall_effect_no_prior.rds")
+print(p2)
+```
+
+```{r black-relative-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/black_relative_effect.rds")
+print(p2)
+```
+
+```{r black-relative-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/black_relative_effect_no_prior.rds")
+print(p2)
+```
+
+```{r non-black-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Nonblack", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/non_black_effect.rds")
+print(p2)
+```
+
+```{r non-black-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Nonblack (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/non_black_effect_no_prior.rds")
+print(p2)
+```
+
+```{r overall-time-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/overall_effect.rds")
+print(p2)
+```
+
+```{r overall-time-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/overall_effect_no_prior.rds")
+print(p2)
+```

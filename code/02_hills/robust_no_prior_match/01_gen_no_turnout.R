@@ -24,7 +24,7 @@ cl<-makeCluster(c(readLines(NodeFile)), type="SOCK")
 cl
 
 
-hills_pre_match <- readRDS("temp/hills_pre_match_cam.rds")
+hills_pre_match <- readRDS("temp/hills_pre_match.rds")
 
 ############## 2014
 
@@ -94,13 +94,13 @@ samp <- pre %>%
 
 match_data <- samp %>% 
   select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
-         -v08, -v16, -v10, -reg_date) %>% 
-  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
-  select(first_tr_year, paid, civil, tampa_pd, v1, v2, v3, everything())
+         -v08, -v16, -v10, -reg_date, -v1, -v2, -v3) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep, paid), ~ ifelse(. == T, 1, 0)) %>% 
+  select(first_tr_year, paid, civil, tampa_pd, everything())
 
 genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000,
-                   exact = c(rep(T, 7), rep(F, 14)))
+                   exact = c(rep(T, 4), rep(F, 14)))
 
-saveRDS(genout, "temp/genout_hills_yem_cam.rds")
+saveRDS(genout, "temp/genout_hills_no_prior.rds")
 
 

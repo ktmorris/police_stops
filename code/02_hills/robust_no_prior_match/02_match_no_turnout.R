@@ -12,7 +12,7 @@ require(snow)
 require(parallel)
 
 
-hills_pre_match <- readRDS("temp/hills_pre_match_cam.rds")
+hills_pre_match <- readRDS("temp/hills_pre_match.rds")
 
 ############## 2014
 
@@ -75,19 +75,17 @@ hills18 <- bind_rows(hills18_t, hills18_c) %>%
 ###########################################
 pre <- bind_rows(hills14, hills16, hills18)
 
-saveRDS(pre, "temp/real_pre_match_hills_cam.rds")
-
 ids <- pre %>%
   mutate(id = row_number()) %>%
   select(id, voter_id, first_tr_year)
 
 X <- pre %>%
   select(-voter_id, -treated, -GEOID, -amount_paid, -last_date,
-         -v08, -v16, -v10, -reg_date) %>% 
-  mutate_at(vars(white, black, latino, asian, male, dem, rep, v1, v2, v3, paid), ~ ifelse(. == T, 1, 0)) %>% 
-  select(first_tr_year, paid, civil, tampa_pd, v1, v2, v3, everything())
+         -v08, -v16, -v10, -reg_date, -v1, -v2, -v3) %>% 
+  mutate_at(vars(white, black, latino, asian, male, dem, rep, paid), ~ ifelse(. == T, 1, 0)) %>% 
+  select(first_tr_year, paid, civil, tampa_pd, everything())
 
-genout <- readRDS("temp/genout_hills_yem_cam.rds")
+genout <- readRDS("temp/genout_hills_no_prior.rds")
 
 
 mout <- Matchby(Tr = pre$treated, X = X,
@@ -99,13 +97,13 @@ mout <- Matchby(Tr = pre$treated, X = X,
                        X$male,
                        X$dem,
                        X$rep), estimand = "ATT", Weight.matrix = genout, M = 1,
-                exact = c(rep(T, 7), rep(F, 14)), ties = T)
+                exact = c(rep(T, 4), rep(F, 14)), ties = T)
 
 
 
-save(mout, file = "./temp/mout_hills_y_cam.RData")
+save(mout, file = "./temp/mout_hills_no_prior.RData")
 
-load("temp/mout_hills_y_cam.RData")
+load("temp/mout_hills_no_prior.RData")
 
 matches <- data.table(voter = c(mout$index.control,
                                 mout$index.treated),
@@ -124,4 +122,4 @@ matches <- left_join(matches, ids, by = c("group" = "id")) %>%
   select(-group) %>%
   rename(group = voter_id)
 
-saveRDS(matches, "temp/matches_hills_yem_cam.rds")
+saveRDS(matches, "temp/matches_hills_no_prior.rds")

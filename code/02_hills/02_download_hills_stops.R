@@ -1,68 +1,66 @@
-# hills_stops <- rbindlist(lapply(c(2003:2021), function(l){
-#   print(l)
-#   if(l != "J"){
-#   if(!(file.exists(paste0("raw_data/hills_stops/civil_stops_", l, ".csv")))){
-#     download.file(paste0("https://publicrec.hillsclerk.com/Traffic/Civil_Traffic_Name_Index_files/Civil_Traffic_Name_Index_", l, ".csv"),
-#                   paste0("raw_data/hills_stops/civil_stops_", l, ".csv"))
-#   }
-# 
-#   ja <- fread(paste0("raw_data/hills_stops/civil_stops_", l, ".csv"))
-# 
-#   colnames(ja) <- clean_names(ja)
-# 
-#   ja <- ja %>%
-#     filter(!grepl("cam", tolower(statute_description))) %>%
-#     select(last_name, first_name, middle_name,
-#            date_of_birth,
-#            street = address_line_1,
-#            city,
-#            state,
-#            zip = zip_code,
-#            offense_date,
-#            amount_paid,
-#            law_enf_agency_name) %>%
-#     mutate(civil = 1,
-#            tampa_pd = grepl("tampa police", tolower(law_enf_agency_name)),
-#            tampa_pd = ifelse(tampa_pd, T, law_enf_agency_name == "TPD")) %>%
-#     select(-law_enf_agency_name)
-# 
-#   return(ja)
-#   }
-# }))
-# 
-# hills_stops_cr <- rbindlist(lapply(c(2003:2021), function(l){
-#   print(l)
-#   if(l != "J"){
-#     if(!(file.exists(paste0("raw_data/hills_stops/crim_stops_", l, ".csv")))){
-#       download.file(paste0("https://publicrec.hillsclerk.com/Traffic/Criminal_Traffic_Name_Index_files/Criminal_Traffic_Name_Index_", l, ".csv"),
-#                     paste0("raw_data/hills_stops/crim_stops_", l, ".csv"))
-#     }
-# 
-#     ja <- fread(paste0("raw_data/hills_stops/crim_stops_", l, ".csv"))
-# 
-#     colnames(ja) <- clean_names(ja)
-# 
-#     ja <- ja %>%
-#       select(last_name, first_name, middle_name,
-#              date_of_birth,
-#              offense_date, amount_paid,
-#              law_enf_agency_name) %>%
-#       mutate(civil = 0,
-#              tampa_pd = grepl("tampa police", tolower(law_enf_agency_name)),
-#              tampa_pd = ifelse(tampa_pd, T, law_enf_agency_name == "TPD")) %>%
-#       select(-law_enf_agency_name)
-# 
-#     return(ja)
-#   }
-# }))
-# hills_stops <- bind_rows(hills_stops, hills_stops_cr) %>%
-#   mutate(amount_paid = ifelse(is.na(amount_paid), 0, amount_paid)) %>%
-#   mutate(offense_date = as.Date(offense_date, "%m/%d/%Y"),
-#          date_of_birth = as.Date(date_of_birth, "%m/%d/%Y")) %>%
-#   mutate_at(vars(first_name,
-#                  last_name), ~ gsub("[[:punct:]]| ", "", ifelse(. == "", NA, toupper(.))))
-# 
-# saveRDS(hills_stops, "temp/hills_stops.rds")
+hills_stops <- rbindlist(lapply(c(2003:2021), function(l){
+  print(l)
+  if(l != "J"){
+  if(!(file.exists(paste0("raw_data/hills_stops/civil_stops_", l, ".csv")))){
+    download.file(paste0("https://publicrec.hillsclerk.com/Traffic/Civil_Traffic_Name_Index_files/Civil_Traffic_Name_Index_", l, ".csv"),
+                  paste0("raw_data/hills_stops/civil_stops_", l, ".csv"))
+  }
+
+  ja <- fread(paste0("raw_data/hills_stops/civil_stops_", l, ".csv"))
+
+  colnames(ja) <- clean_names(ja)
+
+  ja <- ja %>%
+    filter(!grepl("cam", tolower(statute_description))) %>%
+    select(last_name, first_name, middle_name,
+           date_of_birth,
+           street = address_line_1,
+           city,
+           state,
+           zip = zip_code,
+           offense_date,
+           amount_paid,
+           law_enf_agency_name) %>%
+    mutate(civil = 1,
+           tampa_pd = grepl("tampa police", tolower(law_enf_agency_name)),
+           tampa_pd = ifelse(tampa_pd, T, law_enf_agency_name == "TPD")) %>%
+    select(-law_enf_agency_name)
+
+  return(ja)
+  }
+}))
+
+hills_stops_cr <- rbindlist(lapply(c(2003:2021), function(l){
+  print(l)
+    if(!(file.exists(paste0("raw_data/hills_stops/crim_stops_", l, ".csv")))){
+      download.file(paste0("https://publicrec.hillsclerk.com/Traffic/Criminal_Traffic_Name_Index_files/Criminal_Traffic_Name_Index_", l, ".csv"),
+                    paste0("raw_data/hills_stops/crim_stops_", l, ".csv"))
+    }
+
+    ja <- fread(paste0("raw_data/hills_stops/crim_stops_", l, ".csv"))
+
+    colnames(ja) <- clean_names(ja)
+
+    ja <- ja %>%
+      select(last_name, first_name, middle_name,
+             date_of_birth,
+             offense_date, amount_paid,
+             law_enf_agency_name) %>%
+      mutate(civil = 0,
+             tampa_pd = grepl("tampa police", tolower(law_enf_agency_name)),
+             tampa_pd = ifelse(tampa_pd, T, law_enf_agency_name == "TPD")) %>%
+      select(-law_enf_agency_name)
+
+    return(ja)
+}))
+hills_stops <- bind_rows(hills_stops, hills_stops_cr) %>%
+  mutate(amount_paid = ifelse(is.na(amount_paid), 0, amount_paid)) %>%
+  mutate(offense_date = as.Date(offense_date, "%m/%d/%Y"),
+         date_of_birth = as.Date(date_of_birth, "%m/%d/%Y")) %>%
+  mutate_at(vars(first_name,
+                 last_name), ~ gsub("[[:punct:]]| ", "", ifelse(. == "", NA, toupper(.))))
+
+saveRDS(hills_stops, "temp/hills_stops.rds")
 
 hills_stops <- readRDS("temp/hills_stops.rds")
 

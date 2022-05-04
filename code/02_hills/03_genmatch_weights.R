@@ -101,6 +101,6 @@ match_data <- samp %>%
 genout <- GenMatch(Tr = samp$treated, X = match_data, replace = T, cluster = cl, pop.size = 1000,
                    exact = c(rep(T, 7), rep(F, 14)))
 
-saveRDS(genout, "temp/genout_hills_yem.rds")
+saveRDS(genout, "temp/genout_hills.rds")
 
 

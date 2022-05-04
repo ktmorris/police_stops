@@ -3,7 +3,7 @@
 hills_pre_match <- readRDS("temp/real_pre_match_hills_cam.rds") %>% 
   ungroup()
 
-matches <- readRDS("temp/matches_hills_yem_cam.rds")
+matches <- readRDS("temp/matches_hills_cam.rds")
 
 matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                      by = c("group" = "voter_id", "first_tr_year")) %>% 
@@ -13,7 +13,7 @@ matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                                        ifelse(first_tr_year == 3, "2018-11-06", "XX"))),
          first_tr_year = as.Date(first_tr_year))
 
-hist <- readRDS("C:/Users/morrisk/Desktop/full_raw_coded_hills_w_bgs.rds") %>%
+hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
   select(voter_id, starts_with("v1"), v08) %>%
   pivot_longer(!starts_with("vo"), names_to = "year", values_to = "to")
 
@@ -88,10 +88,11 @@ p2 <- ggplot(data = ll) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
        shape = "Treatment Group",
-       caption = "Treatment occurs inside of yellow band.", ) +
+       caption = "Treatment occurs inside of yellow band.
+Full regression tables in section 3 of SI.", ) +
   coord_cartesian(ylim = c(0.05, 0.75))
 p2
-saveRDS(p2, "temp/stopped_any_time_y.rds")
+saveRDS(p2, "temp/stopped_any_time_cam.rds")
 
 #####################
 
@@ -122,62 +123,85 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
     tit = paste0("\\label{tab:dind-table-", substring(gg, 1, 4), "}Treatment Effect for Voters Stopped before ", substring(gg, 1, 4), " Election")
     ooo = c(1, 2, 7, 23, 24, 22, 25)
   }
- 
+  
   models1 <- lapply(c(m1, m2, m3, m4), function(f){
-    m <- lm(f, data = dat1,
-            weight = dat1$weight)
+    m <- feols(f, data = dat1,
+               weight = ~ weight, cluster = "group")
   })
   
+  rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
+                  "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
   
-  ses_cl <- list(
-    summary(lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-    summary(lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-    summary(lm.cluster(formula = m3, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2],
-    summary(lm.cluster(formula = m4, data = dat1, weights = dat1$weight, cluster = dat1$group))[ , 2]
-  )
+  attr(rows, 'position') <- c(13)
   
+  modelsummary(models1,
+               statistic = "std.error",
+               stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+               coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                            "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                            "treatedTRUE" = "Treated",
+                            "postTRUE" = "Post Treatment",
+                            "blackTRUE" = "Black",
+                            "(Intercept)" = "Intercept"),
+               gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+               title = tit,
+               latex_options = "scale_down",
+               add_rows = rows,
+               output = paste0("temp/small_two_matches_reg_", gg, "_cam.tex"),
+               escape = FALSE)
   
-  stargazer(models1,
-            type = "text",
-            omit.stat = c("f", "ser"),
-            se = ses_cl,
-            omit = c("as.fac"),
-            covariate.labels = c("Treated",
-                                 "Post Treatment",
-                                 "Black",
-                                 "Treated $\\times$ Post Treatment",
-                                 "Treated $\\times$ Black",
-                                 "Post Treatment $\\times$ Black",
-                                 "Treated $\\times$ Post Treatment $\\times$ Black"),
-            table.layout = "-cm#-t-a-s-n",
-            keep = c("treatedTRUE", "post", "blackTRUE", "Constant"),
-            order = ooo,
-            notes = "TO REPLACE",
-            table.placement = "H",
-            title = tit,
-            out = paste0("temp/two_matches_reg_y_", gg, ".tex"),
-            add.lines = list(c("Includes Matched Covariates", "", "X", "", "X"),
-                             c("Includes Year Fixed Effects", "X", "X", "X", "X")))
+  attr(rows, 'position') <- 53
+  modelsummary(models1,
+               statistic = "std.error",
+               stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+               coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                            "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                            "treatedTRUE" = "Treated",
+                            "postTRUE" = "Post Treatment",
+                            "blackTRUE" = "Black",
+                            "whiteTRUE" = "White",
+                            "latinoTRUE" = "Latino",
+                            "asianTRUE" = "Asian",
+                            "maleTRUE" = "Male",
+                            "demTRUE" = "Democrat",
+                            "repTRUE" = "Republican",
+                            "age" = "Age",
+                            "reg_date" = "Registration Date",
+                            "pre_stops" = "Traffic Stops before Period",
+                            "v1TRUE" = "Turnout (t = -3)",
+                            "v2TRUE" = "Turnout (t = -2)",
+                            "v3TRUE" = "Turnout (t = -1)",
+                            "median_income" = "Nhood Median Income",
+                            "some_college" = "Nhood w/ Some College",
+                            "unem" = "Nhood Unemployment Rate",
+                            "civil" = "Civil Infraction",
+                            "paidTRUE" = "Paid Money on Stop",
+                            "tampa_pd" = "Stopped by Tampa Police Department",
+                            "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                            "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                            "(Intercept)" = "Intercept"),
+               gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+               title = tit,
+               latex_options = "scale_down",
+               add_rows = rows,
+               output = paste0("temp/two_matches_reg_", gg, "_cam.tex"),
+               escape = FALSE)
   
-  j <- fread(paste0("temp/two_matches_reg_y_", gg, ".tex"), header = F, sep = "+")
+  j <- fread(paste0("temp/two_matches_reg_", gg, "_cam.tex"), header = F, sep = "+") %>% 
+    mutate(n = row_number())
   
-  note.latex <- "\\multicolumn{5}{l}{\\scriptsize{\\parbox{.5\\linewidth}{\\vspace{2pt}$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. \\\\Robust standard errors (clustered at level of match) in parentheses.}}}"
+  insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+  insert2 <- "}"
   
-  j <- j %>% 
-    mutate(n = row_number(),
-           V1 = ifelse(grepl("TO REPLACE", V1), note.latex, V1),
-           V1 = ifelse(grepl("\\\\#tab", V1), gsub("\\\\#", "", V1), V1)) %>% 
-    filter(!grepl("Note:", V1))
-  
-  
-  j <- j %>%
-    arrange(n) %>%
+  j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>% 
+    mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>% 
+    arrange(n) %>% 
     select(-n)
   
   
-  write.table(j, paste0("./temp/dind_reg_y", gg, ".tex"), quote = F, col.names = F,
+  write.table(j, paste0("./temp/dind_reg", gg, "_cam.tex"), quote = F, col.names = F,
               row.names = F)
-   
+  
 }
 
 
@@ -247,12 +271,12 @@ hills_voters <- left_join(hills_voters, readRDS("../regular_data/census_bgs_18.r
   mutate(treated = "Never Stopped")
 
 low_demos <- bind_rows(matches %>% 
-  group_by(treated = as.character(treated)) %>% 
-  summarize_at(vars(c("paid", "civil", "tampa_pd", "white", "black", "latino",
-                    "asian", "male", "dem", "rep", "age", "pre_stops", "v1",
-                    "v2", "v3", "median_income", "some_college", "unem")),
-                    ~ weighted.mean(., weight)),
-  hills_voters) %>% 
+                         group_by(treated = as.character(treated)) %>% 
+                         summarize_at(vars(c("paid", "civil", "tampa_pd", "white", "black", "latino",
+                                             "asian", "male", "dem", "rep", "age", "pre_stops", "v1",
+                                             "v2", "v3", "median_income", "some_college", "unem")),
+                                      ~ weighted.mean(., weight)),
+                       hills_voters) %>% 
   mutate_at(vars(paid, civil, tampa_pd, white, black, latino, asian, male, dem,
                  rep, v1, v2, v3, some_college, unem), percent, accuracy = 0.1) %>% 
   mutate_at(vars(age, pre_stops), ~format(round(., 1))) %>% 
