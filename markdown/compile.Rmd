@@ -23,20 +23,17 @@ header-includes:
 \pagenumbering{gobble}
 \pagebreak
 ```{r setup, echo = F, message = F, warning = F}
-knitr::opts_knit$set(root.dir = "..", dev = "cairo_pdf")
+library(ragg)
 library(systemfit)
-library(kevostools)
-library(AER)
-library(sandwich)
-library(lmtest)
-library(scales)
 library(ggpubr)
 library(tidyverse)
-library(extrafont)
 library(kableExtra)
 library(data.table)
-library(stargazer)
-loadfonts()
+ragg_png = function(..., res = 300) {
+  ragg::agg_png(..., res = res, units = "in")
+}
+knitr::opts_chunk$set(dev = "ragg_png", dpi = 800)
+knitr::opts_knit$set(root.dir = "..", dev = "cairo_pdf")
 ```
 \pagenumbering{arabic}
 \doublespacing
@@ -44,16 +41,17 @@ loadfonts()
 
 ```{r did-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
 p2 <- readRDS("temp/stopped_any_time.rds")
-print(p2)
+p2
 ```
 
-```{r did-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/stopped_any_time_no_prior.rds")
-print(p2)
-```
 
 ```{r did-no-matching, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no matching at all)", fig.pos = "H", fig.align = "center"}
 p2 <- readRDS("temp/stopped_any_time_no_matching.rds")
+print(p2)
+```
+
+```{r did-different-approaches, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 6, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no matching at all)", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/ts.rds")
 print(p2)
 ```
 
@@ -80,12 +78,8 @@ p2 <- readRDS("temp/coef_plot.rds")
 print(p2)
 ```
 
-```{r coef-plot-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/coef_plot_no_prior.rds")
-print(p2)
-```
 
-```{r event-study-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
+```{r event-study-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 4, fig.cap = "\\label{fig:did-1}Effect of Being Ticketed on Turnout", fig.pos = "H", fig.align = "center"}
 p2 <- readRDS("temp/event_study.rds")
 print(p2)
 ```
@@ -96,42 +90,8 @@ print(p2)
 ```
 
 
-```{r black-overall-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Overall", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/black_overall_effect.rds")
-print(p2)
-```
 
-```{r black-overall-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Overall (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/black_overall_effect_no_prior.rds")
-print(p2)
-```
-
-```{r black-relative-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/black_relative_effect.rds")
-print(p2)
-```
-
-```{r black-relative-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/black_relative_effect_no_prior.rds")
-print(p2)
-```
-
-```{r non-black-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Nonblack", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/non_black_effect.rds")
-print(p2)
-```
-
-```{r non-black-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Nonblack (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/non_black_effect_no_prior.rds")
-print(p2)
-```
-
-```{r overall-time-primary, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/overall_effect.rds")
-print(p2)
-```
-
-```{r overall-time-no-prior, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 8, fig.cap = "\\label{fig:did-1}Black Relative (no prior turnout in match)", fig.pos = "H", fig.align = "center"}
-p2 <- readRDS("temp/overall_effect_no_prior.rds")
+```{r windows, echo = FALSE, message = F, warning = F, fig.width = 7.5, fig.height = 5, fig.cap = "\\label{fig:did-1}Black Relative", fig.pos = "H", fig.align = "center"}
+p2 <- readRDS("temp/window_plot_good.rds")
 print(p2)
 ```

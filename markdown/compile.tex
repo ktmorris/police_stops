@@ -7,8 +7,8 @@
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{lmodern}
-\usepackage{ifxetex,ifluatex}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+\usepackage{iftex}
+\ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
@@ -85,13 +85,13 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
-\ifluatex
+\ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
 
 \title{Ticketing and Turnout: The Participatory Consequences of Low-Level Police Contact}
 \author{}
-\date{\vspace{-2.5em}May 04, 2022}
+\date{\vspace{-2.5em}June 16, 2022}
 
 \begin{document}
 \maketitle
@@ -113,20 +113,20 @@
 
 \begin{figure}[H]
 
-{\centering \includegraphics{compile_files/figure-latex/did-no-prior-1} 
-
-}
-
-\caption{\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)}\label{fig:did-no-prior}
-\end{figure}
-
-\begin{figure}[H]
-
 {\centering \includegraphics{compile_files/figure-latex/did-no-matching-1} 
 
 }
 
 \caption{\label{fig:did-1}Effect of Being Ticketed on Turnout (no matching at all)}\label{fig:did-no-matching}
+\end{figure}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{compile_files/figure-latex/did-different-approaches-1} 
+
+}
+
+\caption{\label{fig:did-1}Effect of Being Ticketed on Turnout (no matching at all)}\label{fig:did-different-approaches}
 \end{figure}
 
 Tables 1--4 are with prior turnout in the match. Tables 5--8 have no prior turnout. Table 9--12 have no matching at all
@@ -159,15 +159,6 @@ Tables 1--4 are with prior turnout in the match. Tables 5--8 have no prior turno
 
 \begin{figure}[H]
 
-{\centering \includegraphics{compile_files/figure-latex/coef-plot-no-prior-1} 
-
-}
-
-\caption{\label{fig:did-1}Effect of Being Ticketed on Turnout (no prior turnout in match)}\label{fig:coef-plot-no-prior}
-\end{figure}
-
-\begin{figure}[H]
-
 {\centering \includegraphics{compile_files/figure-latex/event-study-primary-1} 
 
 }
@@ -186,74 +177,11 @@ Tables 1--4 are with prior turnout in the match. Tables 5--8 have no prior turno
 
 \begin{figure}[H]
 
-{\centering \includegraphics{compile_files/figure-latex/black-overall-primary-1} 
+{\centering \includegraphics{compile_files/figure-latex/windows-1} 
 
 }
 
-\caption{\label{fig:did-1}Black Overall}\label{fig:black-overall-primary}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/black-overall-no-prior-1} 
-
-}
-
-\caption{\label{fig:did-1}Black Overall (no prior turnout in match)}\label{fig:black-overall-no-prior}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/black-relative-primary-1} 
-
-}
-
-\caption{\label{fig:did-1}Black Relative}\label{fig:black-relative-primary}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/black-relative-no-prior-1} 
-
-}
-
-\caption{\label{fig:did-1}Black Relative (no prior turnout in match)}\label{fig:black-relative-no-prior}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/non-black-primary-1} 
-
-}
-
-\caption{\label{fig:did-1}Nonblack}\label{fig:non-black-primary}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/non-black-no-prior-1} 
-
-}
-
-\caption{\label{fig:did-1}Nonblack (no prior turnout in match)}\label{fig:non-black-no-prior}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/overall-time-primary-1} 
-
-}
-
-\caption{\label{fig:did-1}Black Relative}\label{fig:overall-time-primary}
-\end{figure}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{compile_files/figure-latex/overall-time-no-prior-1} 
-
-}
-
-\caption{\label{fig:did-1}Black Relative (no prior turnout in match)}\label{fig:overall-time-no-prior}
+\caption{\label{fig:did-1}Black Relative}\label{fig:windows}
 \end{figure}
 
 \end{document}

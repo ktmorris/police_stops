@@ -7,8 +7,8 @@
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{lmodern}
-\usepackage{ifxetex,ifluatex}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+\usepackage{iftex}
+\ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
@@ -69,6 +69,29 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{5}
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 \usepackage{rotating}
 \usepackage{setspace}
 \usepackage{booktabs}
@@ -85,29 +108,9 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
-\ifluatex
+\ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
- {% don't indent paragraphs
-  \setlength{\parindent}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1 \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces\fi
-  % set entry spacing
-  \ifnum #2 > 0
-  \setlength{\parskip}{#2\baselineskip}
-  \fi
- }%
- {}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{#1\hfill\break}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 \title{Supplementary Information}
 \author{}
@@ -121,14 +124,14 @@
 \tableofcontents
 }
 \pagenumbering{gobble}
-\pagenumbering{arabic}
+\pagebreak
+
 \doublespacing
-\newpage
 
 \hypertarget{administrative-matching-robustness-check}{%
 \section{Administrative Matching Robustness Check}\label{administrative-matching-robustness-check}}
 
-Our models exploring the turnout effects of traffic stops in Hillsborough County, Florida, require that we merge administrative records using the identifiers in the data. This runs the risk of identifying false positives. To test the prevalence of false positives in our administrative matching procedure, we use the test developed by \protect\hyperlink{ref-Meredith2014}{Meredith and Morse} (\protect\hyperlink{ref-Meredith2014}{2014}). By systematically permuting the birth dates in one set of records, we can see whether false positive matches are a major concern. In Table 1 we begin by merging all names and dates of birth in the traffic stop data with the names and dates of birth in the Hillsborough County registered voter file. We then add and subtract 35 days from the birth dates in the traffic stop data. If there are no false positives, these records should match with no records from the registered voter file.
+Our models exploring the turnout effects of traffic stops in Hillsborough County, Florida, require that we merge administrative records using the identifiers in the data. This runs the risk of identifying false positives. To test the prevalence of false positives in our administrative matching procedure, we use the test developed by Meredith and Morse (\protect\hyperlink{ref-Meredith2014}{2014}). By systematically permuting the birth dates in one set of records, we can see whether false positive matches are a major concern. In Table 1 we begin by merging all names and dates of birth in the traffic stop data with the names and dates of birth in the Hillsborough County registered voter file. We then add and subtract 35 days from the birth dates in the traffic stop data. If there are no false positives, these records should match with no records from the registered voter file.
 
 \begin{singlespace}
 \begin{table}[H]
@@ -139,7 +142,7 @@ Our models exploring the turnout effects of traffic stops in Hillsborough County
 \toprule
 Group & \makecell[c]{Number of Matches Between\\Traffic Stop and Voter File Records}\\
 \midrule
-Actual Birthdate & 263,152\\
+Actual Birthdate & 263,149\\
 Birthdate + 35 Days & 78\\
 Birthdate - 35 Days & 60\\
 \bottomrule
@@ -148,24 +151,6 @@ Birthdate - 35 Days & 60\\
 \end{singlespace}
 
 As the table makes clear, more than a quarter-million registered voters in Hillsborough County match at least one record in the traffic stop database when merging by first and last name, and date of birth. Once we permute the birth dates, however, the match rate drops dramatically---to 60 or 78, depending on how these dates of birth are permuted. This translates into a false positive rate of roughly 0.03 percent. We consider this rate of false positives too low to meaningfully impact our results.
-
-\hypertarget{sensitivity-to-narrower-windows}{%
-\section{Sensitivity to Narrower Windows}\label{sensitivity-to-narrower-windows}}
-
-In the individual-level section of this manuscript, voters stopped in the 2 years prior to an election are considered treated, and we draw our controls from the voters stopped 2 years after the election. It is perhaps the case that this large window results in implausible matches; under this design, a treated voter stopped in December of 2012 could draw a control not stopped until October of 2016. Voters stopped nearly 4 years apart from one another might differ in meaningful ways that our matching models cannot capture.
-
-Here, we re-run our matching process on a variety of different windows around the elections. In the most conservative approach, we force voters stopped in the month before an election to match with voters stopped in the month after the election; we then gradually relax this assumption by allowing voters stopped in the 2 months before the election to match to those stopped in the 2 months afterwards, until reaching the two-years used in the manuscript.
-
-Figure 1 shows that our overall treatment effect is remarkably consistent regardless of the size of the window drawn around the election. As we expand the window, we gain more treated voters (and treated voters have a larger pool of potential controls). As such, the confidence interval shrinks, but the treated and control voters are stopped at more distant temporal points from one another. The left-most side of the plot shows that the overall effect is robust to very strict assumptions. In each case, we are re-estimating our primary models in which the covariates used in the matching exercise are also included in the econometric model.
-
-\begin{figure}[!htb]
-
-{\centering \includegraphics{si_files/figure-latex/windows-1} 
-
-}
-
-\caption{\label{fig:rob-window}Estimated Treatment Effect for Different Treatment Windows}\label{fig:windows}
-\end{figure}
 
 \hypertarget{full-regression-tables-for-administrative-test}{%
 \section{Full Regression Tables for Administrative Test}\label{full-regression-tables-for-administrative-test}}
@@ -211,7 +196,7 @@ Model 1 in Table 6 shows that Black individuals who had been stopped by the poli
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
-\leavevmode\hypertarget{ref-Meredith2014}{}%
+\leavevmode\vadjust pre{\hypertarget{ref-Meredith2014}{}}%
 Meredith, Marc, and Michael Morse. 2014. {``Do {Voting Rights Notification Laws Increase Ex-Felon Turnout}?''} \emph{The ANNALS of the American Academy of Political and Social Science} 651 (1): 220--49. \url{https://doi.org/10.1177/0002716213502931}.
 
 \end{CSLReferences}
