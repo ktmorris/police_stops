@@ -103,52 +103,6 @@ full_inters <- readRDS("temp/rob_intervals.rds")
 
 colnames(full_inters) <- c("lb", "ub", "var", "month", "model", "ntreat")
 
-#######################################
-inter_data <- filter(full_inters, var %in% c("black_add"),
-                      model == "inter") %>% 
-  mutate(estimate = (lb + ub) / 2)
-  
-
-p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var)) + geom_point() +
-  geom_line() + theme_bc(base_family = "Latin Modern Roman",  legend.position = "NONE") +
-  geom_errorbar(aes(ymin = lb, ymax = ub)) +
-  scale_x_continuous(breaks = c(1:23)) +
-  scale_y_continuous(labels = percent) +
-  labs(x = "Months Before / After Election",
-       y = "Estimated Treatment Effect (Treated × Post-Treatment × Black)") +
-  geom_hline(yintercept = 0, linetype = "dashed")
-saveRDS(p, "temp/black_overall_effect.rds")
-p
-inter_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE:blackTRUE"),
-                     model == "inter") %>% 
-  mutate(estimate = (lb + ub) / 2)
-
-p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var)) + geom_point() +
-  geom_line() + theme_bc(base_family = "Latin Modern Roman", legend.position = "NONE") +
-  geom_errorbar(aes(ymin = lb, ymax = ub)) +
-  scale_x_continuous(breaks = c(1:23)) +
-  scale_y_continuous(labels = percent) +
-  labs(x = "Months Before / After Election",
-       y = "Estimated Treatment Effect (Treated × Post-Treatment × Black)") +
-  geom_hline(yintercept = 0, linetype = "dashed")
-p
-saveRDS(p, "temp/black_relative_effect.rds")
-
-inter_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE"),
-                     model == "inter") %>% 
-  mutate(estimate = (lb + ub) / 2)
-
-p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var)) + geom_point() +
-  geom_line() + theme_bc(base_family = "Latin Modern Roman", legend.position = "NONE") +
-  geom_errorbar(aes(ymin = lb, ymax = ub)) +
-  scale_x_continuous(breaks = c(1:23)) +
-  scale_y_continuous(labels = percent) +
-  labs(x = "Months Before / After Election",
-       y = "Estimated Treatment Effect (Treated × Post-Treatment)") +
-  geom_hline(yintercept = 0, linetype = "dashed")
-p
-saveRDS(p, "temp/non_black_effect.rds")
-
 ########################################
 inter_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE", "black_add"),
                      model == "inter") %>% 
@@ -167,21 +121,3 @@ p <- ggplot(inter_data, aes(x = month, y = estimate)) + geom_point() +
 p
 saveRDS(p, "temp/window_plot_good.rds")
 
-########################################
-
-straight_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE"),
-                      model == "straight") %>% 
-  mutate(estimate = (lb + ub) / 2)
-
-
-p2 <- ggplot() + geom_point(data = straight_data, aes(x = month, y = estimate)) +
-  geom_line(data = straight_data, aes(x = month, y = estimate)) + theme_bc(base_family = "Latin Modern Roman") +
-  geom_errorbar(data = straight_data, aes(ymin = lb, ymax = ub, y = estimate, x = month)) +
-  scale_x_continuous(breaks = c(1:23)) +
-  scale_y_continuous(labels = percent) +
-  labs(x = "Months Before / After Election",
-       y = "Estimated Treatment Effect (Treated × Post-Treatment)") +
-  geom_hline(yintercept = 0, linetype = "dashed")
-p2
-
-saveRDS(p2, "temp/overall_effect.rds")

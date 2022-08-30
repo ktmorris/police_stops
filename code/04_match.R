@@ -128,3 +128,55 @@ matches <- left_join(matches, ids, by = c("group" = "id")) %>%
   rename(group = voter_id)
 
 saveRDS(matches, "temp/matches_hills.rds")
+
+##########################
+
+hills_voters <- readRDS("temp/full_raw_coded_hills_w_bgs.rds")
+hills_pre_match <- readRDS("temp/hills_pre_match.rds")
+
+hills_voters <- filter(hills_voters, !(voter_id %in% hills_pre_match$voter_id)) %>% 
+  mutate(white = race == 5,
+         black = race == 3,
+         latino = race == 4,
+         asian = race == 2,
+         male = gender == "M",
+         dem = party_affiliation == "DEM",
+         rep = party_affiliation == "REP")
+
+hills_voters <- left_join(hills_voters, readRDS("../regular_data/census_bgs_18.rds") %>% 
+                            select(median_income, some_college, unem, GEOID)) %>% 
+  summarize_at(vars(c("white", "black", "latino",
+                      "asian", "male", "dem", "rep", "age", "median_income", "some_college", "unem")),
+               mean, na.rm = T) %>% 
+  mutate(treated = "Never Stopped")
+
+low_demos <- bind_rows(matches %>% 
+                         group_by(treated = as.character(treated)) %>% 
+                         summarize_at(vars(c("paid", "civil", "tampa_pd", "white", "black", "latino",
+                                             "asian", "male", "dem", "rep", "age", "pre_stops", "v1",
+                                             "v2", "v3", "median_income", "some_college", "unem")),
+                                      ~ weighted.mean(., weight)),
+                       hills_voters) %>% 
+  mutate_at(vars(paid, civil, tampa_pd, white, black, latino, asian, male, dem,
+                 rep, v1, v2, v3, some_college, unem), percent, accuracy = 0.1) %>% 
+  mutate_at(vars(age, pre_stops), ~format(round(., 1))) %>% 
+  mutate_at(vars(median_income), dollar, accuracy = 1) %>% 
+  pivot_longer(cols = c("paid", "civil", "tampa_pd", "white", "black", "latino",
+                        "asian", "male", "dem", "rep", "age", "pre_stops", "v1",
+                        "v2", "v3", "median_income", "some_college", "unem")) %>% 
+  pivot_wider(id_cols = "name", names_from = "treated", values_from = "value") %>% 
+  select(name, `Treated Voters` = `TRUE`, `Control Voters` = `FALSE`, `Never Stopped`)
+
+ord <- fread("./raw_data/var_orders.csv")
+
+low_demos <- left_join(low_demos, ord, by = c("name" = "variable")) %>% 
+  select(-name) %>% 
+  rename(name = name.y) %>% 
+  arrange(order) %>% 
+  select(-order) %>% 
+  mutate(`Never Stopped` = ifelse(is.na(`Never Stopped`)| `Never Stopped` == " NA", "", `Never Stopped`)) %>% 
+  select(Variable = name, everything()) %>%
+  mutate_all(~ gsub("[%]", paste0("\\\\", "%"), .)) %>%
+  mutate_all(~ gsub("[$]", paste0("\\\\", "$"), .))
+
+saveRDS(low_demos, "./temp/balance_table_y.rds")
