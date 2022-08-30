@@ -99,7 +99,7 @@ p <- ggplot(data = cints, aes(y = t, x = estimate, xmin = lb,
                                         shape = model), position = ggstance::position_dodgev(height = 0.5), 
                                     fill = "white", show.legend = T) +
   facet_grid(year ~.) +
-  theme_bc(base_family = "LM Roman 10", legend.position = "bottom") +
+  theme_bc(base_family = "Latin Modern Roman", legend.position = "bottom") +
   labs(shape = "Model",
        linetype = "Model",
        x = "Estimate",
@@ -159,8 +159,8 @@ p <- ggplot(data = filter(es), aes(y = year, x = estimate, xmin = lower,
                                  linetype = model),
                              position = ggstance::position_dodgev(height = .5), 
                              fill = "white", fatten = 3, size = 0.8, show.legend = T) +
-  coord_flip() + theme_bc(base_family = "LM Roman 10") +
-  theme(legend.position = "bottom", text = element_text(family = "LM Roman 10")) +
+  coord_flip() + theme_bc(base_family = "Latin Modern Roman") +
+  theme(legend.position = "bottom") +
   labs(y = "t = 0", x = "Estimate", shape = "Model",
        linetype = "Model") + scale_x_continuous(labels = percent) +
   scale_y_continuous(labels = c(-2, -1, 0), breaks = c(-1.5, -.5, .5))
