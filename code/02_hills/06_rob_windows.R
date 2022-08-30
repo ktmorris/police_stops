@@ -1,7 +1,4 @@
-library(Matching)
-library(tidyverse)
-library(lubridate)
-library(data.table)
+
 
 lapply(c(1:23), function(i){
   if(!file.exists(paste0("temp/matches_rob_", i, ".rds"))){
@@ -170,7 +167,7 @@ inter_data <- filter(full_inters, var %in% c("black_add"),
   
 
 p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var)) + geom_point() +
-  geom_line() + theme_bc(base_family = "LM Roman 10",  legend.position = "NONE") +
+  geom_line() + theme_bc(base_family = "Latin Modern Roman",  legend.position = "NONE") +
   geom_errorbar(aes(ymin = lb, ymax = ub)) +
   scale_x_continuous(breaks = c(1:23)) +
   scale_y_continuous(labels = percent) +
@@ -184,7 +181,7 @@ inter_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE:blackTRUE"),
   mutate(estimate = (lb + ub) / 2)
 
 p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var)) + geom_point() +
-  geom_line() + theme_bc(base_family = "LM Roman 10", legend.position = "NONE") +
+  geom_line() + theme_bc(base_family = "Latin Modern Roman", legend.position = "NONE") +
   geom_errorbar(aes(ymin = lb, ymax = ub)) +
   scale_x_continuous(breaks = c(1:23)) +
   scale_y_continuous(labels = percent) +
@@ -199,7 +196,7 @@ inter_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE"),
   mutate(estimate = (lb + ub) / 2)
 
 p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var)) + geom_point() +
-  geom_line() + theme_bc(base_family = "LM Roman 10", legend.position = "NONE") +
+  geom_line() + theme_bc(base_family = "Latin Modern Roman", legend.position = "NONE") +
   geom_errorbar(aes(ymin = lb, ymax = ub)) +
   scale_x_continuous(breaks = c(1:23)) +
   scale_y_continuous(labels = percent) +
@@ -208,6 +205,25 @@ p <- ggplot(inter_data, aes(x = month, y = estimate, shape = var, linetype = var
   geom_hline(yintercept = 0, linetype = "dashed")
 p
 saveRDS(p, "temp/non_black_effect.rds")
+
+########################################
+inter_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE", "black_add"),
+                     model == "inter") %>% 
+  mutate(estimate = (lb + ub) / 2,
+         var = ifelse(var == "black_add", "Black Voters", "Non-Black Voters"))
+
+p <- ggplot(inter_data, aes(x = month, y = estimate)) + geom_point() +
+  geom_line() + theme_bc(base_family = "Latin Modern Roman", legend.position = "NONE") +
+  geom_errorbar(aes(ymin = lb, ymax = ub), width = 0) +
+  scale_x_continuous(breaks = seq(1, 25, 5)) +
+  scale_y_continuous(labels = percent) +
+  labs(x = "Months Before / After Election",
+       y = "Estimated Treatment Effect") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(~var)
+p
+saveRDS(p, "temp/window_plot_good.rds")
+
 ########################################
 
 straight_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE"),
@@ -216,7 +232,7 @@ straight_data <- filter(full_inters, var %in% c("treatedTRUE:postTRUE"),
 
 
 p2 <- ggplot() + geom_point(data = straight_data, aes(x = month, y = estimate)) +
-  geom_line(data = straight_data, aes(x = month, y = estimate)) + theme_bc(base_family = "LM Roman 10") +
+  geom_line(data = straight_data, aes(x = month, y = estimate)) + theme_bc(base_family = "Latin Modern Roman") +
   geom_errorbar(data = straight_data, aes(ymin = lb, ymax = ub, y = estimate, x = month)) +
   scale_x_continuous(breaks = c(1:23)) +
   scale_y_continuous(labels = percent) +
