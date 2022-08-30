@@ -16,8 +16,8 @@ full$type <- factor(full$type, levels = c("Unmatched", "Matched\n(No Prior Turno
 
 p2 <- ggplot(data = full) + 
   facet_grid(type ~ black) +
-  geom_rect(aes(xmin = -.49, xmax = 0.5, ymax = Inf, ymin = -Inf),
-            alpha = 0.03, color = "black", fill = "yellow") +
+  geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = -Inf, ymax = Inf),
+            alpha = 0.3, color = "black", fill = "gray") +
   geom_line(data = full, aes(x = period, y = to, linetype = treated)) +
   geom_point(data = full, aes(x = period, y = to, shape = treated)) +
   scale_x_continuous(minor_breaks = seq(-3.5, 3.5, 1),
@@ -35,7 +35,7 @@ p2 <- ggplot(data = full) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
        shape = "Treatment Group",
-       caption = "Treatment occurs inside of yellow band.
+       caption = "Treatment occurs inside of shaded band.
 Full regression tables in section 3 of SI.", ) +
   coord_cartesian(ylim = c(0.0, 0.6))
 p2
