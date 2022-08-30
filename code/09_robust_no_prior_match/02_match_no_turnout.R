@@ -75,6 +75,9 @@ hills18 <- bind_rows(hills18_t, hills18_c) %>%
 ###########################################
 pre <- bind_rows(hills14, hills16, hills18)
 
+saveRDS(pre %>% 
+          select(-latitude, -longitude), "temp/real_pre_match_hills_no_prior_anon.rds")
+
 ids <- pre %>%
   mutate(id = row_number()) %>%
   select(id, voter_id, first_tr_year)

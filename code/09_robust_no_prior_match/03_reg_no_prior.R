@@ -1,6 +1,6 @@
 
 #####
-hills_pre_match <- readRDS("temp/real_pre_match_hills_no_prior.rds") %>% 
+hills_pre_match <- readRDS("temp/real_pre_match_hills_no_prior_anon.rds") %>% 
   ungroup()
 
 matches <- readRDS("temp/matches_hills_no_prior.rds")
@@ -13,7 +13,7 @@ matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                                        ifelse(first_tr_year == 3, "2018-11-06", "XX"))),
          first_tr_year = as.Date(first_tr_year))
 
-hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
+hist <- readRDS("temp/hist_rolls.rds") %>%
   select(voter_id, starts_with("v1"), v08) %>%
   pivot_longer(!starts_with("vo"), names_to = "year", values_to = "to")
 
@@ -46,9 +46,6 @@ matches <- left_join(matches,
                      by = c("group" = "voter_id", "fd" = "first_tr_year")) %>% 
   mutate(post = period >= 0.5,
          treated = voter == group)
-
-cleanup("matches")
-
 ##########################################################
 ll <- bind_rows(mutate(matches, first_tr_year = as.character(first_tr_year)),
                 mutate(matches, first_tr_year = "Overall")) %>%
@@ -92,8 +89,8 @@ Full regression tables in section 3 of SI.", ) +
   coord_cartesian(ylim = c(0.05, 0.75))
 p2
 saveRDS(p2, "temp/stopped_any_time_no_prior.rds")
+########################
 
-#####################
 matches$first_tr_year <- as.character(matches$first_tr_year)
 saveRDS(matches, "temp/full_reg_data_no_prior.rds")
 
