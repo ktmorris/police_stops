@@ -17,14 +17,13 @@ library(lubridate)
 library(kableExtra)
 library(ggeffects)
 library(scales)
-library(extrafont)
 library(data.table)
 library(stargazer)
 library(tidyverse)
-library(kevostools)
 
 save <- c("db", "cleanup", "theme_bc", "save", "weighted.ttest.ci")
 options("modelsummary_format_numeric_latex" = "plain")
+
 
 cleanup <- function(...){
   save2 <- c(save, ...)
