@@ -68,7 +68,7 @@ ll$first_tr_year <- factor(ll$first_tr_year, levels = unique(ll$first_tr_year))
 
 p2 <- ggplot(data = ll) + 
   facet_grid(first_tr_year ~ black) +
-  geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
+  geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = -Inf, ymax = Inf),
             alpha = 0.3, color = "black", fill = "gray") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
   geom_point(data = ll, aes(x = period, y = to, shape = treated)) +
@@ -131,12 +131,61 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
     m <- feols(f, data = dat1,
             weight = ~ weight, cluster = "group")
   })
-
+  
+  c1 <- confint(models1[[1]])
+  c1$term <- rownames(c1)
+  c1 <- c1 %>% 
+    mutate(model = 1,
+           year = gg,
+           t = "Overall") %>% 
+    filter(term == "treatedTRUE:postTRUE")
+  
+  c2 <- confint(models1[[2]])
+  c2$term <- rownames(c2)
+  c2 <- c2 %>% 
+    mutate(model = 2,
+           year = gg,
+           t = "Overall") %>% 
+    filter(term == "treatedTRUE:postTRUE")
+  
+  c3 <- confint(models1[[3]])
+  c3$term <- rownames(c3)
+  c3 <- c3 %>% 
+    mutate(model = 3,
+           year = gg,
+           t = "Non-Black") %>% 
+    filter(term == "treatedTRUE:postTRUE")
+  
+  h <- glht(models1[[3]], linfct = c("treatedTRUE:postTRUE + treatedTRUE:postTRUE:blackTRUE = 2"))
+  c4 <- data.table(t = "Black",
+                   `2.5 %` = confint(h)[["confint"]][[2]],
+                   `97.5 %` = confint(h)[["confint"]][[3]],
+                   year = gg,
+                   model = 3)
+  
+  c5 <- confint(models1[[4]])
+  c5$term <- rownames(c5)
+  c5 <- c5 %>% 
+    mutate(model = 4,
+           year = gg,
+           t = "Non-Black") %>% 
+    filter(term == "treatedTRUE:postTRUE")
+  
+  h <- glht(models1[[4]], linfct = c("treatedTRUE:postTRUE + treatedTRUE:postTRUE:blackTRUE = 2"))
+  c6 <- data.table(t = "Black",
+                   `2.5 %` = confint(h)[["confint"]][[2]],
+                   `97.5 %` = confint(h)[["confint"]][[3]],
+                   year = gg,
+                   model = 4)
+  
+  c <- bind_rows(c1, c2, c3, c4, c5, c6)
+  saveRDS(c, paste0("temp/cints_full_", gg, ".rds"))
+  ##################################
   rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
                   "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$",
                   "Matching Covariates Included", "", "$\\checkmark$", "", "$\\checkmark$")
   
-  attr(rows, 'position') <- c(18:19)
+  attr(rows, 'position') <- c(17:18)
   
   modelsummary(models1,
                statistic = "std.error",
@@ -156,9 +205,25 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
                output = paste0("temp/small_reg_", gg, ".tex"),
                escape = FALSE)
   
+  j <- fread(paste0("temp/small_reg_", gg, ".tex"), header = F, sep = "+") %>%
+    mutate(n = row_number())
+  
+  for(i in c(2:nrow(j))){
+    j$n[i] <- ifelse(grepl("Intercept", j$V1[i-1]), j$n[i] + 1.5, j$n[i])
+  }
+  
+  j <- j %>% 
+    arrange(n) %>% 
+    select(-n)
+  
+  write.table(j, paste0("temp/small_reg_", gg, ".tex"), quote = F, col.names = F,
+              row.names = F)
+  
+  ##########################
   rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
                   "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
-  attr(rows, 'position') <- c(54:54)
+  attr(rows, 'position') <- c(53:53)
+  
   modelsummary(models1,
                statistic = "std.error",
                stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
@@ -197,11 +262,24 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
   
   j <- fread(paste0("temp/big_reg_", gg, ".tex"), header = F, sep = "+") %>%
     mutate(n = row_number())
+  
+  for(i in c(2:nrow(j))){
+    j$n[i] <- ifelse(grepl("Intercept", j$V1[i-1]), j$n[i] + 1.5, j$n[i])
+  }
+  
+  l <- filter(j, grepl("dind-table", V1)) %>% 
+    select(n) %>% 
+    pull()
+  
+  add <- data.frame(V1 = "\\captionsetup{justification=centering}",
+                    n = (l - 0.01))
+  
+  j <- bind_rows(j, add)
 
   insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
   insert2 <- "}"
 
-  j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>%
+  j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(5.1, max(j$n) - 0.01))) %>%
     arrange(n) %>%
     select(-n)
 
@@ -210,3 +288,38 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
               row.names = F)
    
 }
+
+##########################
+cints <- rbindlist(lapply(c("overall", "2014-11-04", "2016-11-08", "2018-11-06"), function(gg){
+  readRDS(paste0("temp/cints_full_", gg, ".rds"))
+})) %>% 
+  mutate(model = ifelse(t == "Overall", model, model - 2))
+
+colnames(cints) <- c("lb", "ub", "term", "model", "year", "t")
+
+cints <- mutate(cints, estimate = (lb + ub) / 2,
+                model = ifelse(model == 1, "No Controls", "With Controls"),
+                year = ifelse(year == "overall", "Overall",
+                              paste("t = 0\nin", substring(year, 1, 4))))
+
+cints$year <- factor(cints$year, levels = c("t = 0\nin 2014",
+                                            "t = 0\nin 2016",
+                                            "t = 0\nin 2018",
+                                            "Overall"))
+
+p <- ggplot(data = cints, aes(y = t, x = estimate, xmin = lb, 
+                              xmax = ub, linetype = model)) +
+  ggstance::geom_pointrangeh(aes(y = t, x = estimate, 
+                                 xmin = lb, xmax = ub,
+                                 shape = model), position = ggstance::position_dodgev(height = 0.5), 
+                             fill = "white", show.legend = T) +
+  facet_grid(year ~.) +
+  theme_bc(base_family = "Latin Modern Roman", legend.position = "bottom") +
+  labs(shape = "Model",
+       linetype = "Model",
+       x = "Estimate",
+       y = NULL) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(labels = scales::percent)
+p
+saveRDS(p, "temp/coef_plot.rds")
