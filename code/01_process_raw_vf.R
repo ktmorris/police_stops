@@ -1,6 +1,5 @@
-
+## function to geocode with smartystreets
 geocode = function(file){
-  ## function to geocode with smartystreets
   file$nnn <- c(1:nrow(file))
   file$t <- runif(nrow(file))
   file <- setorder(file, t) %>%
