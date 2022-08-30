@@ -1,3 +1,5 @@
+## packages used (there may be extra here)
+
 library(splitstackshape)
 library(sqldf)
 library(fixest)
@@ -6,6 +8,7 @@ library(RSQLite)
 library(modelsummary)
 library(tidycensus)
 library(modelsummary)
+options("modelsummary_format_numeric_latex" = "plain")
 library(multcomp)
 library(miceadds)
 library(Matching)
@@ -17,6 +20,7 @@ library(scales)
 library(data.table)
 library(tidyverse)
 
+## function for ggplot theme
 theme_bc <- function(base_size = 11, base_family = "BentonSans",
                      legend.position = "right", face = "plain", ...) {
   library(extrafont)
@@ -38,8 +42,8 @@ theme_bc <- function(base_size = 11, base_family = "BentonSans",
           ...)
 }
 
+## quick functions for clearing the workspace
 save <- c("db", "cleanup", "theme_bc", "save", "weighted.ttest.ci")
-options("modelsummary_format_numeric_latex" = "plain")
 
 
 cleanup <- function(...){
