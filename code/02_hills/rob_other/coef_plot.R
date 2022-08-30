@@ -15,7 +15,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
   }
   
   c1 <- confint(
-    feols(m1, dat1, weights = ~ weight, cluster = ~ group)
+    feols(m1, dat1, weights = ~ weight, cluster = ~ voter_id)
   )
   c1$term <- rownames(c1)
   c1 <- c1 %>% 
@@ -24,7 +24,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
            t = "Overall")
   
   c2 <- confint(
-    feols(m2, dat1, weights = ~ weight, cluster = ~ group)
+    feols(m2, dat1, weights = ~ weight, cluster = ~ voter_id)
   )
   c2$term <- rownames(c2)
   c2 <- c2 %>% 
@@ -33,7 +33,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
            t = "Overall")
   ######
   c3 <- confint(
-    feols(m1, filter(dat1, !black), weights = ~ weight, cluster = ~ group)
+    feols(m1, filter(dat1, !black), weights = ~ weight, cluster = ~ voter_id)
   )
   c3$term <- rownames(c3)
   c3 <- c3 %>% 
@@ -42,7 +42,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
            t = "Non-Black")
   
   c4 <- confint(
-    feols(m1, filter(dat1, black), weights = ~ weight, cluster = ~ group)
+    feols(m1, filter(dat1, black), weights = ~ weight, cluster = ~ voter_id)
   )
   c4$term <- rownames(c4)
   c4 <- c4 %>% 
@@ -51,7 +51,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
            t = "Black")
   ######
   c5 <- confint(
-    feols(m2, filter(dat1, !black), weights = ~ weight, cluster = ~ group)
+    feols(m2, filter(dat1, !black), weights = ~ weight, cluster = ~ voter_id)
   )
   c5$term <- rownames(c5)
   c5 <- c5 %>% 
@@ -60,7 +60,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
            t = "Non-Black")
   
   c6 <- confint(
-    feols(m2, filter(dat1, black), weights = ~ weight, cluster = ~ group)
+    feols(m2, filter(dat1, black), weights = ~ weight, cluster = ~ voter_id)
   )
   c6$term <- rownames(c6)
   c6 <- c6 %>% 
@@ -77,7 +77,7 @@ cleanup()
 cints <- rbindlist(lapply(c("overall", "2014-11-04", "2016-11-08", "2018-11-06"), function(gg){
   readRDS(paste0("temp/cints_full_", gg, "_no_matching.rds"))
 })) %>% 
-  filter(term == "treatedTRUE:postTRUE") %>% 
+  filter(term == "treated:postTRUE") %>% 
   mutate(model = ifelse(t == "Overall", model, model - 2))
 
 colnames(cints) <- c("lb", "ub", "term", "model", "year", "t")
@@ -99,7 +99,7 @@ p <- ggplot(data = cints, aes(y = t, x = estimate, xmin = lb,
                                  shape = model), position = ggstance::position_dodgev(height = 0.5), 
                              fill = "white", show.legend = T) +
   facet_grid(year ~.) +
-  theme_bc(base_family = "LM Roman 10", legend.position = "bottom") +
+  theme_bc(base_family = "Latin Modern Roman", legend.position = "bottom") +
   labs(shape = "Model",
        linetype = "Model",
        x = "Estimate",
@@ -124,19 +124,19 @@ es <- rbindlist(lapply(seq(-1.5, 0.5, 1), function(y){
   dat1 <- filter(matches, period <= y)
   dat1$post <- dat1$period == y
   
-  confint(feols(m1, dat1, weights = ~ weight, cluster = ~ group)) %>% 
+  confint(feols(m1, dat1, weights = ~ weight, cluster = ~ voter_id)) %>% 
     mutate(model = 1,
            year = y)
   
-  c <- confint(feols(m1, dat1, weights = ~ weight, cluster = ~ group)) %>% 
+  c <- confint(feols(m1, dat1, weights = ~ weight, cluster = ~ voter_id)) %>% 
     mutate(model = 1,
            year = y)
-  c <- c[rownames(c) == "treatedTRUE:postTRUE",]
+  c <- c[rownames(c) == "treated:postTRUE",]
   
-  c2 <- confint(feols(m2, dat1, weights = ~ weight, cluster = ~ group)) %>% 
+  c2 <- confint(feols(m2, dat1, weights = ~ weight, cluster = ~ voter_id)) %>% 
     mutate(model = 2,
            year = y)
-  c2 <- c2[rownames(c2) == "treatedTRUE:postTRUE",]
+  c2 <- c2[rownames(c2) == "treated:postTRUE",]
   
   return(bind_rows(
     c,
@@ -157,8 +157,8 @@ p <- ggplot(data = filter(es), aes(y = year, x = estimate, xmin = lower,
                                  linetype = model),
                              position = ggstance::position_dodgev(height = .5), 
                              fill = "white", fatten = 3, size = 0.8, show.legend = T) +
-  coord_flip() + theme_bc(base_family = "LM Roman 10") +
-  theme(legend.position = "bottom", text = element_text(family = "LM Roman 10")) +
+  coord_flip() + theme_bc(base_family = "Latin Modern Roman") +
+  theme(legend.position = "bottom") +
   labs(y = "t = 0", x = "Estimate", shape = "Model",
        linetype = "Model") + scale_x_continuous(labels = percent) +
   scale_y_continuous(labels = c(-2, -1, 0), breaks = c(-1.5, -.5, .5))

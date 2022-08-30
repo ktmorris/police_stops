@@ -71,7 +71,7 @@ p2 <- ggplot(data = ll) +
                                 "1",
                                 "2",
                                 "3")) +
-  theme_bc(base_family = "LM Roman 10") +
+  theme_bc(base_family = "Latin Modern Roman") +
   scale_y_continuous(labels = percent) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
@@ -175,7 +175,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
                output = paste0("temp/two_matches_reg_", gg, "_no_matching.tex"),
                escape = FALSE)
   
-  j <- fread(paste0("temp/two_matches_reg_y_", gg, "_no_matching.tex"), header = F, sep = "+") %>% 
+  j <- fread(paste0("temp/two_matches_reg_", gg, "_no_matching.tex"), header = F, sep = "+") %>% 
     mutate(n = row_number())
   
   insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
