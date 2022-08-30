@@ -59,17 +59,12 @@ full_inters <- rbindlist(lapply(c(1:23), function(i){
   
   dat1 <- filter(matches, period <= 0.5)
   
-  m1 <- to ~ treated * post + as.factor(year) +
+  m1 <- to ~ treated * post*black + as.factor(year) +
     white + black + latino + asian + male +
     dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
     median_income + some_college + unem + civil + paid + tampa_pd
   
-  m2 <- to ~ treated * post*black + as.factor(year) +
-    white + black + latino + asian + male +
-    dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
-    median_income + some_college + unem + civil + paid + tampa_pd
-  
-  m <- lm.cluster(formula = m2, data = dat1, weights = dat1$weight, cluster = dat1$group)
+  m <- lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group)
   
   j <- data.table(confint(m))
   j2 <- cbind(j, rownames(confint(m))) %>% 
@@ -86,16 +81,12 @@ full_inters <- rbindlist(lapply(c(1:23), function(i){
     mutate(model = "inter")
   
   ###################
-  m <- lm.cluster(formula = m1, data = dat1, weights = dat1$weight, cluster = dat1$group)
   
-  j <- data.table(confint(m))
   
-  ax <- cbind(j, rownames(confint(m))) %>% 
-    mutate(month = i,
-           model = "straight")
+  m <- feols(fml = m1, data = dat1, weights = dat1$weight, cluster = dat1$group)
   
-  ###################
-  return(bind_rows(j2, ax) %>% 
+  saveRDS(m, paste0("temp/month_", i, "_reg.rds"))
+  return(j2 %>% 
            mutate(ntreat = nt))
 }))
 
@@ -123,3 +114,277 @@ p <- ggplot(inter_data, aes(x = month, y = estimate)) + geom_point() +
 p
 saveRDS(p, "temp/window_plot_good.rds")
 
+############################
+
+mods <- list(
+  readRDS("temp/month_1_reg.rds"),
+  readRDS("temp/month_2_reg.rds"),
+  readRDS("temp/month_3_reg.rds"),
+  readRDS("temp/month_4_reg.rds"),
+  readRDS("temp/month_5_reg.rds"),
+  readRDS("temp/month_6_reg.rds")
+)
+
+names(mods) <- c("1 month",
+                 "2",
+                 "3",
+                 "4",
+                 "5",
+                 "6")
+
+rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4, ~m5, ~m6,
+                "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
+attr(rows, 'position') <- c(53:53)
+
+modelsummary(mods,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                          "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                          "treatedTRUE" = "Treated",
+                          "postTRUE" = "Post Treatment",
+                          "blackTRUE" = "Black",
+                          "whiteTRUE" = "White",
+                          "latinoTRUE" = "Latino",
+                          "asianTRUE" = "Asian",
+                          "maleTRUE" = "Male",
+                          "demTRUE" = "Democrat",
+                          "repTRUE" = "Republican",
+                          "age" = "Age",
+                          "reg_date" = "Registration Date",
+                          "pre_stops" = "Traffic Stops before Period",
+                          "v1TRUE" = "Turnout (t = -3)",
+                          "v2TRUE" = "Turnout (t = -2)",
+                          "v3TRUE" = "Turnout (t = -1)",
+                          "median_income" = "Nhood Median Income",
+                          "some_college" = "Nhood w/ Some College",
+                          "unem" = "Nhood Unemployment Rate",
+                          "civil" = "Civil Infraction",
+                          "paidTRUE" = "Paid Money on Stop",
+                          "tampa_pd" = "Stopped by Tampa Police Department",
+                          "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                          "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "Individual-Level Turnout",
+             latex_options = "scale_down",
+             add_rows = rows,
+             output = paste0("temp/months_1_6.tex"),
+             escape = FALSE)
+
+j <- fread("temp/months_1_6.tex", header = F, sep = "+") %>%
+  mutate(n = row_number())
+
+insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>%
+  arrange(n) %>%
+  select(-n)
+
+
+write.table(j, "temp/months_1_6.tex", quote = F, col.names = F,
+            row.names = F)
+#################################
+
+mods <- list(
+  readRDS("temp/month_7_reg.rds"),
+  readRDS("temp/month_8_reg.rds"),
+  readRDS("temp/month_9_reg.rds"),
+  readRDS("temp/month_10_reg.rds"),
+  readRDS("temp/month_11_reg.rds"),
+  readRDS("temp/month_12_reg.rds")
+)
+
+names(mods) <- c("7 months",
+                 "8",
+                 "9",
+                 "10",
+                 "11",
+                 "12")
+
+modelsummary(mods,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                          "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                          "treatedTRUE" = "Treated",
+                          "postTRUE" = "Post Treatment",
+                          "blackTRUE" = "Black",
+                          "whiteTRUE" = "White",
+                          "latinoTRUE" = "Latino",
+                          "asianTRUE" = "Asian",
+                          "maleTRUE" = "Male",
+                          "demTRUE" = "Democrat",
+                          "repTRUE" = "Republican",
+                          "age" = "Age",
+                          "reg_date" = "Registration Date",
+                          "pre_stops" = "Traffic Stops before Period",
+                          "v1TRUE" = "Turnout (t = -3)",
+                          "v2TRUE" = "Turnout (t = -2)",
+                          "v3TRUE" = "Turnout (t = -1)",
+                          "median_income" = "Nhood Median Income",
+                          "some_college" = "Nhood w/ Some College",
+                          "unem" = "Nhood Unemployment Rate",
+                          "civil" = "Civil Infraction",
+                          "paidTRUE" = "Paid Money on Stop",
+                          "tampa_pd" = "Stopped by Tampa Police Department",
+                          "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                          "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "Individual-Level Turnout",
+             latex_options = "scale_down",
+             add_rows = rows,
+             output = paste0("temp/months_7_12.tex"),
+             escape = FALSE)
+
+j <- fread("temp/months_7_12.tex", header = F, sep = "+") %>%
+  mutate(n = row_number())
+
+insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>%
+  arrange(n) %>%
+  select(-n)
+
+
+write.table(j, "temp/months_7_12.tex", quote = F, col.names = F,
+            row.names = F)
+
+#################################
+
+mods <- list(
+  readRDS("temp/month_13_reg.rds"),
+  readRDS("temp/month_14_reg.rds"),
+  readRDS("temp/month_15_reg.rds"),
+  readRDS("temp/month_16_reg.rds"),
+  readRDS("temp/month_17_reg.rds"),
+  readRDS("temp/month_18_reg.rds")
+)
+
+names(mods) <- c("13 months",
+                 "14",
+                 "15",
+                 "16",
+                 "17",
+                 "18")
+
+modelsummary(mods,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                          "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                          "treatedTRUE" = "Treated",
+                          "postTRUE" = "Post Treatment",
+                          "blackTRUE" = "Black",
+                          "whiteTRUE" = "White",
+                          "latinoTRUE" = "Latino",
+                          "asianTRUE" = "Asian",
+                          "maleTRUE" = "Male",
+                          "demTRUE" = "Democrat",
+                          "repTRUE" = "Republican",
+                          "age" = "Age",
+                          "reg_date" = "Registration Date",
+                          "pre_stops" = "Traffic Stops before Period",
+                          "v1TRUE" = "Turnout (t = -3)",
+                          "v2TRUE" = "Turnout (t = -2)",
+                          "v3TRUE" = "Turnout (t = -1)",
+                          "median_income" = "Nhood Median Income",
+                          "some_college" = "Nhood w/ Some College",
+                          "unem" = "Nhood Unemployment Rate",
+                          "civil" = "Civil Infraction",
+                          "paidTRUE" = "Paid Money on Stop",
+                          "tampa_pd" = "Stopped by Tampa Police Department",
+                          "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                          "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "Individual-Level Turnout",
+             latex_options = "scale_down",
+             add_rows = rows,
+             output = paste0("temp/months_13_18.tex"),
+             escape = FALSE)
+
+j <- fread("temp/months_13_18.tex", header = F, sep = "+") %>%
+  mutate(n = row_number())
+
+insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>%
+  arrange(n) %>%
+  select(-n)
+
+
+write.table(j, "temp/months_13_18.tex", quote = F, col.names = F,
+            row.names = F)
+
+#################################
+
+mods <- list(
+  readRDS("temp/month_19_reg.rds"),
+  readRDS("temp/month_20_reg.rds"),
+  readRDS("temp/month_21_reg.rds"),
+  readRDS("temp/month_22_reg.rds"),
+  readRDS("temp/month_23_reg.rds")
+)
+
+names(mods) <- c("19 months",
+                 "20",
+                 "21",
+                 "22",
+                 "23")
+
+rows <- rows[,c(1:6)]
+
+modelsummary(mods,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                          "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                          "treatedTRUE" = "Treated",
+                          "postTRUE" = "Post Treatment",
+                          "blackTRUE" = "Black",
+                          "whiteTRUE" = "White",
+                          "latinoTRUE" = "Latino",
+                          "asianTRUE" = "Asian",
+                          "maleTRUE" = "Male",
+                          "demTRUE" = "Democrat",
+                          "repTRUE" = "Republican",
+                          "age" = "Age",
+                          "reg_date" = "Registration Date",
+                          "pre_stops" = "Traffic Stops before Period",
+                          "v1TRUE" = "Turnout (t = -3)",
+                          "v2TRUE" = "Turnout (t = -2)",
+                          "v3TRUE" = "Turnout (t = -1)",
+                          "median_income" = "Nhood Median Income",
+                          "some_college" = "Nhood w/ Some College",
+                          "unem" = "Nhood Unemployment Rate",
+                          "civil" = "Civil Infraction",
+                          "paidTRUE" = "Paid Money on Stop",
+                          "tampa_pd" = "Stopped by Tampa Police Department",
+                          "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                          "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "Individual-Level Turnout",
+             latex_options = "scale_down",
+             add_rows = rows,
+             output = paste0("temp/months_19_23.tex"),
+             escape = FALSE)
+
+j <- fread("temp/months_19_23.tex", header = F, sep = "+") %>%
+  mutate(n = row_number())
+
+insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>%
+  arrange(n) %>%
+  select(-n)
+
+
+write.table(j, "temp/months_19_23.tex", quote = F, col.names = F,
+            row.names = F)
