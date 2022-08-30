@@ -115,7 +115,6 @@ cleanup()
 matches <- readRDS("temp/full_reg_data.rds") %>% 
   filter(period <= 0.5)
 
-matches <- readRDS("temp/full_reg_data.rds")
 m1 <- to ~ treated * post + as.factor(year)
 m2 <- to ~ treated * post + as.factor(year) +
   white + black + latino + asian + male +
