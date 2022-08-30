@@ -12,17 +12,19 @@ hist <- left_join(hist, elec_dates) %>%
 hist <- hist %>% 
   filter(year(year) %% 2 == 0)
 
-month_matches <- readRDS("temp/month_matches.rds")
 ###############################
+
+
+month_matches <- readRDS("temp/month_matches.rds")
+hills_pre_match <- readRDS("temp/real_pre_match_hills_anon.rds") %>% 
+  ungroup()
 
 full_inters <- rbindlist(lapply(c(1:23), function(i){
   matches <- filter(month_matches, month == i) %>% 
     select(-month)
   
   nt <- nrow(filter(matches, voter == group))
-  
-  hills_pre_match <- readRDS("temp/real_pre_match_hills_anon.rds") %>% 
-    ungroup()
+
   
   matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                        by = c("group" = "voter_id", "first_tr_year")) %>% 
