@@ -70,7 +70,7 @@ ll$first_tr_year <- factor(ll$first_tr_year, levels = unique(ll$first_tr_year))
 p2 <- ggplot(data = ll) + 
   facet_grid(first_tr_year ~ black) +
   geom_rect(aes(xmin = -.49, xmax = 0.5, ymin = 0, ymax = Inf),
-            alpha = 0.03, color = "black", fill = "yellow") +
+            alpha = 0.3, color = "black", fill = "gray") +
   geom_line(data =ll, aes(x = period, y = to, linetype = treated)) +
   geom_point(data = ll, aes(x = period, y = to, shape = treated)) +
   scale_x_continuous(minor_breaks = seq(-3.5, 3.5, 1),
@@ -83,18 +83,22 @@ p2 <- ggplot(data = ll) +
                                 "1",
                                 "2",
                                 "3")) +
-  theme_bc(base_family = "LM Roman 10") +
+  theme_bc(base_family = "Latin Modern Roman") +
   scale_y_continuous(labels = percent) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
        shape = "Treatment Group",
-       caption = "Treatment occurs inside of yellow band.
+       caption = "Treatment occurs inside of shaded band.
 Full regression tables in section 3 of SI.", ) +
   coord_cartesian(ylim = c(0.05, 0.75))
 p2
 saveRDS(p2, "temp/stopped_any_time.rds")
 
 #####################
+matches$first_tr_year <- as.character(matches$first_tr_year)
+saveRDS(matches, "temp/full_reg_data.rds")
+
+matches <- readRDS("temp/full_reg_data.rds")
 
 m1 <- to ~ treated * post + as.factor(year)
 
@@ -110,17 +114,17 @@ m4 <- to ~ treated * post * black + as.factor(year) +
   dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
   median_income + some_college + unem + civil + paid + tampa_pd
 
-matches$first_tr_year <- as.character(matches$first_tr_year)
-saveRDS(matches, "temp/full_reg_data.rds")
+
+
 for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
   
   if(gg == "overall"){
     dat1 <- filter(matches, period <= 0.5)
-    tit = "\\label{tab:dind-table} Overall Treatment Effect"
+    tit = "\\label{tab:dind-table} Overall Treatment Effect\\\\\nDependent Variable: Individual-Level Turnout"
     ooo = c(1, 2, 4, 23, 24, 22, 25)
   }else{
     dat1 <- dplyr::filter(matches, period <= 0.5, first_tr_year == gg)
-    tit = paste0("\\label{tab:dind-table-", substring(gg, 1, 4), "}Treatment Effect for Voters Stopped before ", substring(gg, 1, 4), " Election")
+    tit = paste0("\\label{tab:dind-table-", substring(gg, 1, 4), "}Treatment Effect for Voters Stopped before ", substring(gg, 1, 4), " Election\\\\\nDependent Variable: Individual-Level Turnout")
     ooo = c(1, 2, 7, 23, 24, 22, 25)
   }
  
@@ -130,9 +134,10 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
   })
 
   rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
-                  "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
+                  "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$",
+                  "Matching Covariates Included", "", "$\\checkmark$", "", "$\\checkmark$")
   
-  attr(rows, 'position') <- c(13)
+  attr(rows, 'position') <- c(18:19)
   
   modelsummary(models1,
                statistic = "std.error",
@@ -142,15 +147,19 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
                             "treatedTRUE" = "Treated",
                             "postTRUE" = "Post Treatment",
                             "blackTRUE" = "Black",
+                            "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                            "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
                             "(Intercept)" = "Intercept"),
                gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
                title = tit,
                latex_options = "scale_down",
                add_rows = rows,
-               output = paste0("temp/small_two_matches_reg_", gg, ".tex"),
+               output = paste0("temp/small_reg_", gg, ".tex"),
                escape = FALSE)
   
-  attr(rows, 'position') <- 53
+  rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
+                  "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
+  attr(rows, 'position') <- c(54:54)
   modelsummary(models1,
                statistic = "std.error",
                stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
@@ -184,22 +193,21 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
                title = tit,
                latex_options = "scale_down",
                add_rows = rows,
-               output = paste0("temp/two_matches_reg_", gg, ".tex"),
+               output = paste0("temp/big_reg_", gg, ".tex"),
                escape = FALSE)
   
-  j <- fread(paste0("temp/two_matches_reg_y_", gg, ".tex"), header = F, sep = "+") %>% 
+  j <- fread(paste0("temp/big_reg_", gg, ".tex"), header = F, sep = "+") %>%
     mutate(n = row_number())
-  
+
   insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
   insert2 <- "}"
-  
-  j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>% 
-    mutate(V1 = gsub("dollarsign", "\\\\$", V1)) %>% 
-    arrange(n) %>% 
+
+  j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, nrow(j) - 0.01))) %>%
+    arrange(n) %>%
     select(-n)
-  
-  
-  write.table(j, paste0("./temp/dind_reg_y", gg, ".tex"), quote = F, col.names = F,
+
+
+  write.table(j, paste0("temp/big_reg_", gg, ".tex"), quote = F, col.names = F,
               row.names = F)
    
 }
