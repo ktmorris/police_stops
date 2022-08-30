@@ -261,14 +261,6 @@ joined <- joined %>%
          v08, v10, v12, v14, v16, v18, latitude, longitude, first_tr_year) %>% 
   mutate(paid = amount_paid > 0)
 
-### remove people who were stopped, not fined
-# joined <- left_join(joined, readRDS("temp/stopped_no_fine.rds"),
-#                     by = c("name_first" = "first_name",
-#                            "name_last" = "last_name",
-#                            "birth_date" = "date_of_birth")) %>% 
-  # filter(is.na(exclude)) %>%
-  # select(-exclude)
-
 
 census <- readRDS("../regular_data/census_bgs_18.rds")
 

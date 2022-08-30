@@ -1,3 +1,41 @@
+
+geocode = function(file){
+  ## function to geocode with smartystreets
+  file$nnn <- c(1:nrow(file))
+  file$t <- runif(nrow(file))
+  file <- setorder(file, t) %>%
+    dplyr::mutate(id = row_number()) %>%
+    dplyr::select(-t)
+  
+  dt <- gsub(" |-|:", "", Sys.time())
+  x <- file %>%
+    dplyr::select(id, street, city, state, zip)
+  
+  file_name <- paste0("c:/users/morrisk/documents/smartylist_windows_latest/geo_file", dt, ".csv")
+  fwrite(x, file_name)
+  
+  system("cmd.exe",
+         input = paste0("c:/users/morrisk/documents/smartylist_windows_latest/smartylist -auth-id=\"XXX\" -auth-token=\"XXX\"  -input=\"", file_name, "\""))
+  
+  file2 <- gsub(".csv", "-output.csv", file_name)
+  x <- fread(file2)
+  
+  files <- list.files("c:/users/morrisk/documents/smartylist_windows_latest/", pattern = paste0("geo_file", dt), full.names = T)
+  lapply(files, function(y){file.remove(y)})
+  
+  colnames(x) <- make.unique(make.names(colnames(x)))
+  
+  x <- dplyr::select(x, id, latitude = X.latitude., longitude = X.longitude., match = X.precision.)
+  
+  file <- left_join(file, x, by = "id") %>%
+    dplyr::arrange(nnn) %>%
+    dplyr::select(-id, -nnn)
+  
+  return(file)
+}
+
+
+
 vf_names <- make.names(fread("E:/rolls/florida/colnames.csv", header = F, sep = ",")$V1)
 vf_names <- gsub("[.]", "_", tolower(vf_names))
 
@@ -158,5 +196,10 @@ roll <- roll %>%
   ungroup()
 
 saveRDS(roll, "temp/full_raw_coded_hills_w_bgs.rds")
+
+saveRDS(roll %>% 
+          select(voter_id, starts_with("v1"), v08),
+        "temp/hist_rolls.rds")
+
 
 #######################################################################

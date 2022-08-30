@@ -13,7 +13,7 @@ matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
                                        ifelse(first_tr_year == 3, "2018-11-06", "XX"))),
          first_tr_year = as.Date(first_tr_year))
 
-hist <- readRDS("temp/full_raw_coded_hills_w_bgs.rds") %>%
+hist <- readRDS("temp/hist_rolls.rds") %>%
   select(voter_id, starts_with("v1"), v08) %>%
   pivot_longer(!starts_with("vo"), names_to = "year", values_to = "to")
 
@@ -48,7 +48,6 @@ matches <- left_join(matches,
          treated = voter == group)
 
 cleanup("matches")
-gc()
 
 ##########################################################
 ll <- bind_rows(mutate(matches, first_tr_year = as.character(first_tr_year)),
