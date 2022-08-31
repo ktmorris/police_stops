@@ -240,6 +240,14 @@ test <- data.table(group = c("Actual Birthdate", "Birthdate + 35 Days", "Birthda
   mutate(values = comma(values))
 
 saveRDS(test, "temp/plus_minus_35.rds")
+knitr::kable(test, booktabs = T, caption = "\\label{tab:change-dobs} Results of Shifting Birthdates", linesep = "", align=rep('c', ncol(test)), format = "latex",
+             col.names = linebreak(c("Group", "Number of Matches Between Traffic Stop and Voter File Records"))) %>%
+  kable_styling(font_size = 10,
+                latex_options = c("HOLD_position")) %>%
+  column_spec(c(1), width = "5cm") %>% 
+  column_spec(c(2), width = "6cm") %>% 
+  save_kable(paste0("./temp/shift_tab.tex"))
+
 ######################################
 
 joined <- joined %>% 

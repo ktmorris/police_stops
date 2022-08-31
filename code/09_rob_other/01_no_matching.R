@@ -1,12 +1,10 @@
 
 #####
-hills_pre_match <- readRDS("temp/real_pre_match_hills_no_prior_anon.rds") %>% 
+matches <- readRDS("temp/real_pre_match_hills_anon.rds") %>% 
   ungroup()
 
-matches <- readRDS("temp/matches_hills_no_prior.rds")
 
-matches <- left_join(matches, select(hills_pre_match, voter_id, first_tr_year),
-                     by = c("group" = "voter_id", "first_tr_year")) %>% 
+matches <- matches %>% 
   mutate(fd = first_tr_year,
          first_tr_year = ifelse(first_tr_year == 1, "2014-11-04",
                                 ifelse(first_tr_year == 2, "2016-11-08",
@@ -26,7 +24,7 @@ hist <- left_join(hist, elec_dates) %>%
 
 
 matches <- left_join(matches, hist %>% 
-                       filter(year(year) %% 2 == 0), by = c("voter" = "voter_id"))
+                       filter(year(year) %% 2 == 0), by = c("voter_id" = "voter_id"))
 
 periods <- fread("raw_data/period_lu.csv") %>% 
   mutate_at(vars(first_tr_year, year), as.Date, "%m/%d/%Y")
@@ -34,26 +32,20 @@ periods <- fread("raw_data/period_lu.csv") %>%
 matches <- left_join(matches, periods) %>% 
   filter(period %in% c(-2.5, -1.5, -.5, .5, 1.5))
 
-matches <- left_join(matches,
-                     hills_pre_match %>%
-                       select(-GEOID, -amount_paid, -last_date),
-                     by = c("voter" = "voter_id", "fd" = "first_tr_year"))
+matches <- matches %>% 
+  mutate(post = period >= 0.5)
+matches$weight <- 1
+cleanup("matches")
+gc()
 
-matches <- left_join(matches,
-                     hills_pre_match %>%
-                       select(voter_id, amount_paid, last_date, first_tr_year, black_t = black,
-                              dem_t = dem),
-                     by = c("group" = "voter_id", "fd" = "first_tr_year")) %>% 
-  mutate(post = period >= 0.5,
-         treated = voter == group)
 ##########################################################
 ll <- bind_rows(mutate(matches, first_tr_year = as.character(first_tr_year)),
                 mutate(matches, first_tr_year = "Overall")) %>%
   filter(period <= 0.5) %>% 
-  group_by(treated, period, black_t, first_tr_year) %>%
+  group_by(treated, period, black, first_tr_year) %>%
   summarize(to = weighted.mean(to, weight)) %>% 
   mutate(treated = ifelse(treated, "Treated", "Control"),
-         black = ifelse(black_t, "Black Voters", "Non-Black Voters"))
+         black = ifelse(black, "Black Voters", "Non-Black Voters"))
 
 ll$treated <- factor(ll$treated, levels = c("Treated", "Control"))
 
@@ -79,7 +71,7 @@ p2 <- ggplot(data = ll) +
                                 "1",
                                 "2",
                                 "3")) +
-  theme_bc(base_family = "LM Roman 10") +
+  theme_bc(base_family = "Latin Modern Roman") +
   scale_y_continuous(labels = percent) +
   labs(x = "t", y = "Turnout",
        linetype = "Treatment Group",
@@ -88,10 +80,9 @@ p2 <- ggplot(data = ll) +
 Full regression tables in section 3 of SI.", ) +
   coord_cartesian(ylim = c(0.05, 0.75))
 p2
-saveRDS(p2, "temp/stopped_any_time_no_prior.rds")
-########################
+saveRDS(p2, "temp/stopped_any_time_no_matching.rds")
+
+#####################
 
 matches$first_tr_year <- as.character(matches$first_tr_year)
-saveRDS(matches, "temp/full_reg_data_no_prior.rds")
-
-
+saveRDS(matches, "temp/full_reg_data_no_matching.rds")

@@ -179,4 +179,4 @@ low_demos <- left_join(low_demos, ord, by = c("name" = "variable")) %>%
   mutate_all(~ gsub("[%]", paste0("\\\\", "%"), .)) %>%
   mutate_all(~ gsub("[$]", paste0("\\\\", "$"), .))
 
-saveRDS(low_demos, "./temp/balance_table_y.rds")
+saveRDS(low_demos, "./temp/balance_table.rds")

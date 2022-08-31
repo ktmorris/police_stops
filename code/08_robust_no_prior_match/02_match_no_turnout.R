@@ -11,72 +11,8 @@ library(tidyverse)
 require(snow)
 require(parallel)
 
-
-hills_pre_match <- readRDS("temp/hills_pre_match.rds")
-
-############## 2014
-
-hills14_t <- filter(hills_pre_match, first_tr_year == "2014-11-04") %>% 
-  mutate(treated = 1) %>% 
-  select(-pre_stops_c)
-
-hills14_c <- filter(hills_pre_match, first_tr_year == "2016-11-08",
-                    !(voter_id %in% hills14_t$voter_id)) %>% 
-  mutate(treated = 0) %>% 
-  select(-pre_stops) %>% 
-  rename(pre_stops = pre_stops_c)
-
-
-hills14 <- bind_rows(hills14_t, hills14_c) %>%  
-  mutate(first_tr_year = 1) %>% 
-  select(-v14, -v16) %>% 
-  rename(v1 = v08,
-         v2 = v10,
-         v3 = v12)
-
-############## 2016
-
-hills16_t <- filter(hills_pre_match, first_tr_year == "2016-11-08") %>% 
-  mutate(treated = 1) %>% 
-  select(-pre_stops_c)
-
-hills16_c <- filter(hills_pre_match, first_tr_year == "2018-11-06",
-                    !(voter_id %in% hills16_t$voter_id)) %>% 
-  mutate(treated = 0) %>% 
-  select(-pre_stops) %>% 
-  rename(pre_stops = pre_stops_c)
-
-
-hills16 <- bind_rows(hills16_t, hills16_c) %>%  
-  mutate(first_tr_year = 2) %>% 
-  rename(v1 = v10,
-         v2 = v12,
-         v3 = v14)
-
-############## 2018
-
-hills18_t <- filter(hills_pre_match, first_tr_year == "2018-11-06") %>% 
-  mutate(treated = 1) %>% 
-  select(-pre_stops_c)
-
-hills18_c <- filter(hills_pre_match, first_tr_year == "2020-11-03",
-                    !(voter_id %in% hills18_t$voter_id)) %>% 
-  mutate(treated = 0) %>% 
-  select(-pre_stops) %>% 
-  rename(pre_stops = pre_stops_c)
-
-
-hills18 <- bind_rows(hills18_t, hills18_c) %>%  
-  mutate(first_tr_year = 3) %>% 
-  rename(v1 = v12,
-         v2 = v14,
-         v3 = v16)
-
 ###########################################
-pre <- bind_rows(hills14, hills16, hills18)
-
-saveRDS(pre %>% 
-          select(-latitude, -longitude), "temp/real_pre_match_hills_no_prior_anon.rds")
+pre <- readRDS("temp/real_pre_match_hills.rds")
 
 ids <- pre %>%
   mutate(id = row_number()) %>%

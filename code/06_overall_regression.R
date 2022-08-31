@@ -289,7 +289,7 @@ for(gg in c("overall", "2014-11-04", "2016-11-08", "2018-11-06")){
    
 }
 
-##########################
+########################## coefficient plot
 cints <- rbindlist(lapply(c("overall", "2014-11-04", "2016-11-08", "2018-11-06"), function(gg){
   readRDS(paste0("temp/cints_full_", gg, ".rds"))
 })) %>% 
@@ -323,3 +323,128 @@ p <- ggplot(data = cints, aes(y = t, x = estimate, xmin = lb,
   scale_x_continuous(labels = scales::percent)
 p
 saveRDS(p, "temp/coef_plot.rds")
+
+#################### event study
+
+cleanup()
+
+matches <- readRDS("temp/full_reg_data.rds") %>% 
+  filter(period <= 0.5)
+
+m1 <- to ~ treated * post + as.factor(year)
+m2 <- to ~ treated * post + as.factor(year) +
+  white + black + latino + asian + male +
+  dem + rep + age + reg_date + pre_stops + v1 + v2 + v3 +
+  median_income + some_college + unem + civil + paid + tampa_pd
+
+es <- rbindlist(lapply(seq(-1.5, 0.5, 1), function(y){
+  dat1 <- filter(matches, period <= y)
+  dat1$post <- dat1$period == y
+  
+  mod1 <- feols(m1, dat1, weights = ~ weight, cluster = ~ group)
+  mod2 <- feols(m2, dat1, weights = ~ weight, cluster = ~ group)
+  
+  saveRDS(mod1, paste0("temp/es_reg_mod1_", y, ".rds"))
+  saveRDS(mod2, paste0("temp/es_reg_mod2_", y, ".rds"))
+  
+  c <- confint(mod1) %>% 
+    mutate(model = 1,
+           year = y)
+  c <- c[rownames(c) == "treatedTRUE:postTRUE",]
+  
+  c2 <- confint(mod2) %>% 
+    mutate(model = 2,
+           year = y)
+  c2 <- c2[rownames(c2) == "treatedTRUE:postTRUE",]
+  
+  return(bind_rows(
+    c,
+    c2
+  ))
+})) %>% 
+  rename(lower = `2.5 %`,
+         upper = `97.5 %`) %>% 
+  mutate(estimate = (upper + lower) / 2,
+         model = ifelse(model == 1, "Without Covariates", "With Covariates"))
+
+p <- ggplot(data = filter(es), aes(y = year, x = estimate, xmin = lower, 
+                                   xmax = upper, shape = model,
+                                   linetype = model)) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  ggstance::geom_pointrangeh(aes(y = year, x = estimate, 
+                                 xmin = lower, xmax = upper, shape = model,
+                                 linetype = model),
+                             position = ggstance::position_dodgev(height = .5), 
+                             fill = "white", fatten = 3, size = 0.8, show.legend = T) +
+  coord_flip() + theme_bc(base_family = "Latin Modern Roman") +
+  theme(legend.position = "bottom") +
+  labs(y = "t = 0", x = "Estimate", shape = "Model",
+       linetype = "Model") + scale_x_continuous(labels = percent) +
+  scale_y_continuous(labels = c(-2, -1, 0), breaks = c(-1.5, -.5, .5))
+p
+saveRDS(p, "temp/event_study.rds")
+
+mods <- list(
+  readRDS(paste0("temp/es_reg_mod1_-1.5.rds")),
+  readRDS(paste0("temp/es_reg_mod2_-1.5.rds")),
+  readRDS(paste0("temp/es_reg_mod1_-0.5.rds")),
+  readRDS(paste0("temp/es_reg_mod2_-0.5.rds")),
+  readRDS(paste0("temp/es_reg_mod1_0.5.rds")),
+  readRDS(paste0("temp/es_reg_mod2_0.5.rds"))
+)
+
+names(mods) <- c("t = -2", "t = -2", "t = -1", "t = -1", "t = 0", "t = 0")
+
+rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4, ~m5, ~m6,
+                "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
+attr(rows, 'position') <- c(47:47)
+
+modelsummary(mods,
+             statistic = "std.error",
+             stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+             coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
+                          "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
+                          "treatedTRUE" = "Treated",
+                          "postTRUE" = "Post Treatment",
+                          "blackTRUE" = "Black",
+                          "whiteTRUE" = "White",
+                          "latinoTRUE" = "Latino",
+                          "asianTRUE" = "Asian",
+                          "maleTRUE" = "Male",
+                          "demTRUE" = "Democrat",
+                          "repTRUE" = "Republican",
+                          "age" = "Age",
+                          "reg_date" = "Registration Date",
+                          "pre_stops" = "Traffic Stops before Period",
+                          "v1TRUE" = "Turnout (t = -3)",
+                          "v2TRUE" = "Turnout (t = -2)",
+                          "v3TRUE" = "Turnout (t = -1)",
+                          "median_income" = "Nhood Median Income",
+                          "some_college" = "Nhood w/ Some College",
+                          "unem" = "Nhood Unemployment Rate",
+                          "civil" = "Civil Infraction",
+                          "paidTRUE" = "Paid Money on Stop",
+                          "tampa_pd" = "Stopped by Tampa Police Department",
+                          "treatedTRUE:blackTRUE" = "Treated $\\times$ Black",
+                          "postTRUE:blackTRUE" = "Post Treatment $\\times$ Black",
+                          "(Intercept)" = "Intercept"),
+             gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
+             title = "\\label{tab:es-reg}Individual-Level Turnout",
+             latex_options = "scale_down",
+             add_rows = rows,
+             output = "temp/es_reg.tex",
+             escape = FALSE)
+
+j <- fread("temp/es_reg.tex", header = F, sep = "+") %>%
+  mutate(n = row_number())
+
+insert1 <- "\\resizebox*{!}{0.95\\textheight}{%"
+insert2 <- "}"
+
+j <- bind_rows(j, data.frame(V1 = c(insert1, insert2), n = c(4.1, max(j$n) - 0.01))) %>%
+  arrange(n) %>%
+  select(-n)
+
+
+write.table(j, "temp/es_reg.tex", quote = F, col.names = F,
+            row.names = F)

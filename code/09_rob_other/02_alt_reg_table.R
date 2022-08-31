@@ -36,27 +36,9 @@ for(gg in c("overall")){
     m <- feols(f, data = nom,
                weight = ~ weight, cluster = "voter_id")
   })
-  
+  models <- c(models2, models1)
   rows <- tribble(~term, ~m1,  ~m2, ~m3, ~m4,
                   "Year Fixed Effects", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$", "$\\checkmark$")
-  
-  attr(rows, 'position') <- c(13)
-  models <- c(models2, models1)
-  modelsummary(models,
-               statistic = "std.error",
-               stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
-               coef_map = c("treatedTRUE:postTRUE" = "Treated $\\times$ Post Treatment",
-                            "treatedTRUE:postTRUE:blackTRUE" = "Treated $\\times$ Post Treatment $\\times$ Black",
-                            "treatedTRUE" = "Treated",
-                            "postTRUE" = "Post Treatment",
-                            "blackTRUE" = "Black",
-                            "(Intercept)" = "Intercept"),
-               gof_omit = 'DF|Deviance|AIC|BIC|Within|Pseudo|Log|Std|FE',
-               title = tit,
-               latex_options = "scale_down",
-               add_rows = rows,
-               output = paste0("temp/small_table_", gg, "_no_prior.tex"),
-               escape = FALSE)
   
   attr(rows, 'position') <- 53
   modelsummary(models,
@@ -96,8 +78,8 @@ for(gg in c("overall")){
                escape = FALSE,
                booktabs = T) %>% 
     add_header_above(c(" " = 1, "No Matching" = 2, "Pre-Treatment Turnout\nExcluded from Match" = 2)) %>% 
-    column_spec(c(1), width = "8cm") %>% 
-    column_spec(c(2:5), width = "3cm") %>% 
+    column_spec(column = c(1), width = "8cm") %>% 
+    column_spec(column = c(2:5), width = "3cm") %>%
     save_kable(paste0("temp/table_", gg, "_no_prior.tex"))
   
   j <- fread(paste0("temp/table_", gg, "_no_prior.tex"), header = F, sep = "+") %>% 
